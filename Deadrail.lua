@@ -427,40 +427,9 @@ button.MouseButton1Click:Connect(function()
     noCooldownEnabled = not noCooldownEnabled
     setNoCooldown(noCooldownEnabled)
 end)
-
-local fastMenuTitle = Instance.new("TextLabel", contentFrame)
-            fastMenuTitle.Size = UDim2.new(1, -20, 0, 30)
-            fastMenuTitle.Position = UDim2.new(0, 10, 0, 90)
-            fastMenuTitle.BackgroundTransparency = 1
-            fastMenuTitle.TextColor3 = Color3.new(1, 1, 1)
-            fastMenuTitle.TextSize = 25
-            fastMenuTitle.RichText = true
-            fastMenuTitle.Text = "<b>Fullbright</b>"
-local Gg = Instance.new("TextButton", contentFrame)
-            Gg.Size = UDim2.new(1, -20, 0, 30)
-            Gg.Position = UDim2.new(0, 10, 0, 130)
-            Gg.RichText = true 
-            Gg.Text = "<b>Fullbright toggle</b>"
-            Gg.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
-            Gg.TextColor3 = Color3.new(1,1,1)
-
-Gg.MouseButton1Click:Connect(function()
-    if not FullbrightEnabled then
-        Lighting.Ambient = Color3.new(1, 1, 1) -- ทำให้แสงสว่างทั่วแมพ
-        Lighting.Brightness = 5 -- เพิ่มความสว่าง
-        Lighting.GlobalShadows = false -- ปิดเงา
-        FullbrightEnabled = true
-        Gg.BackgroundColor3 = Color3.fromRGB(255, 0, 0) -- เปลี่ยนสีปุ่มเป็นแดง (ปิด)
-        Gg.Text = "<b>Fullbright: Off</b>"
-    else
-        Lighting.Ambient = Color3.new(0, 0, 0) -- คืนค่าปกติ
-        Lighting.Brightness = 1
-        Lighting.GlobalShadows = true -- เปิดเงากลับมา
-        FullbrightEnabled = false
-        Gg.BackgroundColor3 = Color3.fromRGB(0, 255, 0) -- เปลี่ยนสีปุ่มเป็นเขียว (เปิด)
-        Gg.Text = "<b>Fullbright: On</b>"
-    end
-end)
+        end
+    end)
+end
 
 createMenuButton("Main", "เลือกไอเทมสำหรับฟาร์ม")
 createMenuButton("Player", "สคริปพลังพิเศษ")
