@@ -458,15 +458,9 @@ Gg.MouseButton1Click:Connect(function()
         Lighting.GlobalShadows = true -- เปิดเงากลับมา
         FullbrightEnabled = false
         Gg.BackgroundColor3 = Color3.fromRGB(0, 255, 0) -- เปลี่ยนสีปุ่มเป็นเขียว (เปิด)
-        Gg.Text = "<b>Fullbright: On</b>"     
-        end
+        Gg.Text = "<b>Fullbright: On</b>"
     end
 end)
-
-
-        end
-    end)
-end
 
 createMenuButton("Main", "เลือกไอเทมสำหรับฟาร์ม")
 createMenuButton("Player", "สคริปพลังพิเศษ")
