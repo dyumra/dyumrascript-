@@ -305,42 +305,7 @@ local fastMenuTitle = Instance.new("TextLabel", contentFrame)
             fastMenuTitle.Text = "<b>Speed x3</b>"
 
 local Hh = Instance.new("TextButton", contentFrame)
-Hh.Size = UDim2.new(1, -20, 0, 30)
-Hh.Position = UDim2.new(0, 10, 0, 210)
-Hh.RichText = true
-Hh.Text = "<b>Toggle Speed</b>"
-Hh.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
-Hh.TextColor3 = Color3.new(1, 1, 1)
 
-local speedStages = {16, 25, 30} -- ระดับความเร็ว
-local colors = {Color3.fromRGB(0, 255, 0), Color3.fromRGB(255, 255, 0), Color3.fromRGB(255, 0, 0)} -- สีของปุ่ม
-local clickCount = 0
-local maxClicks = 3
-
-Hh.MouseButton1Click:Connect(function()
-    if clickCount < maxClicks then
-        clickCount = clickCount + 1
-        local newSpeedIndex = (clickCount - 1) % #speedStages + 1
-        local newSpeed = speedStages[newSpeedIndex]
-
-        -- ตั้งค่าความเร็วผู้เล่น
-        local player = game.Players.LocalPlayer
-        if player and player.Character and player.Character:FindFirstChild("Humanoid") then
-            player.Character.Humanoid.WalkSpeed = newSpeed
-        end
-
-        -- เปลี่ยนสีปุ่ม
-        Hh.BackgroundColor3 = colors[newSpeedIndex]
-    else
-        -- รีเซ็ตเป็นค่าเริ่มต้น (16) เมื่อกดครบ 3 ครั้ง
-        clickCount = 0
-        Hh.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
-        local player = game.Players.LocalPlayer
-        if player and player.Character and player.Character:FindFirstChild("Humanoid") then
-            player.Character.Humanoid.WalkSpeed = 16
-        end
-    end
-end)
 
 
 elseif name == "Esp" then
@@ -355,7 +320,34 @@ local fastMenuTitle = Instance.new("TextLabel", contentFrame)
 local button = Instance.new("TextButton", contentFrame)
             button.Size = UDim2.new(1, -20, 0, 30)
             button.Position = UDim2.new(0, 10, 0, 50)
-            button.RichText = true 
+        Hh.Size = UDim2.new(1, -20, 0, 30)
+Hh.Position = UDim2.new(0, 10, 0, 210)
+Hh.RichText = true
+Hh.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+Hh.TextColor3 = Color3.new(1, 1, 1)
+
+local speedStages = {16, 25, 30} -- ระดับความเร็ว
+local colors = {Color3.fromRGB(0, 255, 0), Color3.fromRGB(255, 255, 0), Color3.fromRGB(255, 0, 255)} -- สีของปุ่ม
+local texts = {"<b>Speed Toggle</b>", "<b>Speed x2: Toggle</b>", "<b>Speed x3: Toggle</b>"} -- ข้อความแสดงในปุ่ม
+local clickCount = 0
+
+Hh.MouseButton1Click:Connect(function()
+    clickCount = (clickCount % #speedStages) + 1
+    local newSpeed = speedStages[clickCount]
+
+    -- ตั้งค่าความเร็วผู้เล่น
+    local player = game.Players.LocalPlayer
+    if player and player.Character and player.Character:FindFirstChild("Humanoid") then
+        player.Character.Humanoid.WalkSpeed = newSpeed
+    end
+
+    -- เปลี่ยนสีปุ่มให้ตรงกับระดับความเร็ว
+    Hh.BackgroundColor3 = colors[clickCount]
+
+    -- อัปเดตข้อความในปุ่ม
+    Hh.Text = texts[clickCount]
+end)
+button.RichText = true 
             button.Text = "<b>Esp (NOT TOGGLE)</b>"
             button.BackgroundColor3 = Color3.fromRGB(0, 0, 255)
             button.TextColor3 = Color3.new(1, 1, 1)
