@@ -6,9 +6,14 @@ screenGui.ResetOnSpawn = false
 local button = Instance.new("TextButton", screenGui)
 button.Size = UDim2.new(0, 50, 0, 50)
 button.Position = UDim2.new(0, 10, 0, 10)
+button.TextSize = 20
 button.Text = "D"
 button.BackgroundColor3 = Color3.fromRGB(100, 100, 255)
 button.TextColor3 = Color3.new(1, 1, 1)
+
+-- เพิ่ม UICorner เพื่อทำให้ปุ่มกลม
+local corner = Instance.new("UICorner", button)
+corner.CornerRadius = UDim.new(0.5, 0) -- ค่ามากขึ้น = กลมมากขึ้น
 
 
 -- GUI หลัก
