@@ -369,6 +369,146 @@ local fastMenuTitle = Instance.new("TextLabel", contentFrame)
             fastMenuTitle.TextSize = 25
             fastMenuTitle.RichText = true
             fastMenuTitle.Text = "<b>Player</b>"
+                                                
+local fastMenuTitle = Instance.new("TextLabel", contentFrame)
+            fastMenuTitle.Size = UDim2.new(1, -20, 0, 30)
+            fastMenuTitle.Position = UDim2.new(0, 10, 0, 90)
+            fastMenuTitle.BackgroundTransparency = 1
+            fastMenuTitle.TextColor3 = Color3.new(1, 1, 1)
+            fastMenuTitle.TextSize = 25
+            fastMenuTitle.RichText = true
+            fastMenuTitle.Text = "<b>Item</b>"
+                                                
+local button1 = Instance.new("TextButton", contentFrame)
+button1.Size = UDim2.new(1, -20, 0, 30)
+button1.Position = UDim2.new(0, 10, 0, 130)
+button1.RichText = true 
+button1.Text = "<b>Esp (Gold Bar)</b>"
+button1.BackgroundColor3 = Color3.fromRGB(0, 0, 255)
+button1.TextColor3 = Color3.new(1, 1, 1)
+
+local isHighlighted = false
+
+button1.MouseButton1Click:Connect(function()
+    isHighlighted = not isHighlighted -- สลับสถานะ true/false
+    
+    local goldBar = workspace.RuntimeItems.Goldbar.Prop_GoldBar
+
+    if isHighlighted then
+        local highlightGold = Instance.new("Highlight")
+        highlightGold.FillColor = Color3.fromRGB(255, 215, 0) -- สีทอง
+        highlightGold.FillTransparency = 0.7 -- ปรับความโปร่งใสของสีเติม
+        highlightGold.OutlineColor = Color3.fromRGB(255, 215, 0) -- สีขาว
+        highlightGold.OutlineTransparency = 0.3 -- เส้นขอบชัดเจน
+        highlightGold.Parent = goldBar
+    else
+        -- ลบ Highlight
+        for _, v in pairs(goldBar:GetChildren()) do
+            if v:IsA("Highlight") then
+                v:Destroy()
+            end
+        end
+    end
+end)
+
+local oo = Instance.new("TextButton", contentFrame)
+oo.Size = UDim2.new(1, -20, 0, 30)
+oo.Position = UDim2.new(0, 10, 0, 170)
+oo.RichText = true 
+oo.Text = "<b>Esp (Silver Bar)</b>"
+oo.BackgroundColor3 = Color3.fromRGB(0, 0, 255)
+oo.TextColor3 = Color3.new(1, 1, 1)
+
+local isHighlighted = false
+
+oo.MouseButton1Click:Connect(function()
+    isHighlighted = not isHighlighted -- สลับสถานะ true/false
+    
+    local goldBar = workspace.RuntimeItems.SilverBar.Prop_GoldBar
+
+    if isHighlighted then
+        local highlightGold = Instance.new("Highlight")
+        highlightGold.FillColor = Color3.fromRGB(255, 255, 255) -- สีทอง
+        highlightGold.FillTransparency = 0.7 -- ปรับความโปร่งใสของสีเติม
+        highlightGold.OutlineColor = Color3.fromRGB(255, 255, 255) -- สีขาว
+        highlightGold.OutlineTransparency = 0.3 -- เส้นขอบชัดเจน
+        highlightGold.Parent = goldBar
+    else
+        -- ลบ Highlight
+        for _, v in pairs(goldBar:GetChildren()) do
+            if v:IsA("Highlight") then
+                v:Destroy()
+            end
+        end
+    end
+end)
+
+
+local ll = Instance.new("TextButton", contentFrame)
+ll.Size = UDim2.new(1, -20, 0, 30)
+ll.Position = UDim2.new(0, 10, 0, 210)
+ll.RichText = true 
+ll.Text = "<b>Esp (All item in Map)</b>"
+ll.BackgroundColor3 = Color3.fromRGB(0, 0, 255)
+ll.TextColor3 = Color3.new(1, 1, 1)
+
+local isHighlighted = false
+local sizeThreshold = 10 -- ขนาดสูงสุดของ Part ที่จะได้รับ Highlight
+
+ll.MouseButton1Click:Connect(function()
+    isHighlighted = not isHighlighted -- สลับสถานะ true/false
+    
+    local runtimeItems = workspace.RuntimeItems:GetChildren()
+
+    if isHighlighted then
+        -- Loop เช็คทุก Part ใน RuntimeItems
+        for _, item in pairs(runtimeItems) do
+            if item:IsA("Part") or item:IsA("MeshPart") then
+                local size = item.Size
+                
+                -- เช็คขนาด ถ้ามีด้านใดด้านหนึ่งใหญ่เกิน sizeThreshold จะไม่ถูก Highlight
+                if size.X <= sizeThreshold and size.Y <= sizeThreshold and size.Z <= sizeThreshold then
+                    -- เพิ่ม Highlight
+                    local highlight = Instance.new("Highlight")
+                    highlight.FillColor = Color3.fromRGB(255, 255, 255) -- สีทอง
+                    highlight.FillTransparency = 0.5 -- ความโปร่งใส
+                    highlight.OutlineColor = Color3.fromRGB(255, 0, 0) -- สีขาว
+                    highlight.OutlineTransparency = 0 -- เส้นขอบชัดเจน
+                    highlight.Parent = item
+
+                    -- เพิ่ม Text บน Part
+                    local billboard = Instance.new("BillboardGui")
+                    billboard.Size = UDim2.new(0, 100, 0, 25) -- ขนาดของ GUI
+                    billboard.StudsOffset = Vector3.new(0, size.Y + 1, 0) -- ยกขึ้นเหนือ Part
+                    billboard.Adornee = item
+                    billboard.Parent = item
+
+                    local textLabel = Instance.new("TextLabel")
+                    textLabel.Size = UDim2.new(1, 0, 1, 0)
+                    textLabel.BackgroundTransparency = 1
+                    textLabel.TextColor3 = Color3.fromRGB(255, 255, 255) -- สีขาว
+                    textLabel.TextStrokeTransparency = 0 -- ขอบตัวอักษร
+                    textLabel.Text = item.Name -- ตั้งชื่อเป็นชื่อของ Part
+                    textLabel.Font = Enum.Font.SourceSansBold
+                    textLabel.TextScaled = true
+                    textLabel.Parent = billboard
+                end
+            end
+        end
+    else
+        -- ลบ Highlight และ Text ทั้งหมด
+        for _, item in pairs(runtimeItems) do
+            for _, v in pairs(item:GetChildren()) do
+                if v:IsA("Highlight") or v:IsA("BillboardGui") then
+                    v:Destroy()
+                end
+            end
+        end
+    end
+end)
+                                                
+
+                                                
 local button = Instance.new("TextButton", contentFrame)
             button.Size = UDim2.new(1, -20, 0, 30)
             button.Position = UDim2.new(0, 10, 0, 50)
@@ -410,6 +550,8 @@ button.MouseButton1Click:Connect(function()
         end
     end
 end)
+                                                
+
 elseif name == "Cheat" then
 local Players = game:GetService("Players")
 local StarterGui = game:GetService("StarterGui")
