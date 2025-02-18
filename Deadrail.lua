@@ -42,15 +42,6 @@ contentFrame.Size = UDim2.new(1, -110, 1, -20)
 contentFrame.Position = UDim2.new(0, 110, 0, 10)
 contentFrame.BackgroundColor3 = Color3.fromRGB(90, 90, 90)
 
-local fastMenuTitle = Instance.new("TextLabel", guiFrame)
-            fastMenuTitle.Size = UDim2.new(1, -20, 0, 30)
-            fastMenuTitle.Position = UDim2.new(0, -190, 0, 10)
-            fastMenuTitle.BackgroundTransparency = 1
-            fastMenuTitle.TextColor3 = Color3.new(1, 1, 1)
-            fastMenuTitle.TextSize = 16
-            fastMenuTitle.RichText = true
-            fastMenuTitle.Text = "<b>Skibidi</b>"
-
 -- ข้อความแสดงเนื้อหา
 local contentLabel = Instance.new("TextLabel", contentFrame)
 contentLabel.Size = UDim2.new(1, -20, 0, 50)
@@ -173,7 +164,7 @@ local statueButton = Instance.new("TextButton", contentFrame)
             statueButton.Size = UDim2.new(1, -20, 0, 30)
             statueButton.Position = UDim2.new(0, 10, 0, 170)
             statueButton.Text = "Barrel - Fuel +25%"
-            statueButton.BackgroundColor3 = Color3.fromRGB(120, 0, 120)
+            statueButton.BackgroundColor3 = Color3.fromRGB(255, 215, 0)
             statueButton.TextColor3 = Color3.new(1, 1, 1)
 
             statueButton.MouseButton1Click:Connect(function()
@@ -193,7 +184,7 @@ local statueButton = Instance.new("TextButton", contentFrame)
             statueButton.Size = UDim2.new(1, -20, 0, 30)
             statueButton.Position = UDim2.new(0, 10, 0, 210)
             statueButton.Text = "Coal - Fuel +45%"
-            statueButton.BackgroundColor3 = Color3.fromRGB(120, 0, 120)
+            statueButton.BackgroundColor3 = Color3.fromRGB(255, 215, 0)
             statueButton.TextColor3 = Color3.new(1, 1, 1)
 
             statueButton.MouseButton1Click:Connect(function()
@@ -379,6 +370,15 @@ local fastMenuTitle = Instance.new("TextLabel", contentFrame)
             fastMenuTitle.TextSize = 25
             fastMenuTitle.RichText = true
             fastMenuTitle.Text = "<b>Player</b>"
+
+local fastMenuTitle = Instance.new("TextLabel", contentFrame)
+            fastMenuTitle.Size = UDim2.new(1, -20, 0, 30)
+            fastMenuTitle.Position = UDim2.new(0, -190, 0, 10)
+            fastMenuTitle.BackgroundTransparency = 1
+            fastMenuTitle.TextColor3 = Color3.new(1, 1, 1)
+            fastMenuTitle.TextSize = 16
+            fastMenuTitle.RichText = true
+            fastMenuTitle.Text = "<b>Skibidi</b>"                                                
                                                 
 local fastMenuTitle = Instance.new("TextLabel", contentFrame)
             fastMenuTitle.Size = UDim2.new(1, -20, 0, 30)
@@ -563,6 +563,16 @@ end)
                                                 
 
 elseif name == "Cheat" then
+
+local fastMenuTitle = Instance.new("TextLabel", contentFrame)
+            fastMenuTitle.Size = UDim2.new(1, -20, 0, 30)
+            fastMenuTitle.Position = UDim2.new(0, -190, 0, 10)
+            fastMenuTitle.BackgroundTransparency = 1
+            fastMenuTitle.TextColor3 = Color3.new(1, 1, 1)
+            fastMenuTitle.TextSize = 16
+            fastMenuTitle.RichText = true
+            fastMenuTitle.Text = "<b>Skibidi</b>"                                                
+                                                
 local Players = game:GetService("Players")
 local StarterGui = game:GetService("StarterGui")
 
