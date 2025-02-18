@@ -10,6 +10,7 @@ button.Text = "D"
 button.BackgroundColor3 = Color3.fromRGB(100, 100, 255)
 button.TextColor3 = Color3.new(1, 1, 1)
 
+
 -- GUI หลัก
 local guiFrame = Instance.new("Frame", screenGui)
 guiFrame.Size = UDim2.new(0, 400, 0, 300)
@@ -40,6 +41,15 @@ local contentFrame = Instance.new("Frame", guiFrame)
 contentFrame.Size = UDim2.new(1, -110, 1, -20)
 contentFrame.Position = UDim2.new(0, 110, 0, 10)
 contentFrame.BackgroundColor3 = Color3.fromRGB(90, 90, 90)
+
+local fastMenuTitle = Instance.new("TextLabel", guiFrame)
+            fastMenuTitle.Size = UDim2.new(1, -20, 0, 30)
+            fastMenuTitle.Position = UDim2.new(0, -190, 0, 10)
+            fastMenuTitle.BackgroundTransparency = 1
+            fastMenuTitle.TextColor3 = Color3.new(1, 1, 1)
+            fastMenuTitle.TextSize = 16
+            fastMenuTitle.RichText = true
+            fastMenuTitle.Text = "<b>Skibidi</b>"
 
 -- ข้อความแสดงเนื้อหา
 local contentLabel = Instance.new("TextLabel", contentFrame)
