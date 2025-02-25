@@ -94,16 +94,24 @@ LP:addDropdown("Teleport to Player",PLIST,4,function(value)
     game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame =  game.Players[value].Character.HumanoidRootPart.CFrame * CFrame.new(0,2,1)
 end)
 
--- Create a button to open the menu at the top left of the screen
-local OpenMenuButton = Instance.new("TextButton")
-OpenMenuButton.Size = UDim2.new(0, 150, 0, 50)  -- Button size
-OpenMenuButton.Position = UDim2.new(0, 10, 0, 10)  -- Position in the top left corner
-OpenMenuButton.Text = "Open Menu"
-OpenMenuButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-OpenMenuButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-OpenMenuButton.Parent = game.Players.LocalPlayer.PlayerGui:WaitForChild("ScreenGui")
+-- Create a button to open/close the menu at the top left of the screen
+local OpenCloseButton = Instance.new("TextButton")
+OpenCloseButton.Size = UDim2.new(0, 150, 0, 50)  -- Button size
+OpenCloseButton.Position = UDim2.new(0, 10, 0, 10)  -- Position in the top left corner
+OpenCloseButton.Text = "Open Menu"
+OpenCloseButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+OpenCloseButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+OpenCloseButton.Parent = game.Players.LocalPlayer.PlayerGui:WaitForChild("ScreenGui")
 
-OpenMenuButton.MouseButton1Click:Connect(function()
-    -- Open the GUI when the button is clicked
-    UI:Open()
+local isOpen = false  -- Variable to check if the GUI is open or closed
+
+OpenCloseButton.MouseButton1Click:Connect(function()
+    if isOpen then
+        UI:Close()  -- Close the GUI if it's open
+        OpenCloseButton.Text = "Open Menu"  -- Change button text to "Open Menu"
+    else
+        UI:Open()  -- Open the GUI if it's closed
+        OpenCloseButton.Text = "Close Menu"  -- Change button text to "Close Menu"
+    end
+    isOpen = not isOpen  -- Toggle the isOpen variable
 end)
