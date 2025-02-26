@@ -168,65 +168,90 @@ statueButton.Text = "Esp"
 statueButton.BackgroundColor3 = Color3.fromRGB(255, 215, 0)
 statueButton.TextColor3 = Color3.new(1, 1, 1)
 
-local espEnabled = false -- Ensure we have a variable to track ESP status
+local espEnabled = false
+local espInstances = {} -- Store ESP objects to remove later
+
+local function applyESP(player)
+    if player == game.Players.LocalPlayer then return end -- Don't ESP yourself
+    if not player.Character then return end
+    local head = player.Character:FindFirstChild("Head")
+    if not head then return end
+
+    -- Highlight effect
+    local highlight = Instance.new("Highlight")
+    highlight.Parent = player.Character
+    highlight.FillColor = Color3.new(1, 1, 1)
+    highlight.FillTransparency = 0.5
+    highlight.OutlineColor = Color3.new(1, 0, 0)
+    
+    -- Billboard (Name + Level + Money)
+    local billboard = Instance.new("BillboardGui")
+    billboard.Parent = head
+    billboard.Size = UDim2.new(5, 0, 1, 0)
+    billboard.StudsOffset = Vector3.new(0, 2, 0)
+    billboard.AlwaysOnTop = true
+
+    -- Name Label
+    local nameLabel = Instance.new("TextLabel")
+    nameLabel.Parent = billboard
+    nameLabel.Size = UDim2.new(1, 0, 0.5, 0)
+    nameLabel.Text = player.DisplayName .. " (@" .. player.Name .. ")"
+    nameLabel.TextColor3 = Color3.new(1, 1, 1)
+    nameLabel.BackgroundColor3 = Color3.new(0, 0, 0)
+    nameLabel.BorderColor3 = Color3.new(1, 0, 0)
+    nameLabel.TextStrokeTransparency = 0
+
+    -- Level & Money Display
+    local level = player:FindFirstChild("Level") and player.Level.Value or "000"
+    local money = player:FindFirstChild("Money") and player.Money.Value or "000"
+
+    local levelLabel = Instance.new("TextLabel")
+    levelLabel.Parent = billboard
+    levelLabel.Position = UDim2.new(0, 0, -0.5, 0)
+    levelLabel.Size = UDim2.new(1, 0, 0.5, 0)
+    levelLabel.Text = "Level " .. level .. " | $" .. money
+    levelLabel.TextColor3 = Color3.new(1, 1, 1)
+    levelLabel.BackgroundColor3 = Color3.new(0, 0, 0)
+    levelLabel.BorderColor3 = Color3.new(1, 1, 0)
+    levelLabel.TextStrokeTransparency = 0
+
+    -- Store ESP references for cleanup
+    espInstances[player] = {highlight, billboard}
+end
+
+local function removeESP(player)
+    if espInstances[player] then
+        for _, obj in pairs(espInstances[player]) do
+            if obj then obj:Destroy() end
+        end
+        espInstances[player] = nil
+    end
+end
 
 local function toggleESP()
     espEnabled = not espEnabled
+
     if espEnabled then
-        -- Enable ESP
+        -- Apply ESP to all players
         for _, player in pairs(game.Players:GetPlayers()) do
-            if player ~= game.Players.LocalPlayer then
-                local highlight = Instance.new("Highlight")
-                highlight.Parent = player.Character
-                highlight.FillColor = Color3.new(1, 1, 1)
-                highlight.FillTransparency = 0.5
-                highlight.OutlineColor = Color3.new(1, 0, 0)
-
-                local billboard = Instance.new("BillboardGui")
-                billboard.Parent = player.Character.Head
-                billboard.Size = UDim2.new(5, 0, 1, 0)
-                billboard.StudsOffset = Vector3.new(0, 2, 0)
-                billboard.AlwaysOnTop = true
-
-                local nameLabel = Instance.new("TextLabel")
-                nameLabel.Parent = billboard
-                nameLabel.Size = UDim2.new(1, 0, 0.5, 0)
-                nameLabel.Text = player.DisplayName .. " (@" .. player.Name .. ")"
-                nameLabel.TextColor3 = Color3.new(1, 1, 1)
-                nameLabel.BackgroundColor3 = Color3.new(0, 0, 0)
-                nameLabel.BorderColor3 = Color3.new(1, 0, 0)
-                nameLabel.TextStrokeTransparency = 0
-
-                -- Extract level number from player's level
-                local level = player:FindFirstChild("Level")
-                local levelText = level and "Level " .. level.Value or "Level 000"
-                local levelNumber = levelText:match("Level (%d+)") -- Extracts only the number
-
-                -- Show only the level number
-                local levelLabel = Instance.new("TextLabel")
-                levelLabel.Parent = billboard
-                levelLabel.Position = UDim2.new(0, 0, -0.5, 0)
-                levelLabel.Size = UDim2.new(1, 0, 0.5, 0)
-                levelLabel.Text = levelNumber .. " | $" .. (player:FindFirstChild("Money") and player.Money.Value or "000")
-                levelLabel.TextColor3 = Color3.new(1, 1, 1)
-                levelLabel.BackgroundColor3 = Color3.new(0, 0, 0)
-                levelLabel.BorderColor3 = Color3.new(1, 1, 0)
-                levelLabel.TextStrokeTransparency = 0
-            end
+            applyESP(player)
         end
     else
-        -- Disable ESP
+        -- Remove ESP from all players
         for _, player in pairs(game.Players:GetPlayers()) do
-            if player.Character then
-                for _, obj in pairs(player.Character:GetChildren()) do
-                    if obj:IsA("Highlight") or obj:IsA("BillboardGui") then
-                        obj:Destroy()
-                    end
-                end
-            end
+            removeESP(player)
         end
     end
 end
+
+-- Handle players joining
+game.Players.PlayerAdded:Connect(function(player)
+    player.CharacterAdded:Connect(function()
+        if espEnabled then
+            applyESP(player)
+        end
+    end)
+end)
 
 -- Connect button to toggleESP function
 statueButton.MouseButton1Click:Connect(toggleESP)
