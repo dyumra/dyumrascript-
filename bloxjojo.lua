@@ -13,7 +13,7 @@ Frame.Selectable = true
 
 local TitleLabel = Instance.new("TextLabel")
 TitleLabel.Parent = Frame
-TitleLabel.Text = "Farm Mob"
+TitleLabel.Text = "BizBlox by Kawin"
 TitleLabel.Size = UDim2.new(1, 0, 0, 50)
 TitleLabel.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
 TitleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -79,7 +79,24 @@ local function loadEnemies(folderName)
 end
 
 EnemyInput.FocusLost:Connect(function()
-    loadEnemies(EnemyInput.Text)
+    local inputText = EnemyInput.Text
+    -- ตรวจสอบว่าพิมพ์ย่อหรือเลข Level
+    local shortName, level = inputText:match("^(%a+)%s?%[?Level%s?(%d+)%]?")
+    
+    if shortName then
+        EnemyInput.Text = shortName  -- ใช้ชื่อย่อ
+        loadEnemies(shortName)  -- โหลดศัตรูจากชื่อย่อ
+    elseif level then
+        -- ถ้ามีเลข Level ให้ค้นหาจาก Level
+        for _, folder in pairs(game.Workspace:GetChildren()) do
+            if folder:IsA("Folder") then
+                loadEnemies(folder.Name)
+            end
+        end
+    else
+        -- ถ้าไม่มีการจับคู่ย่อหรือเลข Level
+        loadEnemies(inputText)
+    end
 end)
 
 ReloadButton.MouseButton1Click:Connect(function()
