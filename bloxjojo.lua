@@ -1,80 +1,116 @@
--- GUI หลัก
+-- GUI
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Parent = game.Players.LocalPlayer.PlayerGui
 
--- สร้าง Frame ที่สามารถลากได้
-local MainFrame = Instance.new("Frame")
-MainFrame.Parent = ScreenGui
-MainFrame.Size = UDim2.new(0, 300, 0, 400)
-MainFrame.Position = UDim2.new(0.5, -150, 0.3, 0)
-MainFrame.BackgroundColor3 = Color3.fromRGB(40, 0, 0)
-MainFrame.Draggable = true
-MainFrame.Active = true
+local FarmLabel = Instance.new("TextLabel")
+FarmLabel.Parent = ScreenGui
+FarmLabel.Text = "Farm Mob"
+FarmLabel.Size = UDim2.new(0, 200, 0, 50)
+FarmLabel.Position = UDim2.new(0.5, -100, 0.2, 0)
 
-local UIListLayout = Instance.new("UIListLayout")
-UIListLayout.Parent = MainFrame
-UIListLayout.FillDirection = Enum.FillDirection.Vertical
-UIListLayout.Padding = UDim.new(0, 5)
+local StartButton = Instance.new("TextButton")
+StartButton.Parent = ScreenGui
+StartButton.Text = "Start"
+StartButton.Size = UDim2.new(0, 200, 0, 50)
+StartButton.Position = UDim2.new(0.5, -100, 0.3, 0)
 
--- Input สำหรับพิมพ์ Enemies
-local EnemyInput = Instance.new("TextBox")
-EnemyInput.Parent = MainFrame
-EnemyInput.PlaceholderText = "Enter Enemies Folder"
-EnemyInput.Size = UDim2.new(0, 280, 0, 30)
-EnemyInput.Position = UDim2.new(0, 10, 0, 10)
-EnemyInput.BackgroundColor3 = Color3.fromRGB(60, 0, 0)
-EnemyInput.TextColor3 = Color3.fromRGB(255, 255, 255)
-
--- ปุ่ม Reload
 local ReloadButton = Instance.new("TextButton")
-ReloadButton.Parent = MainFrame
+ReloadButton.Parent = ScreenGui
 ReloadButton.Text = "Reload"
-ReloadButton.Size = UDim2.new(0, 280, 0, 30)
-ReloadButton.Position = UDim2.new(0, 10, 0, 50)
-ReloadButton.BackgroundColor3 = Color3.fromRGB(100, 0, 0)
-ReloadButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+ReloadButton.Size = UDim2.new(0, 100, 0, 30)
+ReloadButton.Position = UDim2.new(0.5, 50, 0.3, 0)
 
--- ListView สำหรับแสดง Enemies
-local EnemyList = Instance.new("ScrollingFrame")
-EnemyList.Parent = MainFrame
-EnemyList.Size = UDim2.new(0, 280, 0, 250)
-EnemyList.Position = UDim2.new(0, 10, 0, 90)
-EnemyList.BackgroundColor3 = Color3.fromRGB(30, 0, 0)
-EnemyList.CanvasSize = UDim2.new(0, 0, 5, 0)
+local EspButton = Instance.new("TextButton")
+EspButton.Parent = ScreenGui
+EspButton.Text = "ESP"
+EspButton.Size = UDim2.new(0, 100, 0, 30)
+EspButton.Position = UDim2.new(0.5, -150, 0.3, 0)
 
-local UIListLayout2 = Instance.new("UIListLayout")
-UIListLayout2.Parent = EnemyList
-UIListLayout2.FillDirection = Enum.FillDirection.Vertical
-UIListLayout2.Padding = UDim.new(0, 5)
+local farming = false
+local espEnabled = false
 
--- อัพเดทรายการ Enemies
-local function updateEnemyList()
-    for _, child in pairs(EnemyList:GetChildren()) do
-        if child:IsA("TextButton") then
-            child:Destroy()
+local function startFarming()
+    farming = true
+    while farming do
+        local nearestEnemy = nil
+        local shortestDistance = 40
+        for _, enemy in pairs(game.Workspace.Enemies:GetChildren()) do
+            if enemy:FindFirstChild("HumanoidRootPart") and enemy:FindFirstChild("Humanoid") and enemy.Humanoid.Health > 2 then
+                local distance = (game.Players.LocalPlayer.Character.HumanoidRootPart.Position - enemy.HumanoidRootPart.Position).magnitude
+                if distance < shortestDistance then
+                    shortestDistance = distance
+                    nearestEnemy = enemy
+                end
+            end
         end
+        if nearestEnemy then
+            local vampirePosition = nearestEnemy.HumanoidRootPart.Position
+            game.Players.LocalPlayer.Character:SetPrimaryPartCFrame(CFrame.new(vampirePosition.X, vampirePosition.Y, vampirePosition.Z))
+        end
+        wait(2)
     end
-    
-    local player = game.Players.LocalPlayer
-    local character = player.Character or player.CharacterAdded:Wait()
-    local root = character:FindFirstChild("HumanoidRootPart")
-    if not root then return end
-    
-    for _, enemy in pairs(workspace:FindFirstChild("Enemies"):GetChildren()) do
-        if enemy:FindFirstChild("HumanoidRootPart") and (enemy.HumanoidRootPart.Position - root.Position).magnitude <= 40 then
-            local EnemyButton = Instance.new("TextButton")
-            EnemyButton.Parent = EnemyList
-            EnemyButton.Text = enemy.Name
-            EnemyButton.Size = UDim2.new(1, 0, 0, 30)
-            EnemyButton.BackgroundColor3 = Color3.fromRGB(80, 0, 0)
-            EnemyButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-            EnemyButton.MouseButton1Click:Connect(function()
-                EnemyInput.Text = enemy.Name
-            end)
+end
+
+local function toggleESP()
+    espEnabled = not espEnabled
+    if espEnabled then
+        for _, player in pairs(game.Players:GetPlayers()) do
+            if player ~= game.Players.LocalPlayer then
+                local highlight = Instance.new("Highlight")
+                highlight.Parent = player.Character
+                highlight.FillColor = Color3.new(1, 1, 1)
+                highlight.OutlineColor = Color3.new(1, 0, 0)
+                
+                local billboard = Instance.new("BillboardGui")
+                billboard.Parent = player.Character.Head
+                billboard.Size = UDim2.new(5, 0, 1, 0)
+                billboard.StudsOffset = Vector3.new(0, 2, 0)
+                billboard.AlwaysOnTop = true
+                
+                local nameLabel = Instance.new("TextLabel")
+                nameLabel.Parent = billboard
+                nameLabel.Size = UDim2.new(1, 0, 0.5, 0)
+                nameLabel.Text = player.DisplayName .. " (@" .. player.Name .. ")"
+                nameLabel.TextColor3 = Color3.new(1, 1, 1)
+                nameLabel.BackgroundColor3 = Color3.new(0, 0, 0)
+                nameLabel.BorderColor3 = Color3.new(1, 0, 0)
+                nameLabel.TextStrokeTransparency = 0
+                
+                local levelLabel = Instance.new("TextLabel")
+                levelLabel.Parent = billboard
+                levelLabel.Position = UDim2.new(0, 0, -0.5, 0)
+                levelLabel.Size = UDim2.new(1, 0, 0.5, 0)
+                levelLabel.Text = "Level " .. (player:FindFirstChild("Level") and player.Level.Value or "000") .. " | $" .. (player:FindFirstChild("Money") and player.Money.Value or "000")
+                levelLabel.TextColor3 = Color3.new(1, 1, 1)
+                levelLabel.BackgroundColor3 = Color3.new(0, 0, 0)
+                levelLabel.BorderColor3 = Color3.new(1, 1, 0)
+                levelLabel.TextStrokeTransparency = 0
+            end
+        end
+    else
+        for _, player in pairs(game.Players:GetPlayers()) do
+            if player.Character then
+                for _, obj in pairs(player.Character:GetChildren()) do
+                    if obj:IsA("Highlight") or obj:IsA("BillboardGui") then
+                        obj:Destroy()
+                    end
+                end
+            end
         end
     end
 end
 
-ReloadButton.MouseButton1Click:Connect(updateEnemyList)
+EspButton.MouseButton1Click:Connect(toggleESP)
+StartButton.MouseButton1Click:Connect(function()
+    if farming then
+        farming = false
+        StartButton.Text = "Start"
+    else
+        startFarming()
+        StartButton.Text = "Stop"
+    end
+end)
 
-updateEnemyList()
+ReloadButton.MouseButton1Click:Connect(function()
+    print("Reloading Enemies...")
+end)
