@@ -108,9 +108,57 @@ local function startFarming()
                 player:SetPrimaryPartCFrame(CFrame.new(enemyPos.X, enemyPos.Y, enemyPos.Z + 5))
             end
         end
-        wait(1)
+        wait(0.5)
     end
 end
+
+local button1 = Instance.new("TextButton")
+button1.Parent = frame
+button1.Size = UDim2.new(0, 48, 0, 20)
+button1.Position = UDim2.new(0, 10, 0, 240)
+button1.Text = "Bring Rebirth Arrow"
+button1.MouseButton1Click:Connect(function()
+    -- Teleport ไปที่ Rebirth Arrow
+    local item = game.Workspace:FindFirstChild("Rebirth Arrow")
+    if item then
+        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = item.CFrame
+        wait(0.5)
+        -- Teleport กลับมาที่เดิม
+        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame
+    end
+end)
+
+local button2 = Instance.new("TextButton")
+button2.Parent = frame
+button2.Size = UDim2.new(0, 48, 0, 20)
+button2.Position = UDim2.new(0, 10, 0, 310)
+button2.Text = "Bring Arrow"
+button2.MouseButton1Click:Connect(function()
+    -- Teleport ไปที่ Arrow
+    local item = game.Workspace:FindFirstChild("Arrow")
+    if item then
+        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = item.CFrame
+        wait(0.5)
+        -- Teleport กลับมาที่เดิม
+        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame
+    end
+end)
+
+local button3 = Instance.new("TextButton")
+button3.Parent = frame
+button3.Size = UDim2.new(0, 48, 0, 20)
+button3.Position = UDim2.new(0, 10, 0, 380)
+button3.Text = "Bring Stone"
+button3.MouseButton1Click:Connect(function()
+    -- Teleport ไปที่ Stone
+    local item = game.Workspace:FindFirstChild("Stone")
+    if item then
+        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = item.CFrame
+        wait(0.5)
+        -- Teleport กลับมาที่เดิม
+        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame
+    end
+end)
 
 local function stopFarming()
     farming = false
