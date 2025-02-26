@@ -53,6 +53,46 @@ StartButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 StartButton.Font = Enum.Font.GothamBold
 StartButton.TextSize = 20
 
+-- Create a ScreenGui and Button
+local player = game.Players.LocalPlayer
+
+local button = Instance.new("TextButton")
+button.Size = UDim2.new(1, -20, 0, 50)
+button.Position = UDim2.new(0, 10, 0, 380)
+button.Text = "Auto M1"
+button.Parent = screenGui
+
+-- Define the args for the remote function call
+local args = {
+    [1] = true,
+    [2] = "M1",
+    [3] = CFrame.new(39.84491729736328, -38.15870666503906, -7.330169677734375, 0.24584314227104187, -0.47960278391838074, 0.8423433899879456, 0, 0.8690137267112732, 0.4947880208492279, -0.9693096280097961, -0.12164024263620377, 0.21364107728004456)
+}
+
+-- A variable to track the script's state (enabled/disabled)
+local scriptEnabled = false
+
+-- Function to toggle the script on and off
+local function toggleScript()
+    if scriptEnabled then
+        -- Disable the script by changing the argument to false or removing the action
+        args[1] = false
+        game:GetService("ReplicatedStorage"):WaitForChild("Remote"):WaitForChild("RemoteFunction"):InvokeServer(unpack(args))
+        scriptEnabled = false
+        button.Text = "Start"
+    else
+        -- Enable the script
+        args[1] = true
+        game:GetService("ReplicatedStorage"):WaitForChild("Remote"):WaitForChild("RemoteFunction"):InvokeServer(unpack(args))
+        scriptEnabled = true
+        button.Text = "Stop"
+    end
+end
+
+-- Connect the button click event to the toggle function
+button.MouseButton1Click:Connect(toggleScript)
+
+
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local player = Players.LocalPlayer
