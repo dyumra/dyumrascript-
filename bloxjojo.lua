@@ -114,7 +114,7 @@ end
 
 local button1 = Instance.new("TextButton")
 button1.Parent = frame
-button1.Size = UDim2.new(1, -20, 0, 30)
+button1.Size = UDim2.new(0, 90, 0, 40)
 button1.Position = UDim2.new(0, 10, 0, 240)
 button1.Text = "Bring Rebirth Arrow"
 button1.MouseButton1Click:Connect(function()
@@ -130,7 +130,7 @@ end)
 
 local button2 = Instance.new("TextButton")
 button2.Parent = frame
-button2.Size = UDim2.new(1, -20, 0, 30)
+button2.Size = UDim2.new(0, 70, 0, 40)
 button2.Position = UDim2.new(0, 10, 0, 310)
 button2.Text = "Bring Arrow"
 button2.MouseButton1Click:Connect(function()
@@ -146,7 +146,7 @@ end)
 
 local button3 = Instance.new("TextButton")
 button3.Parent = frame
-button3.Size = UDim2.new(1, -20, 0, 30)
+button3.Size = UDim2.new(0, 50, 0, 40)
 button3.Position = UDim2.new(0, 10, 0, 380)
 button3.Text = "Bring Stone"
 button3.MouseButton1Click:Connect(function()
@@ -160,8 +160,8 @@ button3.MouseButton1Click:Connect(function()
     end
 end)
 
-local statueButton = Instance.new("TextButton", contentFrame)
-statueButton.Size = UDim2.new(1, -20, 0, 30)
+local statueButton = Instance.new("TextButton")
+statueButton.Size = UDim2.new(0, 60, 0, 40)
 statueButton.Position = UDim2.new(0, 10, 0, 450)
 statueButton.Text = "Esp"
 statueButton.BackgroundColor3 = Color3.fromRGB(255, 215, 0)
