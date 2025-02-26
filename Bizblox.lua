@@ -159,12 +159,11 @@ HighlightFolder.Name = "ESP_Highlights"
 -- สร้าง GUI ปุ่ม ESP
 local EspButton = Instance.new("TextButton")
 EspButton.Parent = Frame
-EspButton.Size = UDim2.new(0, 80, 0, 40)
-EspButton.Position = UDim2.new(0, -100, -0.315, 170)
-EspButton.TextScaled = true
-EspButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0) -- สีเขียว (Start)
+EspButton.Size = UDim2.new(1, -20, 0, 50)
+EspButton.Position = UDim2.new(0, 10, 0, 450)
+EspButton.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
 EspButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-EspButton.Font = Enum.Font.GothamBold
+EspButton.Font = Enum.Font.SourceSansBold
 EspButton.TextSize = 20
 EspButton.Text = "ESP"
 
