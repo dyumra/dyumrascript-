@@ -361,7 +361,7 @@ button1.Position = UDim2.new(0, -100, 0.315, 70)
 button1.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
 button1.TextColor3 = Color3.fromRGB(255, 255, 255)
 button1.Font = Enum.Font.GothamBold
-button1.TextSize = 5
+button1.TextSize = 13
 button1.Text = "Bring Rebirth"
 button1.MouseButton1Click:Connect(function()
     -- Teleport ไปที่ Rebirth Arrow
@@ -381,7 +381,7 @@ button2.Position = UDim2.new(0, -100, 0.315, 140)
 button2.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
 button2.TextColor3 = Color3.fromRGB(255, 255, 255)
 button2.Font = Enum.Font.GothamBold
-button2.TextSize = 5
+button2.TextSize = 13
 button2.Text = "Bring Arrow"
 button2.MouseButton1Click:Connect(function()
     -- Teleport ไปที่ Arrow
@@ -401,7 +401,7 @@ button3.Position = UDim2.new(0, -100, 0.315, 210)
 button3.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
 button3.TextColor3 = Color3.fromRGB(255, 255, 255)
 button3.Font = Enum.Font.GothamBold
-button3.TextSize = 5
+button3.TextSize = 13
 button3.Text = "Bring Mask"
 button3.MouseButton1Click:Connect(function()
     -- Teleport ไปที่ Stone
