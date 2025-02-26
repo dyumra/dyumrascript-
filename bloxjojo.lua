@@ -12,7 +12,7 @@ Frame.Selectable = true
 
 local TitleLabel = Instance.new("TextLabel")
 TitleLabel.Parent = Frame
-TitleLabel.Text = "Farm Mob"
+TitleLabel.Text = "BizBlox by Kawin"
 TitleLabel.Size = UDim2.new(1, 0, 0, 50)
 TitleLabel.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
 TitleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -21,7 +21,7 @@ TitleLabel.TextSize = 18
 
 local EnemyInput = Instance.new("TextBox")
 EnemyInput.Parent = Frame
-EnemyInput.PlaceholderText = "Enter Folder Name"
+EnemyInput.PlaceholderText = "Enter Folder Name/Name Mob"
 EnemyInput.Size = UDim2.new(1, -60, 0, 40)
 EnemyInput.Position = UDim2.new(0, 10, 0, 60)
 EnemyInput.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
@@ -30,7 +30,7 @@ EnemyInput.TextColor3 = Color3.fromRGB(255, 255, 255)
 local ReloadButton = Instance.new("TextButton")
 ReloadButton.Parent = Frame
 ReloadButton.Text = "Reload"
-ReloadButton.Size = UDim2.new(0, 50, 0, 40)
+ReloadButton.Size = UDim2.new(0, 50, 0, 15)
 ReloadButton.Position = UDim2.new(1, -55, 0, 60)
 ReloadButton.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
 ReloadButton.TextColor3 = Color3.fromRGB(255, 255, 255)
