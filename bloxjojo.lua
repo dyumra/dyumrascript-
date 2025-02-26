@@ -1,112 +1,84 @@
--- สร้าง GUI
+-- GUI
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Parent = game.Players.LocalPlayer.PlayerGui
+ScreenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
 
-local Frame = Instance.new("Frame")
-Frame.Parent = ScreenGui
-Frame.Size = UDim2.new(0, 300, 0, 400)
-Frame.Position = UDim2.new(0.5, -150, 0.3, 0)
-Frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-Frame.Draggable = true
-Frame.Active = true
-Frame.Selectable = true
-
-local TitleLabel = Instance.new("TextLabel")
-TitleLabel.Parent = Frame
-TitleLabel.Text = "Farm Mob"
-TitleLabel.Size = UDim2.new(1, 0, 0, 50)
-TitleLabel.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
-TitleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-TitleLabel.Font = Enum.Font.GothamBold
-TitleLabel.TextSize = 18
+local MainFrame = Instance.new("Frame")
+MainFrame.Parent = ScreenGui
+MainFrame.Size = UDim2.new(0, 300, 0, 400)
+MainFrame.Position = UDim2.new(0.5, -150, 0.3, 0)
+MainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+MainFrame.Active = true
+MainFrame.Draggable = true
 
 local EnemyInput = Instance.new("TextBox")
-EnemyInput.Parent = Frame
-EnemyInput.PlaceholderText = "Enter Folder Name"
-EnemyInput.Size = UDim2.new(1, -60, 0, 40)
-EnemyInput.Position = UDim2.new(0, 10, 0, 60)
-EnemyInput.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-EnemyInput.TextColor3 = Color3.fromRGB(255, 255, 255)
+EnemyInput.Parent = MainFrame
+EnemyInput.Size = UDim2.new(0, 200, 0, 30)
+EnemyInput.Position = UDim2.new(0.1, 0, 0.1, 0)
+EnemyInput.PlaceholderText = "Enter Enemy Name"
 
 local ReloadButton = Instance.new("TextButton")
-ReloadButton.Parent = Frame
+ReloadButton.Parent = MainFrame
+ReloadButton.Size = UDim2.new(0, 80, 0, 30)
+ReloadButton.Position = UDim2.new(0.75, 0, 0.1, 0)
 ReloadButton.Text = "Reload"
-ReloadButton.Size = UDim2.new(0, 50, 0, 40)
-ReloadButton.Position = UDim2.new(1, -55, 0, 60)
-ReloadButton.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
-ReloadButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 
 local EnemyList = Instance.new("ScrollingFrame")
-EnemyList.Parent = Frame
-EnemyList.Size = UDim2.new(1, -20, 0, 200)
-EnemyList.Position = UDim2.new(0, 10, 0, 110)
+EnemyList.Parent = MainFrame
+EnemyList.Size = UDim2.new(0, 280, 0, 200)
+EnemyList.Position = UDim2.new(0.05, 0, 0.2, 0)
+EnemyList.CanvasSize = UDim2.new(0, 0, 5, 0)
 EnemyList.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-EnemyList.CanvasSize = UDim2.new(0, 0, 1, 0)
-EnemyList.ScrollBarThickness = 5
 
-local StartButton = Instance.new("TextButton")
-StartButton.Parent = Frame
-StartButton.Text = "Start"
-StartButton.Size = UDim2.new(1, -20, 0, 50)
-StartButton.Position = UDim2.new(0, 10, 0, 320)
-StartButton.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
-StartButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-
-local farming = false
-local selectedEnemy = nil
-
-local function loadEnemies(folderName)
+local function updateEnemyList()
     for _, v in pairs(EnemyList:GetChildren()) do
-        if v:IsA("TextButton") then v:Destroy() end
+        if v:IsA("TextButton") then
+            v:Destroy()
+        end
     end
-    
-    local folder = game.Workspace:FindFirstChild(folderName)
-    if folder then
-        for _, enemy in pairs(folder:GetChildren()) do
-            if enemy:IsA("Model") then
-                local EnemyButton = Instance.new("TextButton")
-                EnemyButton.Parent = EnemyList
-                EnemyButton.Text = enemy.Name
-                EnemyButton.Size = UDim2.new(1, 0, 0, 30)
-                EnemyButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
-                EnemyButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-                EnemyButton.MouseButton1Click:Connect(function()
-                    selectedEnemy = enemy.Name
-                end)
-            end
+    local enemies = game.Workspace:FindFirstChild("Enemies")
+    if enemies then
+        for _, enemy in pairs(enemies:GetChildren()) do
+            local EnemyButton = Instance.new("TextButton")
+            EnemyButton.Parent = EnemyList
+            EnemyButton.Size = UDim2.new(1, 0, 0, 30)
+            EnemyButton.Text = enemy.Name
+            EnemyButton.MouseButton1Click:Connect(function()
+                EnemyInput.Text = enemy.Name
+            end)
         end
     end
 end
 
 EnemyInput.FocusLost:Connect(function()
-    loadEnemies(EnemyInput.Text)
+    updateEnemyList()
 end)
 
 ReloadButton.MouseButton1Click:Connect(function()
-    loadEnemies(EnemyInput.Text)
+    updateEnemyList()
 end)
 
+local StartButton = Instance.new("TextButton")
+StartButton.Parent = MainFrame
+StartButton.Size = UDim2.new(0, 280, 0, 50)
+StartButton.Position = UDim2.new(0.05, 0, 0.8, 0)
+StartButton.Text = "Start"
+
+local farming = false
+
 local function startFarming()
-    if not selectedEnemy then return end
     farming = true
     while farming do
-        local enemiesFolder = game.Workspace:FindFirstChild(EnemyInput.Text)
-        if enemiesFolder then
-            local foundEnemy = nil
-            for _, enemy in pairs(enemiesFolder:GetChildren()) do
-                if enemy:IsA("Model") and enemy.Name == selectedEnemy and enemy:FindFirstChild("Humanoid") and enemy.Humanoid.Health > 2 then
-                    foundEnemy = enemy
-                    break
+        local enemies = game.Workspace:FindFirstChild("Enemies")
+        if enemies then
+            local target = enemies:FindFirstChild(EnemyInput.Text)
+            if target and target:FindFirstChild("Humanoid") and target.Humanoid.Health > 2 then
+                local player = game.Players.LocalPlayer.Character
+                if player then
+                    player:SetPrimaryPartCFrame(target.HumanoidRootPart.CFrame + Vector3.new(0, 0, 5))
                 end
             end
-            
-            if foundEnemy then
-                local enemyPos = foundEnemy.HumanoidRootPart.Position
-                local player = game.Players.LocalPlayer.Character
-                player:SetPrimaryPartCFrame(CFrame.new(enemyPos.X, enemyPos.Y, enemyPos.Z + 5))
-            end
         end
-        wait(1)
+        wait(2)
     end
 end
 
@@ -123,3 +95,5 @@ StartButton.MouseButton1Click:Connect(function()
         StartButton.Text = "Stop"
     end
 end)
+
+updateEnemyList()
