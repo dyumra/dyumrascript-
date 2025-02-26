@@ -347,7 +347,7 @@ end
 local button1 = Instance.new("TextButton")
 button1.Parent = Frame
 button1.Size = UDim2.new(0, 50, 0, 40)
-button1.Position = UDim2.new(0, 10, 0, 240)
+button1.Position = UDim2.new(0, 25, 0, 240)
 button1.Text = "Bring Rebirth Arrow"
 button1.MouseButton1Click:Connect(function()
     -- Teleport ไปที่ Rebirth Arrow
@@ -363,7 +363,7 @@ end)
 local button2 = Instance.new("TextButton")
 button2.Parent = Frame
 button2.Size = UDim2.new(0, 50, 0, 40)
-button2.Position = UDim2.new(0, 10, 0, 310)
+button2.Position = UDim2.new(0, 25, 0, 310)
 button2.Text = "Bring Arrow"
 button2.MouseButton1Click:Connect(function()
     -- Teleport ไปที่ Arrow
@@ -379,7 +379,7 @@ end)
 local button3 = Instance.new("TextButton")
 button3.Parent = Frame
 button3.Size = UDim2.new(0, 50, 0, 40)
-button3.Position = UDim2.new(0, 10, 0, 380)
+button3.Position = UDim2.new(0, 25, 0, 380)
 button3.Text = "Bring Mask"
 button3.MouseButton1Click:Connect(function()
     -- Teleport ไปที่ Stone
