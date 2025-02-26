@@ -77,30 +77,48 @@ local function updateEnemyList()
             EnemyButton.MouseButton1Click:Connect(function()
                 EnemyInput.Text = extractLevel(enemy.Name) -- ใช้ฟังก์ชัน extractLevel
             end)
-
-            -- เพิ่มฟังก์ชัน ESP สำหรับศัตรู
-            local highlight = Instance.new("Highlight")
-            highlight.Parent = enemy
-            highlight.FillColor = Color3.fromRGB(255, 255, 255)
-            highlight.FillTransparency = 0.5
-            highlight.OutlineColor = Color3.fromRGB(255, 0, 0)
-            highlight.OutlineTransparency = 0
         end
     end
 end
 
--- ปุ่ม Reload
-ReloadButton.MouseButton1Click:Connect(updateEnemyList)
+local EspButton = Instance.new("TextButton")
+EspButton.Parent = MainFrame
+EspButton.Text = "ESP Toggle"
+EspButton.Size = UDim2.new(0, 280, 0, 30)
+EspButton.Position = UDim2.new(0, 10, 0, 10)
+EspButton.BackgroundColor3 = Color3.fromRGB(0, 100, 0)
+EspButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 
--- ฟังก์ชันการสร้าง TextLabel บนหัวผู้เล่น
+-- Highlight Players Function
+local espEnabled = false
+
+local function createHighlight(player)
+    if not player.Character then return end
+    local highlight = player.Character:FindFirstChild("ESP_Highlight")
+    if not highlight then
+        highlight = Instance.new("Highlight")
+        highlight.Name = "ESP_Highlight"
+        highlight.FillColor = Color3.fromRGB(255, 255, 255)
+        highlight.FillTransparency = 0.5
+        highlight.OutlineColor = Color3.fromRGB(255, 0, 0)
+        highlight.Parent = player.Character
+    end
+end
+
 local function createNameTag(player)
     if not player.Character then return end
+
+    -- ลบของเก่า
+    if player.Character:FindFirstChild("ESP_NameTag") then
+        player.Character:FindFirstChild("ESP_NameTag"):Destroy()
+    end
 
     -- หัวของ Player
     local head = player.Character:FindFirstChild("Head")
     if not head then return end
 
     local billboard = Instance.new("BillboardGui")
+    billboard.Name = "ESP_NameTag"
     billboard.Parent = player.Character
     billboard.Adornee = head
     billboard.Size = UDim2.new(4, 0, 1, 0)
@@ -135,21 +153,66 @@ local function createNameTag(player)
     nameLabel.TextScaled = true
 end
 
+local function updateESP()
+    for _, player in pairs(game.Players:GetPlayers()) do
+        if player ~= game.Players.LocalPlayer then
+            if espEnabled then
+                createHighlight(player)
+                createNameTag(player)
+            else
+                if player.Character then
+                    if player.Character:FindFirstChild("ESP_Highlight") then
+                        player.Character.ESP_Highlight:Destroy()
+                    end
+                    if player.Character:FindFirstChild("ESP_NameTag") then
+                        player.Character.ESP_NameTag:Destroy()
+                    end
+                end
+            end
+        end
+    end
+end
+
+-- เปิด/ปิด ESP
+EspButton.MouseButton1Click:Connect(function()
+    espEnabled = not espEnabled
+    updateESP()
+end)
+
 -- อัปเดตเมื่อ Player เข้ามาใหม่
 game.Players.PlayerAdded:Connect(function(player)
     player.CharacterAdded:Connect(function()
         wait(1) -- รอโหลด Character
-        createNameTag(player)
-    end)
-
-    -- อัปเดตค่า Level/Money เมื่อมีการเปลี่ยนแปลง
-    player:WaitForChild("Level").Changed:Connect(function()
-        createNameTag(player)
-    end)
-    player:WaitForChild("Money").Changed:Connect(function()
-        createNameTag(player)
+        if espEnabled then
+            createHighlight(player)
+            createNameTag(player)
+        end
     end)
 end)
 
--- เรียกใช้การอัพเดทเมื่อมีการโหลด
+-- อัปเดตเมื่อ Player เปลี่ยนค่า Level หรือ Money
+game.Players.PlayerAdded:Connect(function(player)
+    player.CharacterAdded:Connect(function()
+        wait(1)
+        if espEnabled then
+            createHighlight(player)
+            createNameTag(player)
+        end
+    end)
+
+    player:WaitForChild("Level").Changed:Connect(function()
+        if player.Character then
+            createNameTag(player)
+        end
+    end)
+
+    player:WaitForChild("Money").Changed:Connect(function()
+        if player.Character then
+            createNameTag(player)
+        end
+    end)
+end)
+
+ReloadButton.MouseButton1Click:Connect(updateEnemyList)
+
 updateEnemyList()
