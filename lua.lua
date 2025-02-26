@@ -91,9 +91,9 @@ local function startFarming()
             local player = game.Players.LocalPlayer.Character
             if player and player.PrimaryPart then
                 for _, enemy in pairs(enemiesFolder:GetChildren()) do
-                    if enemy:IsA("Model") and enemy.Name == selectedEnemy and enemy:FindFirstChild("HumanoidRootPart") then
-                        local dist = (player.PrimaryPart.Position - enemy.HumanoidRootPart.Position).Magnitude
-                        if dist < closestDist and enemy:FindFirstChild("Humanoid") and enemy.Humanoid.Health > 2 then
+                    if enemy:IsA("Model") and enemy.Name == selectedEnemy and enemy:FindFirstChild("Humanoid") then
+                        local dist = (player.PrimaryPart.Position - enemy.PrimaryPart.Position).Magnitude
+                        if dist < closestDist and enemy.Humanoid.Health > 2 then
                             closestEnemy = enemy
                             closestDist = dist
                         end
@@ -101,7 +101,7 @@ local function startFarming()
                 end
                 
                 if closestEnemy then
-                    -- Teleport player slightly away from the enemy to avoid collisions
+                    -- ใช้ CFrame เพื่อเทเลพอร์ตไปที่ตำแหน่งของศัตรู
                     local enemyPos = closestEnemy.HumanoidRootPart.Position
                     player:SetPrimaryPartCFrame(CFrame.new(enemyPos.X, enemyPos.Y, enemyPos.Z + 3))
                 end
