@@ -22,7 +22,7 @@ TitleLabel.TextSize = 18
 
 local EnemyInput = Instance.new("TextBox")
 EnemyInput.Parent = Frame
-EnemyInput.PlaceholderText = "Enter Enemies dyumra=Vem"
+EnemyInput.PlaceholderText = "Enter ษฆษฆษษฆฆ Name"
 EnemyInput.Size = UDim2.new(1, -60, 0, 40)
 EnemyInput.Position = UDim2.new(0, 10, 0, 60)
 EnemyInput.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
@@ -54,8 +54,9 @@ StartButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 
 local farming = false
 local selectedEnemy = nil
+local farmingThread = nil  -- เพิ่มตัวแปรสำหรับเก็บ coroutine
 
--- ฟังก์ชันในการโหลดศัตรู
+-- ฟังก์ชั่นในการโหลดศัตรู
 local function loadEnemies(folderName)
     for _, v in pairs(EnemyList:GetChildren()) do
         if v:IsA("TextButton") then v:Destroy() end
@@ -79,38 +80,20 @@ local function loadEnemies(folderName)
     end
 end
 
--- ฟังก์ชันในการจับคำย่อ
-local function handleShortenedName(inputText)
-    local shortName, fullName = inputText:match("^(%a+)%s+dyumra=(%a+)$")
-    
-    if shortName and fullName then
-        -- คำย่อ dyumra กับชื่อเต็ม
-        return fullName
-    end
-    
-    return inputText  -- ถ้าไม่พบคำย่อ, ใช้ข้อความตามที่พิมพ์
-end
-
+-- ฟังก์ชั่นเมื่อพิมพ์ชื่อศัตรูใน TextBox
 EnemyInput.FocusLost:Connect(function()
-    local inputText = EnemyInput.Text
-    local folderName = handleShortenedName(inputText)
-    loadEnemies(folderName)
+    loadEnemies(EnemyInput.Text)
 end)
 
 ReloadButton.MouseButton1Click:Connect(function()
-    local inputText = EnemyInput.Text
-    local folderName = handleShortenedName(inputText)
-    loadEnemies(folderName)
+    loadEnemies(EnemyInput.Text)
 end)
 
-local farming = false
-local selectedEnemy = nil
-local farmingThread = nil
-
+-- ฟังก์ชั่นในการเริ่มฟาร์ม
 local function startFarming()
     if not selectedEnemy then return end
     farming = true
-    farmingThread = coroutine.create(function()  -- Create a new coroutine to run the farming loop
+    farmingThread = coroutine.create(function()  -- สร้าง coroutine เพื่อให้ loop สามารถหยุดได้
         while farming do
             local enemiesFolder = game.Workspace:FindFirstChild(EnemyInput.Text)
             if enemiesFolder then
@@ -131,17 +114,19 @@ local function startFarming()
             wait(1)
         end
     end)
-    coroutine.resume(farmingThread)  -- Start the farming thread
+    coroutine.resume(farmingThread)  -- เริ่มต้น coroutine
 end
 
+-- ฟังก์ชั่นในการหยุดฟาร์ม
 local function stopFarming()
     farming = false
     if farmingThread then
-        coroutine.close(farmingThread)  -- Stop the farming thread
+        coroutine.close(farmingThread)  -- ปิด coroutine
         farmingThread = nil
     end
 end
 
+-- ฟังก์ชั่นเมื่อกดปุ่ม Start
 StartButton.MouseButton1Click:Connect(function()
     if farming then
         stopFarming()
