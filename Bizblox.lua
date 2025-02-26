@@ -69,7 +69,7 @@ local autom1 = Instance.new("TextButton")
 autom1.Parent = Frame
 autom1.Text = "Start / Auto M1"
 autom1.Size = UDim2.new(1, -20, 0, 50)
-autom1.Position = UDim2.new(0, 10, 0, 450)
+autom1.Position = UDim2.new(0, 10, 0, 380)
 autom1.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
 autom1.TextColor3 = Color3.fromRGB(255, 255, 255)
 autom1.Font = Enum.Font.GothamBold
@@ -121,15 +121,14 @@ textBox.Parent = Frame
 
 -- สร้างปุ่ม Start/Stop
 local button = Instance.new("TextButton")
+button.Parent = Frame
+button.Text = "Start"
 button.Size = UDim2.new(1, -20, 0, 50)
 button.Position = UDim2.new(0, 10, 0, 310)
-button.Text = "Start"
-button.TextScaled = true
-button.BackgroundColor3 = Color3.fromRGB(255, 0, 0) -- สีเขียว (Start)
+button.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
 button.TextColor3 = Color3.fromRGB(255, 255, 255)
 button.Font = Enum.Font.GothamBold
 button.TextSize = 20
-button.Parent = Frame
 
 local remoteEvent = ReplicatedStorage:WaitForChild("Remote"):WaitForChild("GameEvent")
 local running = false
@@ -169,8 +168,12 @@ HighlightFolder.Name = "ESP_Highlights"
 -- สร้าง GUI ปุ่ม ESP
 local EspButton = Instance.new("TextButton")
 EspButton.Parent = Frame
-EspButton.Size = UDim2.new(0, 50, 0, 75)
-EspButton.Position = UDim2.new(0, -20, 0, 280)
+EspButton.Size = UDim2.new(0, 80, 0, 40)
+EspButton.Position = UDim2.new(0, -100, 0.315, 280)
+EspButton.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
+EspButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+EspButton.Font = Enum.Font.GothamBold
+EspButton.TextSize = 20
 EspButton.Text = "ESP"
 
 local espEnabled = true -- เปิดใช้งาน ESP ตั้งแต่เริ่มต้น
@@ -354,7 +357,11 @@ end
 local button1 = Instance.new("TextButton")
 button1.Parent = Frame
 button1.Size = UDim2.new(0, 80, 0, 40)
-button1.Position = UDim2.new(0, -100, 0.315, 140)
+button1.Position = UDim2.new(0, -100, 0.315, 70)
+button1.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
+button1.TextColor3 = Color3.fromRGB(255, 255, 255)
+button1.Font = Enum.Font.GothamBold
+button1.TextSize = 20
 button1.Text = "Bring Rebirth Arrow"
 button1.MouseButton1Click:Connect(function()
     -- Teleport ไปที่ Rebirth Arrow
@@ -371,6 +378,10 @@ local button2 = Instance.new("TextButton")
 button2.Parent = Frame
 button2.Size = UDim2.new(0, 80, 0, 40)
 button2.Position = UDim2.new(0, -100, 0.315, 140)
+button2.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
+button2.TextColor3 = Color3.fromRGB(255, 255, 255)
+button2.Font = Enum.Font.GothamBold
+button2.TextSize = 20
 button2.Text = "Bring Arrow"
 button2.MouseButton1Click:Connect(function()
     -- Teleport ไปที่ Arrow
@@ -387,6 +398,10 @@ local button3 = Instance.new("TextButton")
 button3.Parent = Frame
 button3.Size = UDim2.new(0, 80, 0, 40)
 button3.Position = UDim2.new(0, -100, 0.315, 210)
+button3.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
+button3.TextColor3 = Color3.fromRGB(255, 255, 255)
+button3.Font = Enum.Font.GothamBold
+button3.TextSize = 20
 button3.Text = "Bring Mask"
 button3.MouseButton1Click:Connect(function()
     -- Teleport ไปที่ Stone
