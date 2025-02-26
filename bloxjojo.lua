@@ -30,14 +30,14 @@ EnemyInput.TextColor3 = Color3.fromRGB(255, 255, 255)
 local ReloadButton = Instance.new("TextButton")
 ReloadButton.Parent = Frame
 ReloadButton.Text = "Reload"
-ReloadButton.Size = UDim2.new(0, 50, 0, 15)
+ReloadButton.Size = UDim2.new(0, 50, 0, 40)
 ReloadButton.Position = UDim2.new(1, -55, 0, 60)
 ReloadButton.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
 ReloadButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 
 local EnemyList = Instance.new("ScrollingFrame")
 EnemyList.Parent = Frame
-EnemyList.Size = UDim2.new(1, -20, 0, 200)
+EnemyList.Size = UDim2.new(1, -60, 0, 40)
 EnemyList.Position = UDim2.new(0, 10, 0, 110)
 EnemyList.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
 EnemyList.CanvasSize = UDim2.new(0, 0, 1, 0)
