@@ -54,6 +54,60 @@ StartButton.Font = Enum.Font.GothamBold
 StartButton.TextSize = 20
 
 local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local player = Players.LocalPlayer
+
+
+-- สร้าง TextBox สำหรับใส่ชื่อเควส
+local textBox = Instance.new("TextBox")
+textBox.Size = UDim2.new(1, -20, 0, 50)
+textBox.Position = UDim2.new(0, 10, 0, 240)
+textBox.PlaceholderText = "Enter Quest"
+textBox.Text = ""
+textBox.TextScaled = true
+textBox.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+textBox.Parent = Frame
+
+-- สร้างปุ่ม Start/Stop
+local button = Instance.new("TextButton")
+button.Size = UDim2.new(1, -20, 0, 50)
+button.Position = UDim2.new(0, 10, 0, 310)
+button.Text = "Start"
+button.TextScaled = true
+button.BackgroundColor3 = Color3.fromRGB(255, 0, 0) -- สีเขียว (Start)
+button.Parent = Frame
+
+local remoteEvent = ReplicatedStorage:WaitForChild("Remote"):WaitForChild("GameEvent")
+local running = false
+
+-- ฟังก์ชันเริ่ม/หยุดการทำงาน
+local function toggleQuest()
+    running = not running
+    if running then
+        button.Text = "Stop"
+        button.BackgroundColor3 = Color3.fromRGB(200, 0, 0) -- สีแดง (Stop)
+        while running do
+            local questName = textBox.Text
+            if questName and questName ~= "" then
+                local args = {
+                    [1] = "Quest",
+                    [2] = questName
+                }
+                remoteEvent:FireServer(unpack(args))
+            end
+            wait(2) -- ส่งทุก 2 วินาที
+        end
+    else
+        button.Text = "Start"
+        button.BackgroundColor3 = Color3.fromRGB(200, 0, 0) -- สีเขียว (Start)
+    end
+end
+
+-- เมื่อกดปุ่ม Start/Stop
+button.MouseButton1Click:Connect(toggleQuest)
+
+
+local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local HighlightFolder = Instance.new("Folder", game.Workspace)
 HighlightFolder.Name = "ESP_Highlights"
