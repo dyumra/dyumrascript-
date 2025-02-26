@@ -59,11 +59,9 @@ local HighlightFolder = Instance.new("Folder", game.Workspace)
 HighlightFolder.Name = "ESP_Highlights"
 
 -- สร้าง GUI ปุ่ม ESP
-local ScreenGui = Instance.new("ScreenGui", game.Players.LocalPlayer:WaitForChild("PlayerGui"))
 local EspButton = Instance.new("TextButton")
-local statueButton = Instance.new("TextButton")
 EspButton.Parent = Frame
-EspButton.Size = UDim2.new(0, 60, 0, 40)
+EspButton.Size = UDim2.new(0, 50, 0, 40)
 EspButton.Position = UDim2.new(0, 10, 0, 450)
 EspButton.Text = "ESP"
 
@@ -247,7 +245,7 @@ end
 
 local button1 = Instance.new("TextButton")
 button1.Parent = Frame
-button1.Size = UDim2.new(0, 90, 0, 40)
+button1.Size = UDim2.new(0, 50, 0, 40)
 button1.Position = UDim2.new(0, 10, 0, 240)
 button1.Text = "Bring Rebirth Arrow"
 button1.MouseButton1Click:Connect(function()
@@ -263,7 +261,7 @@ end)
 
 local button2 = Instance.new("TextButton")
 button2.Parent = Frame
-button2.Size = UDim2.new(0, 70, 0, 40)
+button2.Size = UDim2.new(0, 50, 0, 40)
 button2.Position = UDim2.new(0, 10, 0, 310)
 button2.Text = "Bring Arrow"
 button2.MouseButton1Click:Connect(function()
