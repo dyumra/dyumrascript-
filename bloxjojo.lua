@@ -78,7 +78,3 @@ end
 ReloadButton.MouseButton1Click:Connect(updateEnemyList)
 
 updateEnemyList()
-
-ทำไมเวลา แก้ไขให้ เวลา กรอก ชื่อ กรอกแค่ ชื่อ เลขก็พอ เช่น Vemipre [Level 40] กรอกแค่ 40 เช่น God [Level 100] กรอกแค่ 100
-
-
