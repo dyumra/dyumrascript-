@@ -60,10 +60,6 @@ local virtualUser = game:GetService("VirtualUser")
 
 local autoClicking = false
 
--- สร้าง ScreenGui
-local screenGui = Instance.new("ScreenGui")
-screenGui.Parent = player:FindFirstChildOfClass("PlayerGui")
-
 -- สร้างปุ่ม
 local autom1 = Instance.new("TextButton")
 autom1.Parent = Frame
@@ -329,30 +325,40 @@ ReloadButton.MouseButton1Click:Connect(function()
     loadEnemies(EnemyInput.Text)
 end)
 
+local range = 15  -- ระยะที่กำหนดสำหรับการ teleport (50 studs)
+
 local function startFarming()
     if not selectedEnemy then return end
     farming = true
-    StartButton.Text = "Stop"  -- Set button text to "Stop" when farming starts
+    StartButton.Text = "Stop"  -- เปลี่ยนข้อความเป็น "Stop" เมื่อการทำฟาร์มเริ่มต้น
     while farming do
         local enemiesFolder = game.Workspace:FindFirstChild(EnemyInput.Text)
         if enemiesFolder then
             local foundEnemy = nil
             for _, enemy in pairs(enemiesFolder:GetChildren()) do
                 if enemy:IsA("Model") and enemy.Name == selectedEnemy and enemy:FindFirstChild("Humanoid") and enemy.Humanoid.Health > 2 then
-                    foundEnemy = enemy
-                    break
+                    local enemyPos = enemy.HumanoidRootPart.Position
+                    local player = game.Players.LocalPlayer.Character
+                    -- เช็คระยะห่างระหว่างผู้เล่นกับศัตรู
+                    local distance = (player.HumanoidRootPart.Position - enemyPos).Magnitude
+                    if distance <= range then
+                        foundEnemy = enemy
+                        break
+                    end
                 end
             end
             
             if foundEnemy then
                 local enemyPos = foundEnemy.HumanoidRootPart.Position
                 local player = game.Players.LocalPlayer.Character
-                player:SetPrimaryPartCFrame(CFrame.new(enemyPos.X, enemyPos.Y, enemyPos.Z + 5))
+                -- ทำการ teleport ไปยังศัตรูที่เลือก
+                player:SetPrimaryPartCFrame(CFrame.new(enemyPos.X, enemyPos.Y, enemyPos.Z + 3))
             end
         end
         wait(0.5)
     end
 end
+
 
 local button1 = Instance.new("TextButton")
 button1.Parent = Frame
