@@ -53,23 +53,27 @@ StartButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 StartButton.Font = Enum.Font.GothamBold
 StartButton.TextSize = 20
 
-
+-- Create a ScreenGui and Button
 local player = game.Players.LocalPlayer
 local userInputService = game:GetService("UserInputService")
 local virtualUser = game:GetService("VirtualUser")
 
 local autoClicking = false
 
+-- สร้าง ScreenGui
+local screenGui = Instance.new("ScreenGui")
+screenGui.Parent = player:FindFirstChildOfClass("PlayerGui")
+
 -- สร้างปุ่ม
-local button = Instance.new("TextButton")
-button.Parent = Frame
-button.Size = UDim2.new(1, -20, 0, 50)
-button.Position = UDim2.new(0, 10, 0, 380)
-button.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
-button.TextColor3 = Color3.fromRGB(255, 255, 255)
-button.Font = Enum.Font.SourceSansBold
-button.TextSize = 20
-button.Text = "Start / Auto M1"
+local autom1 = Instance.new("TextButton")
+autom1.Parent = Frame
+autom1.Text = "Start / Auto M1"
+autom1.Size = UDim2.new(1, -20, 0, 50)
+autom1.Position = UDim2.new(0, 10, 0, 450)
+autom1.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
+autom1.TextColor3 = Color3.fromRGB(255, 255, 255)
+autom1.Font = Enum.Font.GothamBold
+autom1.TextSize = 20
 
 -- ฟังก์ชัน Auto Click
 local function autoClick()
@@ -88,7 +92,7 @@ local function autoClick()
 end
 
 -- เมื่อกดปุ่มให้สลับสถานะ Auto Click
-button.MouseButton1Click:Connect(function()
+autom1.MouseButton1Click:Connect(function()
     autoClicking = not autoClicking
 
     if autoClicking then
@@ -98,6 +102,11 @@ button.MouseButton1Click:Connect(function()
         button.Text = "Start / Auto M1"
     end
 end)
+
+
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local player = Players.LocalPlayer
 
 
 -- สร้าง TextBox สำหรับใส่ชื่อเควส
@@ -112,14 +121,15 @@ textBox.Parent = Frame
 
 -- สร้างปุ่ม Start/Stop
 local button = Instance.new("TextButton")
-button.Parent = Frame
-button.Text = "Start"
 button.Size = UDim2.new(1, -20, 0, 50)
 button.Position = UDim2.new(0, 10, 0, 310)
-button.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
+button.Text = "Start"
+button.TextScaled = true
+button.BackgroundColor3 = Color3.fromRGB(255, 0, 0) -- สีเขียว (Start)
 button.TextColor3 = Color3.fromRGB(255, 255, 255)
 button.Font = Enum.Font.GothamBold
 button.TextSize = 20
+button.Parent = Frame
 
 local remoteEvent = ReplicatedStorage:WaitForChild("Remote"):WaitForChild("GameEvent")
 local running = false
@@ -150,131 +160,6 @@ end
 -- เมื่อกดปุ่ม Start/Stop
 button.MouseButton1Click:Connect(toggleQuest)
 
-local farming = false
-local selectedEnemy = nil
-
-local function loadEnemies(folderName)
-    for _, v in pairs(EnemyList:GetChildren()) do
-        if v:IsA("TextButton") then v:Destroy() end
-    end
-    
-    local folder = game.Workspace:FindFirstChild(folderName)
-    if folder then
-        for _, enemy in pairs(folder:GetChildren()) do
-            if enemy:IsA("Model") then
-                local EnemyButton = Instance.new("TextButton")
-                EnemyButton.Parent = EnemyList
-                EnemyButton.Text = enemy.Name
-                EnemyButton.Size = UDim2.new(1, 0, 0, 30)
-                EnemyButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
-                EnemyButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-                EnemyButton.MouseButton1Click:Connect(function()
-                    selectedEnemy = enemy.Name
-                end)
-            end
-        end
-    end
-end
-
-EnemyInput.FocusLost:Connect(function()
-    loadEnemies(EnemyInput.Text)
-end)
-
-ReloadButton.MouseButton1Click:Connect(function()
-    loadEnemies(EnemyInput.Text)
-end)
-
-local function startFarming()
-    if not selectedEnemy then return end
-    farming = true
-    StartButton.Text = "Stop"  -- Set button text to "Stop" when farming starts
-    while farming do
-        local enemiesFolder = game.Workspace:FindFirstChild(EnemyInput.Text)
-        if enemiesFolder then
-            local foundEnemy = nil
-            for _, enemy in pairs(enemiesFolder:GetChildren()) do
-                if enemy:IsA("Model") and enemy.Name == selectedEnemy and enemy:FindFirstChild("Humanoid") and enemy.Humanoid.Health > 2 then
-                    foundEnemy = enemy
-                    break
-                end
-            end
-            
-            if foundEnemy then
-                local enemyPos = foundEnemy.HumanoidRootPart.Position
-                local player = game.Players.LocalPlayer.Character
-                player:SetPrimaryPartCFrame(CFrame.new(enemyPos.X, enemyPos.Y, enemyPos.Z + 5))
-            end
-        end
-        wait(0.5)
-    end
-end
-
-local button1 = Instance.new("TextButton")
-button1.Parent = Frame
-button1.Size = UDim2.new(0, 80, 0, 40)
-button1.Position = UDim2.new(0, -100, -0.325, 240)
-button1.Text = "Bring Rebirth"
-button1.TextScaled = true
-button1.BackgroundColor3 = Color3.fromRGB(255, 0, 0) -- สีเขียว (Start)
-button1.TextColor3 = Color3.fromRGB(255, 255, 255)
-button1.Font = Enum.Font.GothamBold
-button1.TextSize = 20
-
-button1.MouseButton1Click:Connect(function()
-    -- Teleport ไปที่ Rebirth Arrow
-    local item = game.Workspace:FindFirstChild("Rebirth Arrow")
-    if item then
-        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = item.CFrame
-        wait(0.5)
-        -- Teleport กลับมาที่เดิม
-        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame
-    end
-end)
-
-local button2 = Instance.new("TextButton")
-button2.Parent = Frame
-button2.Size = UDim2.new(0, 80, 0, 40)
-button2.Position = UDim2.new(0, -100, -0.320, 310)
-button2.Text = "Bring Arrow"
-button2.TextScaled = true
-button2.BackgroundColor3 = Color3.fromRGB(255, 0, 0) -- สีเขียว (Start)
-button2.TextColor3 = Color3.fromRGB(255, 255, 255)
-button2.Font = Enum.Font.GothamBold
-button2.TextSize = 20
-
-button2.MouseButton1Click:Connect(function()
-    -- Teleport ไปที่ Arrow
-    local item = game.Workspace:FindFirstChild("Arrow")
-    if item then
-        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = item.CFrame
-        wait(0.5)
-        -- Teleport กลับมาที่เดิม
-        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame
-    end
-end)
-
-local button3 = Instance.new("TextButton")
-button3.Parent = Frame
-button3.Size = UDim2.new(0, 80, 0, 40)
-button3.Position = UDim2.new(0, -100, -0.315, 380)
-button3.Text = "Bring Mask"
-button3.TextScaled = true
-button3.BackgroundColor3 = Color3.fromRGB(255, 0, 0) -- สีเขียว (Start)
-button3.TextColor3 = Color3.fromRGB(255, 255, 255)
-button3.Font = Enum.Font.GothamBold
-button3.TextSize = 20
-
-button3.MouseButton1Click:Connect(function()
-    -- Teleport ไปที่ Stone
-    local item = game.Workspace:FindFirstChild("Stone")
-    if item then
-        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = item.CFrame
-        wait(0.5)
-        -- Teleport กลับมาที่เดิม
-        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame
-    end
-end)
-
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -282,16 +167,11 @@ local HighlightFolder = Instance.new("Folder", game.Workspace)
 HighlightFolder.Name = "ESP_Highlights"
 
 -- สร้าง GUI ปุ่ม ESP
-local ScreenGui = Instance.new("ScreenGui", game.Players.LocalPlayer:WaitForChild("PlayerGui"))
 local EspButton = Instance.new("TextButton")
-EspButton.Size = UDim2.new(1, -20, 0, 50)
-EspButton.Position = UDim2.new(0, 10, 0, 450)
-EspButton.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
-EspButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-EspButton.Font = Enum.Font.GothamBold
-EspButton.TextSize = 20
+EspButton.Parent = Frame
+EspButton.Size = UDim2.new(0, 50, 0, 75)
+EspButton.Position = UDim2.new(0, -20, 0, 280)
 EspButton.Text = "ESP"
-EspButton.Parent = ScreenGui
 
 local espEnabled = true -- เปิดใช้งาน ESP ตั้งแต่เริ่มต้น
 
@@ -412,6 +292,112 @@ for _, player in ipairs(Players:GetPlayers()) do
 end
 
 
+local farming = false
+local selectedEnemy = nil
+
+local function loadEnemies(folderName)
+    for _, v in pairs(EnemyList:GetChildren()) do
+        if v:IsA("TextButton") then v:Destroy() end
+    end
+    
+    local folder = game.Workspace:FindFirstChild(folderName)
+    if folder then
+        for _, enemy in pairs(folder:GetChildren()) do
+            if enemy:IsA("Model") then
+                local EnemyButton = Instance.new("TextButton")
+                EnemyButton.Parent = EnemyList
+                EnemyButton.Text = enemy.Name
+                EnemyButton.Size = UDim2.new(1, 0, 0, 30)
+                EnemyButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+                EnemyButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+                EnemyButton.MouseButton1Click:Connect(function()
+                    selectedEnemy = enemy.Name
+                end)
+            end
+        end
+    end
+end
+
+EnemyInput.FocusLost:Connect(function()
+    loadEnemies(EnemyInput.Text)
+end)
+
+ReloadButton.MouseButton1Click:Connect(function()
+    loadEnemies(EnemyInput.Text)
+end)
+
+local function startFarming()
+    if not selectedEnemy then return end
+    farming = true
+    StartButton.Text = "Stop"  -- Set button text to "Stop" when farming starts
+    while farming do
+        local enemiesFolder = game.Workspace:FindFirstChild(EnemyInput.Text)
+        if enemiesFolder then
+            local foundEnemy = nil
+            for _, enemy in pairs(enemiesFolder:GetChildren()) do
+                if enemy:IsA("Model") and enemy.Name == selectedEnemy and enemy:FindFirstChild("Humanoid") and enemy.Humanoid.Health > 2 then
+                    foundEnemy = enemy
+                    break
+                end
+            end
+            
+            if foundEnemy then
+                local enemyPos = foundEnemy.HumanoidRootPart.Position
+                local player = game.Players.LocalPlayer.Character
+                player:SetPrimaryPartCFrame(CFrame.new(enemyPos.X, enemyPos.Y, enemyPos.Z + 5))
+            end
+        end
+        wait(0.5)
+    end
+end
+
+local button1 = Instance.new("TextButton")
+button1.Parent = Frame
+button1.Size = UDim2.new(0, 80, 0, 40)
+button1.Position = UDim2.new(0, -100, 0.315, 140)
+button1.Text = "Bring Rebirth Arrow"
+button1.MouseButton1Click:Connect(function()
+    -- Teleport ไปที่ Rebirth Arrow
+    local item = game.Workspace:FindFirstChild("Rebirth Arrow")
+    if item then
+        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = item.CFrame
+        wait(0.5)
+        -- Teleport กลับมาที่เดิม
+        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame
+    end
+end)
+
+local button2 = Instance.new("TextButton")
+button2.Parent = Frame
+button2.Size = UDim2.new(0, 80, 0, 40)
+button2.Position = UDim2.new(0, -100, 0.315, 140)
+button2.Text = "Bring Arrow"
+button2.MouseButton1Click:Connect(function()
+    -- Teleport ไปที่ Arrow
+    local item = game.Workspace:FindFirstChild("Arrow")
+    if item then
+        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = item.CFrame
+        wait(0.5)
+        -- Teleport กลับมาที่เดิม
+        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame
+    end
+end)
+
+local button3 = Instance.new("TextButton")
+button3.Parent = Frame
+button3.Size = UDim2.new(0, 80, 0, 40)
+button3.Position = UDim2.new(0, -100, 0.315, 210)
+button3.Text = "Bring Mask"
+button3.MouseButton1Click:Connect(function()
+    -- Teleport ไปที่ Stone
+    local item = game.Workspace:FindFirstChild("Stone")
+    if item then
+        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = item.CFrame
+        wait(0.5)
+        -- Teleport กลับมาที่เดิม
+        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame
+    end
+end)
 
 
 local function stopFarming()
