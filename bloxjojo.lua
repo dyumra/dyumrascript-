@@ -114,7 +114,7 @@ end
 
 local button1 = Instance.new("TextButton")
 button1.Parent = frame
-button1.Size = UDim2.new(0, 48, 0, 20)
+button1.Size = UDim2.new(1, -20, 0, 30)
 button1.Position = UDim2.new(0, 10, 0, 240)
 button1.Text = "Bring Rebirth Arrow"
 button1.MouseButton1Click:Connect(function()
@@ -130,7 +130,7 @@ end)
 
 local button2 = Instance.new("TextButton")
 button2.Parent = frame
-button2.Size = UDim2.new(0, 48, 0, 20)
+button2.Size = UDim2.new(1, -20, 0, 30)
 button2.Position = UDim2.new(0, 10, 0, 310)
 button2.Text = "Bring Arrow"
 button2.MouseButton1Click:Connect(function()
@@ -146,7 +146,7 @@ end)
 
 local button3 = Instance.new("TextButton")
 button3.Parent = frame
-button3.Size = UDim2.new(0, 48, 0, 20)
+button3.Size = UDim2.new(1, -20, 0, 30)
 button3.Position = UDim2.new(0, 10, 0, 380)
 button3.Text = "Bring Stone"
 button3.MouseButton1Click:Connect(function()
@@ -159,6 +159,76 @@ button3.MouseButton1Click:Connect(function()
         game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame
     end
 end)
+
+local statueButton = Instance.new("TextButton", contentFrame)
+statueButton.Size = UDim2.new(1, -20, 0, 30)
+statueButton.Position = UDim2.new(0, 10, 0, 450)
+statueButton.Text = "Esp"
+statueButton.BackgroundColor3 = Color3.fromRGB(255, 215, 0)
+statueButton.TextColor3 = Color3.new(1, 1, 1)
+
+local espEnabled = false -- Ensure we have a variable to track ESP status
+
+local function toggleESP()
+    espEnabled = not espEnabled
+    if espEnabled then
+        -- Enable ESP
+        for _, player in pairs(game.Players:GetPlayers()) do
+            if player ~= game.Players.LocalPlayer then
+                local highlight = Instance.new("Highlight")
+                highlight.Parent = player.Character
+                highlight.FillColor = Color3.new(1, 1, 1)
+                highlight.FillTransparency = 0.5
+                highlight.OutlineColor = Color3.new(1, 0, 0)
+
+                local billboard = Instance.new("BillboardGui")
+                billboard.Parent = player.Character.Head
+                billboard.Size = UDim2.new(5, 0, 1, 0)
+                billboard.StudsOffset = Vector3.new(0, 2, 0)
+                billboard.AlwaysOnTop = true
+
+                local nameLabel = Instance.new("TextLabel")
+                nameLabel.Parent = billboard
+                nameLabel.Size = UDim2.new(1, 0, 0.5, 0)
+                nameLabel.Text = player.DisplayName .. " (@" .. player.Name .. ")"
+                nameLabel.TextColor3 = Color3.new(1, 1, 1)
+                nameLabel.BackgroundColor3 = Color3.new(0, 0, 0)
+                nameLabel.BorderColor3 = Color3.new(1, 0, 0)
+                nameLabel.TextStrokeTransparency = 0
+
+                -- Extract level number from player's level
+                local level = player:FindFirstChild("Level")
+                local levelText = level and "Level " .. level.Value or "Level 000"
+                local levelNumber = levelText:match("Level (%d+)") -- Extracts only the number
+
+                -- Show only the level number
+                local levelLabel = Instance.new("TextLabel")
+                levelLabel.Parent = billboard
+                levelLabel.Position = UDim2.new(0, 0, -0.5, 0)
+                levelLabel.Size = UDim2.new(1, 0, 0.5, 0)
+                levelLabel.Text = levelNumber .. " | $" .. (player:FindFirstChild("Money") and player.Money.Value or "000")
+                levelLabel.TextColor3 = Color3.new(1, 1, 1)
+                levelLabel.BackgroundColor3 = Color3.new(0, 0, 0)
+                levelLabel.BorderColor3 = Color3.new(1, 1, 0)
+                levelLabel.TextStrokeTransparency = 0
+            end
+        end
+    else
+        -- Disable ESP
+        for _, player in pairs(game.Players:GetPlayers()) do
+            if player.Character then
+                for _, obj in pairs(player.Character:GetChildren()) do
+                    if obj:IsA("Highlight") or obj:IsA("BillboardGui") then
+                        obj:Destroy()
+                    end
+                end
+            end
+        end
+    end
+end
+
+-- Connect button to toggleESP function
+statueButton.MouseButton1Click:Connect(toggleESP)
 
 local function stopFarming()
     farming = false
