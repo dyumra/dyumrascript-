@@ -119,6 +119,9 @@ button.Position = UDim2.new(0, 10, 0, 310)
 button.Text = "Start"
 button.TextScaled = true
 button.BackgroundColor3 = Color3.fromRGB(255, 0, 0) -- สีเขียว (Start)
+buttonTextColor3 = Color3.fromRGB(255, 255, 255)
+button.Font = Enum.Font.GothamBold
+button.TextSize = 20
 button.Parent = Frame
 
 local remoteEvent = ReplicatedStorage:WaitForChild("Remote"):WaitForChild("GameEvent")
@@ -377,7 +380,7 @@ local button3 = Instance.new("TextButton")
 button3.Parent = Frame
 button3.Size = UDim2.new(0, 50, 0, 40)
 button3.Position = UDim2.new(0, 10, 0, 380)
-button3.Text = "Bring Stone"
+button3.Text = "Bring Mask"
 button3.MouseButton1Click:Connect(function()
     -- Teleport ไปที่ Stone
     local item = game.Workspace:FindFirstChild("Stone")
