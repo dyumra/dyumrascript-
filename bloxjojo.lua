@@ -1,80 +1,120 @@
--- GUI หลัก
+-- GUI สุดหรูแบบแดง-ดำพร้อมลูกเล่น
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Parent = game.Players.LocalPlayer.PlayerGui
+ScreenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
 
--- สร้าง Frame ที่สามารถลากได้
-local MainFrame = Instance.new("Frame")
-MainFrame.Parent = ScreenGui
-MainFrame.Size = UDim2.new(0, 300, 0, 400)
-MainFrame.Position = UDim2.new(0.5, -150, 0.3, 0)
-MainFrame.BackgroundColor3 = Color3.fromRGB(40, 0, 0)
-MainFrame.Draggable = true
-MainFrame.Active = true
+local Frame = Instance.new("Frame")
+Frame.Parent = ScreenGui
+Frame.Size = UDim2.new(0, 400, 0, 300)
+Frame.Position = UDim2.new(0.5, -200, 0.5, -150)
+Frame.BackgroundColor3 = Color3.fromRGB(30, 0, 0)
+Frame.BorderSizePixel = 2
+Frame.BorderColor3 = Color3.fromRGB(255, 0, 0)
 
-local UIListLayout = Instance.new("UIListLayout")
-UIListLayout.Parent = MainFrame
-UIListLayout.FillDirection = Enum.FillDirection.Vertical
-UIListLayout.Padding = UDim.new(0, 5)
+local EnemiesBox = Instance.new("TextBox")
+EnemiesBox.Parent = Frame
+EnemiesBox.Size = UDim2.new(0, 200, 0, 30)
+EnemiesBox.Position = UDim2.new(0, 10, 0, 10)
+EnemiesBox.PlaceholderText = "Enter 'Enemies'"
+EnemiesBox.BackgroundColor3 = Color3.fromRGB(50, 0, 0)
+EnemiesBox.TextColor3 = Color3.fromRGB(255, 255, 255)
 
--- Input สำหรับพิมพ์ Enemies
-local EnemyInput = Instance.new("TextBox")
-EnemyInput.Parent = MainFrame
-EnemyInput.PlaceholderText = "Enter Enemies Folder"
-EnemyInput.Size = UDim2.new(0, 280, 0, 30)
-EnemyInput.Position = UDim2.new(0, 10, 0, 10)
-EnemyInput.BackgroundColor3 = Color3.fromRGB(60, 0, 0)
-EnemyInput.TextColor3 = Color3.fromRGB(255, 255, 255)
-
--- ปุ่ม Reload
 local ReloadButton = Instance.new("TextButton")
-ReloadButton.Parent = MainFrame
+ReloadButton.Parent = Frame
+ReloadButton.Size = UDim2.new(0, 100, 0, 30)
+ReloadButton.Position = UDim2.new(0, 220, 0, 10)
 ReloadButton.Text = "Reload"
-ReloadButton.Size = UDim2.new(0, 280, 0, 30)
-ReloadButton.Position = UDim2.new(0, 10, 0, 50)
 ReloadButton.BackgroundColor3 = Color3.fromRGB(100, 0, 0)
 ReloadButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 
--- ListView สำหรับแสดง Enemies
-local EnemyList = Instance.new("ScrollingFrame")
-EnemyList.Parent = MainFrame
-EnemyList.Size = UDim2.new(0, 280, 0, 250)
-EnemyList.Position = UDim2.new(0, 10, 0, 90)
-EnemyList.BackgroundColor3 = Color3.fromRGB(30, 0, 0)
-EnemyList.CanvasSize = UDim2.new(0, 0, 5, 0)
+local EnemiesList = Instance.new("ScrollingFrame")
+EnemiesList.Parent = Frame
+EnemiesList.Size = UDim2.new(0, 380, 0, 200)
+EnemiesList.Position = UDim2.new(0, 10, 0, 50)
+EnemiesList.CanvasSize = UDim2.new(0, 0, 0, 0)
+EnemiesList.BackgroundColor3 = Color3.fromRGB(20, 0, 0)
+EnemiesList.BorderSizePixel = 2
+EnemiesList.BorderColor3 = Color3.fromRGB(255, 0, 0)
 
-local UIListLayout2 = Instance.new("UIListLayout")
-UIListLayout2.Parent = EnemyList
-UIListLayout2.FillDirection = Enum.FillDirection.Vertical
-UIListLayout2.Padding = UDim.new(0, 5)
+local farming = false
+local selectedEnemy = nil
 
--- อัพเดทรายการ Enemies
-local function updateEnemyList()
-    for _, child in pairs(EnemyList:GetChildren()) do
+local function updateEnemiesList()
+    for _, child in pairs(EnemiesList:GetChildren()) do
         if child:IsA("TextButton") then
             child:Destroy()
         end
     end
     
-    local player = game.Players.LocalPlayer
-    local character = player.Character or player.CharacterAdded:Wait()
-    local root = character:FindFirstChild("HumanoidRootPart")
-    if not root then return end
+    local player = game.Players.LocalPlayer.Character
+    if not player or not player:FindFirstChild("HumanoidRootPart") then return end
     
-    for _, enemy in pairs(workspace:FindFirstChild("Enemies"):GetChildren()) do
-        if enemy:FindFirstChild("HumanoidRootPart") and (enemy.HumanoidRootPart.Position - root.Position).magnitude <= 40 then
-            local EnemyButton = Instance.new("TextButton")
-            EnemyButton.Parent = EnemyList
-            EnemyButton.Text = enemy.Name
-            EnemyButton.Size = UDim2.new(1, 0, 0, 30)
-            EnemyButton.BackgroundColor3 = Color3.fromRGB(80, 0, 0)
-            EnemyButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-            EnemyButton.MouseButton1Click:Connect(function()
-                EnemyInput.Text = enemy.Name
-            end)
+    local enemiesFolder = game.Workspace:FindFirstChild("Enemies")
+    if enemiesFolder then
+        local count = 0
+        for _, enemy in pairs(enemiesFolder:GetChildren()) do
+            if enemy:IsA("Model") and enemy:FindFirstChild("HumanoidRootPart") and enemy:FindFirstChild("Humanoid") then
+                local distance = (player.HumanoidRootPart.Position - enemy.HumanoidRootPart.Position).Magnitude
+                if distance <= 30 then
+                    count = count + 1
+                    local EnemyButton = Instance.new("TextButton")
+                    EnemyButton.Parent = EnemiesList
+                    EnemyButton.Size = UDim2.new(1, 0, 0, 30)
+                    EnemyButton.Text = enemy.Name
+                    EnemyButton.BackgroundColor3 = Color3.fromRGB(70, 0, 0)
+                    EnemyButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+                    
+                    EnemyButton.MouseButton1Click:Connect(function()
+                        selectedEnemy = enemy.Name
+                    end)
+                end
+            end
         end
+        EnemiesList.CanvasSize = UDim2.new(0, 0, 0, count * 30)
     end
 end
 
-ReloadButton.MouseButton1Click:Connect(updateEnemyList)
+ReloadButton.MouseButton1Click:Connect(updateEnemiesList)
 
-updateEnemyList()
+local StartButton = Instance.new("TextButton")
+StartButton.Parent = Frame
+StartButton.Size = UDim2.new(0, 200, 0, 30)
+StartButton.Position = UDim2.new(0, 100, 0, 260)
+StartButton.Text = "Start"
+StartButton.BackgroundColor3 = Color3.fromRGB(150, 0, 0)
+StartButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+
+local function startFarming()
+    farming = true
+    StartButton.Text = "Stop"
+    
+    while farming do
+        local enemiesFolder = game.Workspace:FindFirstChild("Enemies")
+        if enemiesFolder and selectedEnemy then
+            for _, enemy in pairs(enemiesFolder:GetChildren()) do
+                if enemy:IsA("Model") and enemy.Name == selectedEnemy and enemy:FindFirstChild("Humanoid") and enemy:FindFirstChild("HumanoidRootPart") then
+                    if enemy.Humanoid.Health > 2 then
+                        local player = game.Players.LocalPlayer.Character
+                        if player and player:FindFirstChild("HumanoidRootPart") then
+                            player:SetPrimaryPartCFrame(enemy.HumanoidRootPart.CFrame + Vector3.new(0, 0, 5))
+                            break
+                        end
+                    end
+                end
+            end
+        end
+        wait(1)
+    end
+end
+
+local function stopFarming()
+    farming = false
+    StartButton.Text = "Start"
+end
+
+StartButton.MouseButton1Click:Connect(function()
+    if farming then
+        stopFarming()
+    else
+        startFarming()
+    end
+end)
