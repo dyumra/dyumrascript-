@@ -53,53 +53,51 @@ StartButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 StartButton.Font = Enum.Font.GothamBold
 StartButton.TextSize = 20
 
--- Create a ScreenGui and Button
 local player = game.Players.LocalPlayer
+local userInputService = game:GetService("UserInputService")
+local virtualUser = game:GetService("VirtualUser")
 
-local hh = Instance.new("TextButton")
-hh.Parent = Frame
-hh.Text = "Auto M1"
-hh.Size = UDim2.new(1, -20, 0, 50)
-hh.Position = UDim2.new(0, 10, 0, 380)
-hh.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
-hh.TextColor3 = Color3.fromRGB(255, 255, 255)
-hh.Font = Enum.Font.GothamBold
-hh.TextSize = 20
+local autoClicking = false
 
--- Define the args for the remote function call
-local args = {
-    [1] = true,
-    [2] = "M1",
-    [3] = CFrame.new(39.84491729736328, -38.15870666503906, -7.330169677734375, 0.24584314227104187, -0.47960278391838074, 0.8423433899879456, 0, 0.8690137267112732, 0.4947880208492279, -0.9693096280097961, -0.12164024263620377, 0.21364107728004456)
-}
+-- สร้างปุ่ม
+local button = Instance.new("TextButton")
+button.Parent = Frame
+button.Size = UDim2.new(1, -20, 0, 50)
+button.Position = UDim2.new(0, 10, 0, 380)
+button.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
+button.TextColor3 = Color3.fromRGB(255, 255, 255)
+button.Font = Enum.Font.SourceSansBold
+button.TextSize = 20
+button.Text = "Start / Auto M1"
 
--- A variable to track the script's state (enabled/disabled)
-local scriptEnabled = false
-
--- Function to toggle the script on and off
-local function toggleScript()
-    if scriptEnabled then
-        -- Disable the script by changing the argument to false or removing the action
-        args[1] = false
-        game:GetService("ReplicatedStorage"):WaitForChild("Remote"):WaitForChild("RemoteFunction"):InvokeServer(unpack(args))
-        scriptEnabled = false
-        button.Text = "Start"
-    else
-        -- Enable the script
-        args[1] = true
-        game:GetService("ReplicatedStorage"):WaitForChild("Remote"):WaitForChild("RemoteFunction"):InvokeServer(unpack(args))
-        scriptEnabled = true
-        button.Text = "Stop"
+-- ฟังก์ชัน Auto Click
+local function autoClick()
+    while autoClicking do
+        if userInputService.TouchEnabled then
+            -- รองรับ Mobile (แตะหน้าจอ)
+            virtualUser:Button1Down(Vector2.new(0, 0)) 
+            task.wait(0.05)
+            virtualUser:Button1Up(Vector2.new(0, 0))
+        else
+            -- รองรับ PC (คลิกเมาส์)
+            userInputService.InputBegan:Fire(Enum.UserInputType.MouseButton1, false)
+        end
+        task.wait(0.1) -- ปรับความเร็วคลิก (ค่าต่ำลง = เร็วขึ้น)
     end
 end
 
--- Connect the button click event to the toggle function
-hh.MouseButton1Click:Connect(toggleScript)
+-- เมื่อกดปุ่มให้สลับสถานะ Auto Click
+button.MouseButton1Click:Connect(function()
+    autoClicking = not autoClicking
 
+    if autoClicking then
+        button.Text = "Stop / Auto M1"
+        autoClick()
+    else
+        button.Text = "Start / Auto M1"
+    end
+end)
 
-local Players = game:GetService("Players")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local player = Players.LocalPlayer
 
 
 -- สร้าง TextBox สำหรับใส่ชื่อเควส
