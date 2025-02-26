@@ -21,7 +21,7 @@ TitleLabel.TextSize = 18
 
 local EnemyInput = Instance.new("TextBox")
 EnemyInput.Parent = Frame
-EnemyInput.PlaceholderText = "Enter Folder Name/Name Mob"
+EnemyInput.PlaceholderText = "Enter Name"
 EnemyInput.Size = UDim2.new(1, -60, 0, 40)
 EnemyInput.Position = UDim2.new(0, 10, 0, 60)
 EnemyInput.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
@@ -47,7 +47,7 @@ local StartButton = Instance.new("TextButton")
 StartButton.Parent = Frame
 StartButton.Text = "Start"
 StartButton.Size = UDim2.new(1, -20, 0, 50)
-StartButton.Position = UDim2.new(0, 10, 0, 320)
+StartButton.Position = UDim2.new(0, 10, 0, 180)
 StartButton.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
 StartButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 
