@@ -1,4 +1,3 @@
--- สร้าง GUI
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Parent = game.Players.LocalPlayer.PlayerGui
 
@@ -22,7 +21,7 @@ TitleLabel.TextSize = 18
 
 local EnemyInput = Instance.new("TextBox")
 EnemyInput.Parent = Frame
-EnemyInput.PlaceholderText = "Enter ษฆษฆษษฆฆ Name"
+EnemyInput.PlaceholderText = "Enter Folder Name"
 EnemyInput.Size = UDim2.new(1, -60, 0, 40)
 EnemyInput.Position = UDim2.new(0, 10, 0, 60)
 EnemyInput.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
@@ -54,9 +53,7 @@ StartButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 
 local farming = false
 local selectedEnemy = nil
-local farmingThread = nil  -- เพิ่มตัวแปรสำหรับเก็บ coroutine
 
--- ฟังก์ชั่นในการโหลดศัตรู
 local function loadEnemies(folderName)
     for _, v in pairs(EnemyList:GetChildren()) do
         if v:IsA("TextButton") then v:Destroy() end
@@ -80,7 +77,6 @@ local function loadEnemies(folderName)
     end
 end
 
--- ฟังก์ชั่นเมื่อพิมพ์ชื่อศัตรูใน TextBox
 EnemyInput.FocusLost:Connect(function()
     loadEnemies(EnemyInput.Text)
 end)
@@ -89,50 +85,40 @@ ReloadButton.MouseButton1Click:Connect(function()
     loadEnemies(EnemyInput.Text)
 end)
 
--- ฟังก์ชั่นในการเริ่มฟาร์ม
 local function startFarming()
     if not selectedEnemy then return end
     farming = true
-    farmingThread = coroutine.create(function()  -- สร้าง coroutine เพื่อให้ loop สามารถหยุดได้
-        while farming do
-            local enemiesFolder = game.Workspace:FindFirstChild(EnemyInput.Text)
-            if enemiesFolder then
-                local foundEnemy = nil
-                for _, enemy in pairs(enemiesFolder:GetChildren()) do
-                    if enemy:IsA("Model") and enemy.Name == selectedEnemy and enemy:FindFirstChild("Humanoid") and enemy.Humanoid.Health > 2 then
-                        foundEnemy = enemy
-                        break
-                    end
-                end
-                
-                if foundEnemy then
-                    local enemyPos = foundEnemy.HumanoidRootPart.Position
-                    local player = game.Players.LocalPlayer.Character
-                    player:SetPrimaryPartCFrame(CFrame.new(enemyPos.X, enemyPos.Y, enemyPos.Z + 5))
+    StartButton.Text = "Stop"  -- Set button text to "Stop" when farming starts
+    while farming do
+        local enemiesFolder = game.Workspace:FindFirstChild(EnemyInput.Text)
+        if enemiesFolder then
+            local foundEnemy = nil
+            for _, enemy in pairs(enemiesFolder:GetChildren()) do
+                if enemy:IsA("Model") and enemy.Name == selectedEnemy and enemy:FindFirstChild("Humanoid") and enemy.Humanoid.Health > 2 then
+                    foundEnemy = enemy
+                    break
                 end
             end
-            wait(1)
+            
+            if foundEnemy then
+                local enemyPos = foundEnemy.HumanoidRootPart.Position
+                local player = game.Players.LocalPlayer.Character
+                player:SetPrimaryPartCFrame(CFrame.new(enemyPos.X, enemyPos.Y, enemyPos.Z + 5))
+            end
         end
-    end)
-    coroutine.resume(farmingThread)  -- เริ่มต้น coroutine
-end
-
--- ฟังก์ชั่นในการหยุดฟาร์ม
-local function stopFarming()
-    farming = false
-    if farmingThread then
-        coroutine.close(farmingThread)  -- ปิด coroutine
-        farmingThread = nil
+        wait(1)
     end
 end
 
--- ฟังก์ชั่นเมื่อกดปุ่ม Start
+local function stopFarming()
+    farming = false
+    StartButton.Text = "Start"  -- Set button text back to "Start" when farming stops
+end
+
 StartButton.MouseButton1Click:Connect(function()
     if farming then
         stopFarming()
-        StartButton.Text = "Start"
     else
         startFarming()
-        StartButton.Text = "Stop"
     end
 end)
