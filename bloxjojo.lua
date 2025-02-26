@@ -1,11 +1,10 @@
--- สร้าง GUI
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Parent = game.Players.LocalPlayer.PlayerGui
 
 -- สร้าง Frame สำหรับเมนู
 local MenuFrame = Instance.new("Frame")
 MenuFrame.Parent = ScreenGui
-MenuFrame.Size = UDim2.new(0, 250, 0, 400)
+MenuFrame.Size = UDim2.new(0, 250, 0, 200)
 MenuFrame.Position = UDim2.new(0, 10, 0.2, 0)
 MenuFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
 
@@ -16,25 +15,11 @@ MobNameBox.Size = UDim2.new(0, 200, 0, 30)
 MobNameBox.Position = UDim2.new(0, 25, 0, 10)
 MobNameBox.PlaceholderText = "Enter Mob Name"
 
--- ปุ่มเลือกทิศทาง
-local directions = {"Front", "Back", "Left", "Right"}
-local selectedDirection = "Back"
-for i, dir in ipairs(directions) do
-    local Button = Instance.new("TextButton")
-    Button.Parent = MenuFrame
-    Button.Size = UDim2.new(0, 200, 0, 30)
-    Button.Position = UDim2.new(0, 25, 0, 50 + (i - 1) * 40)
-    Button.Text = dir
-    Button.MouseButton1Click:Connect(function()
-        selectedDirection = dir
-    end)
-end
-
 -- ปุ่มเริ่ม / หยุด
 local StartButton = Instance.new("TextButton")
 StartButton.Parent = MenuFrame
 StartButton.Size = UDim2.new(0, 200, 0, 50)
-StartButton.Position = UDim2.new(0, 25, 0, 250)
+StartButton.Position = UDim2.new(0, 25, 0, 50)
 StartButton.Text = "Start"
 
 local farming = false
@@ -44,19 +29,22 @@ local function startFarming()
     
     while farming do
         local mobName = MobNameBox.Text
-        local mob = game.Workspace.Enemies:FindFirstChild(mobName)
+        local mobs = game.Workspace.Enemies:GetChildren()
+        local targetMob = nil
         
-        if mob and mob:FindFirstChild("Humanoid") and mob.Humanoid.Health > 2 then
-            local pos = mob.HumanoidRootPart.Position
-            local player = game.Players.LocalPlayer.Character
-            local offset = {Front = 5, Back = -5, Left = -5, Right = 5}
-            
-            if selectedDirection == "Front" or selectedDirection == "Back" then
-                player:SetPrimaryPartCFrame(CFrame.new(pos.X, pos.Y, pos.Z + offset[selectedDirection]))
-            else
-                player:SetPrimaryPartCFrame(CFrame.new(pos.X + offset[selectedDirection], pos.Y, pos.Z))
+        for _, mob in ipairs(mobs) do
+            if mob.Name == mobName and mob:FindFirstChild("Humanoid") and mob.Humanoid.Health > 2 then
+                targetMob = mob
+                break
             end
         end
+        
+        if targetMob then
+            local pos = targetMob.HumanoidRootPart.Position
+            local player = game.Players.LocalPlayer.Character
+            player:SetPrimaryPartCFrame(CFrame.new(pos.X, pos.Y, pos.Z + 5))
+        end
+        
         wait(1)
     end
 end
