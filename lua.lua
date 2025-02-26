@@ -1,93 +1,133 @@
-local Players = game:GetService("Players")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local player = Players.LocalPlayer
-local playerGui = player:FindFirstChildOfClass("PlayerGui")
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
 
--- สร้าง GUI
-local screenGui = Instance.new("ScreenGui")
-screenGui.Parent = playerGui
+local Frame = Instance.new("Frame")
+Frame.Parent = ScreenGui
+Frame.Size = UDim2.new(0, 300, 0, 500)
+Frame.Position = UDim2.new(0.5, -150, 0.3, 0)
+Frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+Frame.Draggable = true
+Frame.Active = true
+Frame.Selectable = true
 
-local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0, 250, 0, 300)
-frame.Position = UDim2.new(0.5, -125, 0.5, -150)
-frame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-frame.Parent = screenGui
+local TitleLabel = Instance.new("TextLabel")
+TitleLabel.Parent = Frame
+TitleLabel.Text = "BizBlox by Kawin"
+TitleLabel.Size = UDim2.new(1, 0, 0, 50)
+TitleLabel.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
+TitleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+TitleLabel.Font = Enum.Font.GothamBold
+TitleLabel.TextSize = 18
 
--- สร้าง ScrollingFrame
-local scrollingFrame = Instance.new("ScrollingFrame")
-scrollingFrame.Size = UDim2.new(0.9, 0, 0.6, 0)
-scrollingFrame.Position = UDim2.new(0.05, 0, 0.1, 0)
-scrollingFrame.CanvasSize = UDim2.new(0, 0, 2, 0)
-scrollingFrame.Parent = frame
+local EnemyList = Instance.new("ScrollingFrame")
+EnemyList.Parent = Frame
+EnemyList.Size = UDim2.new(1, -20, 0, 250)
+EnemyList.Position = UDim2.new(0, 10, 0, 60)
+EnemyList.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+EnemyList.CanvasSize = UDim2.new(0, 0, 0, 0)
+EnemyList.ScrollBarThickness = 5
 
--- สร้างปุ่ม Start/Stop
-local button = Instance.new("TextButton")
-button.Size = UDim2.new(0.8, 0, 0.15, 0)
-button.Position = UDim2.new(0.1, 0, 0.75, 0)
-button.Text = "Start"
-button.TextScaled = true
-button.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
-button.Parent = frame
+local StartButton = Instance.new("TextButton")
+StartButton.Parent = Frame
+StartButton.Text = "Start"
+StartButton.Size = UDim2.new(1, -20, 0, 50)
+StartButton.Position = UDim2.new(0, 10, 0, 320)
+StartButton.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
+StartButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+StartButton.Font = Enum.Font.GothamBold
+StartButton.TextSize = 20
 
-local remoteEvent = ReplicatedStorage:WaitForChild("Remote"):WaitForChild("GameEvent")
-local running = false
+local QuestButton = Instance.new("TextButton")
+QuestButton.Parent = Frame
+QuestButton.Text = "Accept Quest"
+QuestButton.Size = UDim2.new(1, -20, 0, 50)
+QuestButton.Position = UDim2.new(0, 10, 0, 380)
+QuestButton.BackgroundColor3 = Color3.fromRGB(0, 200, 0)
+QuestButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+QuestButton.Font = Enum.Font.GothamBold
+QuestButton.TextSize = 20
+
+local farming = false
 local selectedEnemy = nil
 
--- สร้างปุ่มเลือกมอนสเตอร์ใน ScrollingFrame
-local enemies = {"Thug [Level 5]", "HumanUser [Level 15]", "Gryphon [Level 30]", "Vampire [Level 40]",
+local enemyNames = {
+    "Thug [Level 5]", "HumanUser [Level 15]", "Gryphon [Level 30]", "Vampire [Level 40]",
     "Snow Thug [Level 50]", "Snow Man [Level 65]", "Wammu", "Desert Bandit [Level 120]",
     "Dio Guard [Level 165]", "Dio Royal Guard [Level 180]", "City Criminal [Level 280]",
-    "Criminal Master [Level 300]", "School Bully [Level 270]"} -- เพิ่มมอนสเตอร์ที่ต้องการ
-for _, enemyName in ipairs(enemies) do
-    local enemyButton = Instance.new("TextButton")
-    enemyButton.Size = UDim2.new(1, 0, 0.2, 0)
-    enemyButton.Text = enemyName
-    enemyButton.Parent = scrollingFrame
-    
-    enemyButton.MouseButton1Click:Connect(function()
-        selectedEnemy = enemyName
-        print("Selected Enemy:", selectedEnemy)
-    end)
-end
+    "Criminal Master [Level 300]", "School Bully [Level 270]"
+}
 
--- ฟังก์ชันเริ่ม/หยุดการทำงาน
-local function toggleQuest()
-    if not selectedEnemy then return end
-    running = not running
-    if running then
-        button.Text = "Stop"
-        button.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
-        while running do
-            local args = {
-                [1] = "Quest",
-                [2] = selectedEnemy
-            }
-            remoteEvent:FireServer(unpack(args))
-            wait(2) -- ส่งทุก 2 วินาที
-        end
-    else
-        button.Text = "Start"
-        button.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+local function loadEnemies()
+    for _, v in pairs(EnemyList:GetChildren()) do
+        if v:IsA("TextButton") then v:Destroy() end
     end
+    
+    local count = 0
+    for _, enemyName in pairs(enemyNames) do
+        count = count + 1
+        local EnemyButton = Instance.new("TextButton")
+        EnemyButton.Parent = EnemyList
+        EnemyButton.Text = enemyName
+        EnemyButton.Size = UDim2.new(1, 0, 0, 30)
+        EnemyButton.Position = UDim2.new(0, 0, 0, (count - 1) * 35)
+        EnemyButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+        EnemyButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+        EnemyButton.MouseButton1Click:Connect(function()
+            selectedEnemy = string.match(enemyName, "(.-) %[") or enemyName
+        end)
+    end
+    EnemyList.CanvasSize = UDim2.new(0, 0, 0, count * 35)
 end
 
-button.MouseButton1Click:Connect(toggleQuest)
-
--- ฟังก์ชันเทเลพอร์ตไปหามอนสเตอร์ที่เลือก
-local function teleportToEnemy()
+local function startFarming()
     if not selectedEnemy then return end
-    local character = player.Character
-    if character and character:FindFirstChild("HumanoidRootPart") then
-        local enemiesFolder = game.Workspace:FindFirstChild(selectedEnemy)
+    farming = true
+    StartButton.Text = "Stop"
+    while farming do
+        local enemiesFolder = game.Workspace:FindFirstChild("Enemies")
         if enemiesFolder then
-            for _, enemy in pairs(enemiesFolder:GetChildren()) do
-                if enemy:IsA("Model") and enemy:FindFirstChild("Humanoid") and enemy:FindFirstChild("HumanoidRootPart") and enemy.Humanoid.Health > 2 then
-                    character.HumanoidRootPart.CFrame = enemy.HumanoidRootPart.CFrame + Vector3.new(0, 3, 3)
-                    return
+            local closestEnemy = nil
+            local closestDist = 50 
+            local player = game.Players.LocalPlayer.Character
+            if player and player.PrimaryPart then
+                for _, enemy in pairs(enemiesFolder:GetChildren()) do
+                    if enemy:IsA("Model") and enemy.Name == selectedEnemy and enemy:FindFirstChild("HumanoidRootPart") then
+                        local dist = (player.PrimaryPart.Position - enemy.HumanoidRootPart.Position).Magnitude
+                        if dist < closestDist and enemy:FindFirstChild("Humanoid") and enemy.Humanoid.Health > 2 then
+                            closestEnemy = enemy
+                            closestDist = dist
+                        end
+                    end
+                end
+                
+                if closestEnemy then
+                    -- Teleport player slightly away from the enemy to avoid collisions
+                    local enemyPos = closestEnemy.HumanoidRootPart.Position
+                    player:SetPrimaryPartCFrame(CFrame.new(enemyPos.X, enemyPos.Y, enemyPos.Z + 3))
                 end
             end
         end
+        wait(0.5)
     end
 end
 
-button.MouseButton1Click:Connect(teleportToEnemy)
+local function stopFarming()
+    farming = false
+    StartButton.Text = "Start"
+end
+
+StartButton.MouseButton1Click:Connect(function()
+    if farming then
+        stopFarming()
+    else
+        startFarming()
+    end
+end)
+
+QuestButton.MouseButton1Click:Connect(function()
+    if selectedEnemy then
+        print("Quest Accepted: Defeat " .. selectedEnemy)
+    end
+end)
+
+loadEnemies()
