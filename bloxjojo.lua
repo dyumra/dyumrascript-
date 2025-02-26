@@ -13,7 +13,7 @@ Frame.Selectable = true
 
 local TitleLabel = Instance.new("TextLabel")
 TitleLabel.Parent = Frame
-TitleLabel.Text = "BizBlox by Kawin"
+TitleLabel.Text = "Farm Mob"
 TitleLabel.Size = UDim2.new(1, 0, 0, 50)
 TitleLabel.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
 TitleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -22,7 +22,7 @@ TitleLabel.TextSize = 18
 
 local EnemyInput = Instance.new("TextBox")
 EnemyInput.Parent = Frame
-EnemyInput.PlaceholderText = "Enter ษฆษฆษษฆฆ Name"
+EnemyInput.PlaceholderText = "Enter Enemies dyumra=Vem"
 EnemyInput.Size = UDim2.new(1, -60, 0, 40)
 EnemyInput.Position = UDim2.new(0, 10, 0, 60)
 EnemyInput.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
@@ -55,6 +55,7 @@ StartButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 local farming = false
 local selectedEnemy = nil
 
+-- ฟังก์ชันในการโหลดศัตรู
 local function loadEnemies(folderName)
     for _, v in pairs(EnemyList:GetChildren()) do
         if v:IsA("TextButton") then v:Destroy() end
@@ -78,29 +79,28 @@ local function loadEnemies(folderName)
     end
 end
 
+-- ฟังก์ชันในการจับคำย่อ
+local function handleShortenedName(inputText)
+    local shortName, fullName = inputText:match("^(%a+)%s+dyumra=(%a+)$")
+    
+    if shortName and fullName then
+        -- คำย่อ dyumra กับชื่อเต็ม
+        return fullName
+    end
+    
+    return inputText  -- ถ้าไม่พบคำย่อ, ใช้ข้อความตามที่พิมพ์
+end
+
 EnemyInput.FocusLost:Connect(function()
     local inputText = EnemyInput.Text
-    -- ตรวจสอบว่าพิมพ์ย่อหรือเลข Level
-    local shortName, level = inputText:match("^(%a+)%s?%[?Level%s?(%d+)%]?")
-    
-    if shortName then
-        EnemyInput.Text = shortName  -- ใช้ชื่อย่อ
-        loadEnemies(shortName)  -- โหลดศัตรูจากชื่อย่อ
-    elseif level then
-        -- ถ้ามีเลข Level ให้ค้นหาจาก Level
-        for _, folder in pairs(game.Workspace:GetChildren()) do
-            if folder:IsA("Folder") then
-                loadEnemies(folder.Name)
-            end
-        end
-    else
-        -- ถ้าไม่มีการจับคู่ย่อหรือเลข Level
-        loadEnemies(inputText)
-    end
+    local folderName = handleShortenedName(inputText)
+    loadEnemies(folderName)
 end)
 
 ReloadButton.MouseButton1Click:Connect(function()
-    loadEnemies(EnemyInput.Text)
+    local inputText = EnemyInput.Text
+    local folderName = handleShortenedName(inputText)
+    loadEnemies(folderName)
 end)
 
 local function startFarming()
