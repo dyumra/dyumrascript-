@@ -60,7 +60,7 @@ local button = Instance.new("TextButton")
 button.Size = UDim2.new(1, -20, 0, 50)
 button.Position = UDim2.new(0, 10, 0, 380)
 button.Text = "Auto M1"
-button.Parent = screenGui
+button.Parent = Frame
 
 -- Define the args for the remote function call
 local args = {
@@ -105,7 +105,7 @@ textBox.Position = UDim2.new(0, 10, 0, 240)
 textBox.PlaceholderText = "Enter Quest"
 textBox.Text = ""
 textBox.TextScaled = true
-textBox.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+textBox.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
 textBox.Parent = Frame
 
 -- สร้างปุ่ม Start/Stop
