@@ -1,59 +1,69 @@
-local player = game.Players.LocalPlayer
-local scrollingFrame = script.Parent.ScrollingFrame
-local enemiesFolder = workspace.Enemies -- Folder that contains the enemies
+local Players = game:GetService("Players")
+local GuiService = game:GetService("GuiService")
+local workspace = game:GetService("Workspace")
 
--- รายชื่อศัตรูใน ScrollingFrame
-local enemies = {
-    "Thug", "HumanUser", "Gryphon", "Vampire", "Snow Thug", "Snow Man",
-    "Wammu", "Desert Bandit", "Dio Guard", "Dio Royal Guard", "City Criminal",
+-- GUI
+local screenGui = Instance.new("ScreenGui")
+screenGui.Parent = Players.LocalPlayer:WaitForChild("PlayerGui")
+
+local scrollingFrame = Instance.new("ScrollingFrame")
+scrollingFrame.Size = UDim2.new(0.3, 0, 0.5, 0)
+scrollingFrame.Position = UDim2.new(0.35, 0, 0.25, 0)
+scrollingFrame.Parent = screenGui
+
+-- รายชื่อศัตรูใน List
+local enemiesList = {
+    "Thug", "HumanUser", "Gryphon", "Vampire", "Snow Thug", "Snow Man", 
+    "Wammu", "Desert Bandit", "Dio Guard", "Dio Royal Guard", "City Criminal", 
     "Criminal Master", "School Bully"
 }
 
--- ฟังก์ชันตรวจสอบเลือดของ dummy
-local function getDummyHealth(dummyName)
-    local dummy = enemiesFolder:FindFirstChild(dummyName)
+-- ฟังก์ชันเช็คเลือดและ teleport
+local function getDummyHealth(enemyName)
+    local dummy = workspace.Enemies:FindFirstChild(enemyName)
     if dummy and dummy:FindFirstChild("Health") then
         return dummy.Health.Value
     end
     return nil
 end
 
--- ฟังก์ชันเทเลพอร์ตไปยัง dummy
-local function teleportToDummy(dummyName)
-    local dummy = enemiesFolder:FindFirstChild(dummyName)
+local function teleportToEnemy(enemyName)
+    local dummy = workspace.Enemies:FindFirstChild(enemyName)
     if dummy then
-        player.Character:SetPrimaryPartCFrame(dummy.HumanoidRootPart.CFrame)
-    end
-end
-
--- สร้างปุ่มใน ScrollingFrame
-for _, enemyName in ipairs(enemies) do
-    local button = Instance.new("TextButton")
-    button.Size = UDim2.new(0, 200, 0, 50)
-    button.Position = UDim2.new(0, 0, 0, (#scrollingFrame:GetChildren() - 1) * 55) -- ตั้งตำแหน่งของปุ่ม
-    button.Text = enemyName
-    button.Parent = scrollingFrame
-
-    button.MouseButton1Click:Connect(function()
-        local dummyHealth = getDummyHealth(enemyName)
-
-        if dummyHealth then
-            -- ถ้าเลือดเหลือ 2 ให้หาตัวอื่นที่เลือดเต็ม
-            if dummyHealth <= 2 then
-                for _, otherEnemyName in ipairs(enemies) do
-                    if otherEnemyName ~= enemyName then
-                        local otherDummyHealth = getDummyHealth(otherEnemyName)
-                        if otherDummyHealth and otherDummyHealth > 2 then
-                            teleportToDummy(otherEnemyName) -- เทเลพอร์ตไปที่ศัตรูตัวอื่น
-                            wait(1) -- รอ 1 วินาที
-                            teleportToDummy(enemyName) -- กลับไปที่ศัตรูตัวเดิม
-                            break
+        -- ตรวจสอบเลือด ถ้าลดเหลือ 2 ก็ไปจัดการตัวอื่นก่อน
+        local health = getDummyHealth(enemyName)
+        if health and health <= 2 then
+            -- ค้นหาศัตรูอื่นที่เลือดมากกว่า 2
+            for _, enemy in pairs(workspace.Enemies:GetChildren()) do
+                if enemy:IsA("Model") and enemy:FindFirstChild("Health") then
+                    local otherHealth = getDummyHealth(enemy.Name)
+                    if otherHealth and otherHealth > 2 then
+                        -- Teleport ไปหาตัวอื่นก่อน
+                        local humanoidRootPart = enemy:FindFirstChild("HumanoidRootPart")
+                        if humanoidRootPart then
+                            game.Players.LocalPlayer.Character:SetPrimaryPartCFrame(humanoidRootPart.CFrame)
+                            return
                         end
                     end
                 end
-            else
-                teleportToDummy(enemyName) -- ถ้าเลือดมากกว่า 2, เทเลพอร์ตไปยังตัวที่เลือก
             end
         end
+
+        -- Teleport ไปยังศัตรูที่เลือดเหลือ 2 ถ้าเจอ
+        local humanoidRootPart = dummy:FindFirstChild("HumanoidRootPart")
+        if humanoidRootPart then
+            game.Players.LocalPlayer.Character:SetPrimaryPartCFrame(humanoidRootPart.CFrame)
+        end
+    end
+end
+
+-- สร้างปุ่ม GUI สำหรับแต่ละศัตรูใน List
+for _, enemyName in ipairs(enemiesList) do
+    local button = Instance.new("TextButton")
+    button.Text = enemyName
+    button.Size = UDim2.new(1, 0, 0, 50)
+    button.Parent = scrollingFrame
+    button.MouseButton1Click:Connect(function()
+        teleportToEnemy(enemyName)
     end)
 end
