@@ -281,15 +281,17 @@ local RunService = game:GetService("RunService")
 local HighlightFolder = Instance.new("Folder", game.Workspace)
 HighlightFolder.Name = "ESP_Highlights"
 
+-- สร้าง GUI ปุ่ม ESP
+local ScreenGui = Instance.new("ScreenGui", game.Players.LocalPlayer:WaitForChild("PlayerGui"))
 local EspButton = Instance.new("TextButton")
-EspButton.Parent = Frame
-EspButton.Text = "Esp"
 EspButton.Size = UDim2.new(1, -20, 0, 50)
-EspButton.Position = UDim2.new(0, 10, 0, 170)
+EspButton.Position = UDim2.new(0, 10, 0, 450)
 EspButton.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
 EspButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 EspButton.Font = Enum.Font.GothamBold
 EspButton.TextSize = 20
+EspButton.Text = "ESP"
+EspButton.Parent = ScreenGui
 
 local espEnabled = true -- เปิดใช้งาน ESP ตั้งแต่เริ่มต้น
 
@@ -408,6 +410,7 @@ end)
 for _, player in ipairs(Players:GetPlayers()) do
     createESP(player)
 end
+
 
 
 
