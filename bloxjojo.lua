@@ -66,7 +66,6 @@ EspButton.Parent = Frame
 EspButton.Size = UDim2.new(0, 60, 0, 40)
 EspButton.Position = UDim2.new(0, 10, 0, 450)
 EspButton.Text = "ESP"
-EspButton.Parent = ScreenGui
 
 local espEnabled = true -- เปิดใช้งาน ESP ตั้งแต่เริ่มต้น
 
