@@ -56,11 +56,15 @@ StartButton.TextSize = 20
 -- Create a ScreenGui and Button
 local player = game.Players.LocalPlayer
 
-local button = Instance.new("TextButton")
-button.Size = UDim2.new(1, -20, 0, 50)
-button.Position = UDim2.new(0, 10, 0, 380)
-button.Text = "Auto M1"
-button.Parent = Frame
+local hh = Instance.new("TextButton")
+hh.Parent = Frame
+hh.Text = "Auto M1"
+hh.Size = UDim2.new(1, -20, 0, 50)
+hh.Position = UDim2.new(0, 10, 0, 380)
+hh.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
+hh.TextColor3 = Color3.fromRGB(255, 255, 255)
+hh.Font = Enum.Font.GothamBold
+hh.TextSize = 20
 
 -- Define the args for the remote function call
 local args = {
@@ -90,7 +94,7 @@ local function toggleScript()
 end
 
 -- Connect the button click event to the toggle function
-button.MouseButton1Click:Connect(toggleScript)
+hh.MouseButton1Click:Connect(toggleScript)
 
 
 local Players = game:GetService("Players")
