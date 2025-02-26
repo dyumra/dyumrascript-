@@ -2,66 +2,74 @@
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Parent = game.Players.LocalPlayer.PlayerGui
 
-local FarmLabel = Instance.new("TextLabel")
-FarmLabel.Parent = ScreenGui
-FarmLabel.Text = "Farm Mob [Level 40]"
-FarmLabel.Size = UDim2.new(0, 200, 0, 50)
-FarmLabel.Position = UDim2.new(0.5, -100, 0.2, 0)
+-- สร้าง Frame สำหรับเมนู
+local MenuFrame = Instance.new("Frame")
+MenuFrame.Parent = ScreenGui
+MenuFrame.Size = UDim2.new(0, 250, 0, 400)
+MenuFrame.Position = UDim2.new(0, 10, 0.2, 0)
+MenuFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
 
+-- สร้างช่องกรอกชื่อมอนสเตอร์
+local MobNameBox = Instance.new("TextBox")
+MobNameBox.Parent = MenuFrame
+MobNameBox.Size = UDim2.new(0, 200, 0, 30)
+MobNameBox.Position = UDim2.new(0, 25, 0, 10)
+MobNameBox.PlaceholderText = "Enter Mob Name"
+
+-- ปุ่มเลือกทิศทาง
+local directions = {"Front", "Back", "Left", "Right"}
+local selectedDirection = "Back"
+for i, dir in ipairs(directions) do
+    local Button = Instance.new("TextButton")
+    Button.Parent = MenuFrame
+    Button.Size = UDim2.new(0, 200, 0, 30)
+    Button.Position = UDim2.new(0, 25, 0, 50 + (i - 1) * 40)
+    Button.Text = dir
+    Button.MouseButton1Click:Connect(function()
+        selectedDirection = dir
+    end)
+end
+
+-- ปุ่มเริ่ม / หยุด
 local StartButton = Instance.new("TextButton")
-StartButton.Parent = ScreenGui
-StartButton.Text = "Start"
+StartButton.Parent = MenuFrame
 StartButton.Size = UDim2.new(0, 200, 0, 50)
-StartButton.Position = UDim2.new(0.5, -100, 0.3, 0)
+StartButton.Position = UDim2.new(0, 25, 0, 250)
+StartButton.Text = "Start"
 
--- ตัวแปรควบคุมการ farm
 local farming = false
-
--- ฟังก์ชันเริ่มการ farm
 local function startFarming()
     farming = true
+    StartButton.Text = "Stop"
+    
     while farming do
-        -- Teleport ไปยัง Vampire [Level 40]
-        local vampire = game.Workspace.Enemies:FindFirstChild("Vampire [Level 40]")
-        if vampire then
-            -- Teleport ไปข้างหลัง
-            local vampirePosition = vampire.HumanoidRootPart.Position
+        local mobName = MobNameBox.Text
+        local mob = game.Workspace.Enemies:FindFirstChild(mobName)
+        
+        if mob and mob:FindFirstChild("Humanoid") and mob.Humanoid.Health > 2 then
+            local pos = mob.HumanoidRootPart.Position
             local player = game.Players.LocalPlayer.Character
-            player:SetPrimaryPartCFrame(CFrame.new(vampirePosition.X, vampirePosition.Y, vampirePosition.Z + 5))
+            local offset = {Front = 5, Back = -5, Left = -5, Right = 5}
             
-            -- ใช้ไอเทมที่ 2 ใน Inventory
-            local backpack = game.Players.LocalPlayer.Backpack
-            local item = backpack:FindFirstChildOfClass("Tool")  -- หาหรือระบุไอเทมที่ 2 ตามลำดับ
-            if item then
-                -- ใช้ไอเทมที่ 2 (สามารถปรับเปลี่ยนได้ตามไอเทมในเกม)
-                item.Activated:Fire()
-            end
-
-            -- ตีจนกว่า Health ของ Vampire จะหมด
-            while vampire.Humanoid.Health > 0 and farming do
-                -- ตี (ฟังก์ชันการโจมตีอาจแตกต่างกันไป)
-                player.Humanoid:MoveTo(vampire.HumanoidRootPart.Position) -- เดินไปหามอนสเตอร์
-                -- ถ้ามีการโจมตีผ่านการคลิกหรือคำสั่งพิเศษสามารถทำในส่วนนี้
-                wait(1)
+            if selectedDirection == "Front" or selectedDirection == "Back" then
+                player:SetPrimaryPartCFrame(CFrame.new(pos.X, pos.Y, pos.Z + offset[selectedDirection]))
+            else
+                player:SetPrimaryPartCFrame(CFrame.new(pos.X + offset[selectedDirection], pos.Y, pos.Z))
             end
         end
-        -- ถ้า Vampire [Level 40] ตายแล้วให้ไปที่ Vampire ใหม่
-        wait(2)  -- หน่วงเวลาระหว่างการหา Vampire ตัวใหม่
+        wait(1)
     end
 end
 
--- ฟังก์ชันหยุดการ farm
 local function stopFarming()
     farming = false
+    StartButton.Text = "Start"
 end
 
--- ตั้งค่าปุ่ม Start
 StartButton.MouseButton1Click:Connect(function()
     if farming then
         stopFarming()
-        StartButton.Text = "Start"  -- เปลี่ยนข้อความเมื่อหยุด
     else
         startFarming()
-        StartButton.Text = "Stop"  -- เปลี่ยนข้อความเมื่อเริ่ม
     end
 end)
