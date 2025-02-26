@@ -150,142 +150,6 @@ end
 -- เมื่อกดปุ่ม Start/Stop
 button.MouseButton1Click:Connect(toggleQuest)
 
-
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-local HighlightFolder = Instance.new("Folder", game.Workspace)
-HighlightFolder.Name = "ESP_Highlights"
-
--- สร้าง GUI ปุ่ม ESP
-local EspButton = Instance.new("TextButton")
-EspButton.Parent = Frame
-EspButton.Size = UDim2.new(1, -20, 0, 50)
-EspButton.Position = UDim2.new(0, -100, 0, 450)
-EspButton.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
-EspButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-EspButton.Font = Enum.Font.SourceSansBold
-EspButton.TextSize = 20
-EspButton.Text = "ESP"
-
-local espEnabled = true -- เปิดใช้งาน ESP ตั้งแต่เริ่มต้น
-
-local function createESP(player)
-    if not espEnabled then return end
-    if player == game.Players.LocalPlayer then return end
-    if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-        local highlight = Instance.new("Highlight")
-        highlight.Parent = HighlightFolder
-        highlight.Adornee = player.Character
-        highlight.FillColor = Color3.fromRGB(255, 255, 255)
-        highlight.OutlineColor = Color3.fromRGB(255, 0, 0)
-        highlight.FillTransparency = 0.7
-        
-        -- สร้าง BillboardGui แสดงชื่อ, Level, Money และเลือด
-        local billboard = Instance.new("BillboardGui")
-        billboard.Parent = player.Character:FindFirstChild("HumanoidRootPart")
-        billboard.Size = UDim2.new(6, 0, 2, 0) -- ปรับขนาดให้ใหญ่ขึ้น
-        billboard.StudsOffset = Vector3.new(0, 3, 0)
-        billboard.AlwaysOnTop = true
-        billboard.MaxDistance = math.huge -- ทำให้มองเห็นจากที่ไกล
-
-        local nameLabel = Instance.new("TextLabel", billboard)
-        nameLabel.Size = UDim2.new(1, 0, 0.2, 0)
-        nameLabel.Position = UDim2.new(0, 0, 0.8, 0)
-        nameLabel.Text = player.DisplayName .. " (@" .. player.Name .. ")"
-        nameLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-        nameLabel.BackgroundTransparency = 1
-        nameLabel.TextStrokeColor3 = Color3.fromRGB(255, 0, 0)
-        nameLabel.TextStrokeTransparency = 0
-        nameLabel.TextScaled = true
-
-        local levelLabel = Instance.new("TextLabel", billboard)
-        levelLabel.Size = UDim2.new(1, 0, 0.2, 0)
-        levelLabel.Position = UDim2.new(0, 0, 0.6, 0)
-        levelLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-        levelLabel.BackgroundTransparency = 1
-        levelLabel.TextStrokeColor3 = Color3.fromRGB(255, 255, 0)
-        levelLabel.TextStrokeTransparency = 0
-        levelLabel.TextScaled = true
-
-        local moneyLabel = Instance.new("TextLabel", billboard)
-        moneyLabel.Size = UDim2.new(1, 0, 0.2, 0)
-        moneyLabel.Position = UDim2.new(0, 0, 0.4, 0)
-        moneyLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-        moneyLabel.BackgroundTransparency = 1
-        moneyLabel.TextStrokeColor3 = Color3.fromRGB(0, 255, 0)
-        moneyLabel.TextStrokeTransparency = 0
-        moneyLabel.TextScaled = true
-        
-        local healthLabel = Instance.new("TextLabel", billboard)
-        healthLabel.Size = UDim2.new(1, 0, 0.2, 0)
-        healthLabel.Position = UDim2.new(0, 0, 0.2, 0)
-        healthLabel.TextColor3 = Color3.fromRGB(255, 0, 0)
-        healthLabel.BackgroundTransparency = 1
-        healthLabel.TextStrokeColor3 = Color3.fromRGB(255, 255, 255)
-        healthLabel.TextStrokeTransparency = 0
-        healthLabel.TextScaled = true
-        
-        local function updateStats()
-            if player:FindFirstChild("Level") and player:FindFirstChild("Money") and player.Character:FindFirstChild("Humanoid") then
-                levelLabel.Text = "Level (" .. tostring(player.Level.Value) .. ")"
-                moneyLabel.Text = "$" .. tostring(player.Money.Value)
-                healthLabel.Text = "HP: " .. tostring(math.floor(player.Character.Humanoid.Health)) .. "/" .. tostring(math.floor(player.Character.Humanoid.MaxHealth))
-            end
-        end
-
-        updateStats()
-        player.Level:GetPropertyChangedSignal("Value"):Connect(updateStats)
-        player.Money:GetPropertyChangedSignal("Value"):Connect(updateStats)
-        if player.Character:FindFirstChild("Humanoid") then
-            player.Character.Humanoid:GetPropertyChangedSignal("Health"):Connect(updateStats)
-        end
-    end
-end
-
-local function removeESP(player)
-    for _, obj in ipairs(HighlightFolder:GetChildren()) do
-        if obj:IsA("Highlight") and obj.Adornee == player.Character then
-            obj:Destroy()
-        end
-    end
-    if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-        for _, gui in ipairs(player.Character.HumanoidRootPart:GetChildren()) do
-            if gui:IsA("BillboardGui") then
-                gui:Destroy()
-            end
-        end
-    end
-end
-
-EspButton.MouseButton1Click:Connect(function()
-    espEnabled = not espEnabled
-    if espEnabled then
-        for _, player in ipairs(Players:GetPlayers()) do
-            createESP(player)
-        end
-    else
-        for _, player in ipairs(Players:GetPlayers()) do
-            removeESP(player)
-        end
-    end
-end)
-
-Players.PlayerAdded:Connect(function(player)
-    player.CharacterAdded:Connect(function()
-        createESP(player)
-    end)
-end)
-
-Players.PlayerRemoving:Connect(function(player)
-    removeESP(player)
-end)
-
--- เปิดใช้งาน ESP สำหรับผู้เล่นทุกคนที่อยู่ในเกมตอนเริ่มต้น
-for _, player in ipairs(Players:GetPlayers()) do
-    createESP(player)
-end
-
-
 local farming = false
 local selectedEnemy = nil
 
@@ -410,6 +274,141 @@ button3.MouseButton1Click:Connect(function()
         game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame
     end
 end)
+
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local HighlightFolder = Instance.new("Folder", game.Workspace)
+HighlightFolder.Name = "ESP_Highlights"
+
+local EspButton = Instance.new("TextButton")
+EspButton.Parent = Frame
+EspButton.Text = "Esp"
+EspButton.Size = UDim2.new(1, -20, 0, 50)
+EspButton.Position = UDim2.new(0, 10, 0, 170)
+EspButton.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
+EspButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+EspButton.Font = Enum.Font.GothamBold
+EspButton.TextSize = 20
+
+local espEnabled = true -- เปิดใช้งาน ESP ตั้งแต่เริ่มต้น
+
+local function createESP(player)
+    if not espEnabled then return end
+    if player == game.Players.LocalPlayer then return end
+    if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+        local highlight = Instance.new("Highlight")
+        highlight.Parent = HighlightFolder
+        highlight.Adornee = player.Character
+        highlight.FillColor = Color3.fromRGB(255, 255, 255)
+        highlight.OutlineColor = Color3.fromRGB(255, 0, 0)
+        highlight.FillTransparency = 0.7
+        
+        -- สร้าง BillboardGui แสดงชื่อ, Level, Money และเลือด
+        local billboard = Instance.new("BillboardGui")
+        billboard.Parent = player.Character:FindFirstChild("HumanoidRootPart")
+        billboard.Size = UDim2.new(6, 0, 2, 0) -- ปรับขนาดให้ใหญ่ขึ้น
+        billboard.StudsOffset = Vector3.new(0, 3, 0)
+        billboard.AlwaysOnTop = true
+        billboard.MaxDistance = math.huge -- ทำให้มองเห็นจากที่ไกล
+
+        local nameLabel = Instance.new("TextLabel", billboard)
+        nameLabel.Size = UDim2.new(1, 0, 0.2, 0)
+        nameLabel.Position = UDim2.new(0, 0, 0.8, 0)
+        nameLabel.Text = player.DisplayName .. " (@" .. player.Name .. ")"
+        nameLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+        nameLabel.BackgroundTransparency = 1
+        nameLabel.TextStrokeColor3 = Color3.fromRGB(255, 0, 0)
+        nameLabel.TextStrokeTransparency = 0
+        nameLabel.TextScaled = true
+
+        local levelLabel = Instance.new("TextLabel", billboard)
+        levelLabel.Size = UDim2.new(1, 0, 0.2, 0)
+        levelLabel.Position = UDim2.new(0, 0, 0.6, 0)
+        levelLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+        levelLabel.BackgroundTransparency = 1
+        levelLabel.TextStrokeColor3 = Color3.fromRGB(255, 255, 0)
+        levelLabel.TextStrokeTransparency = 0
+        levelLabel.TextScaled = true
+
+        local moneyLabel = Instance.new("TextLabel", billboard)
+        moneyLabel.Size = UDim2.new(1, 0, 0.2, 0)
+        moneyLabel.Position = UDim2.new(0, 0, 0.4, 0)
+        moneyLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+        moneyLabel.BackgroundTransparency = 1
+        moneyLabel.TextStrokeColor3 = Color3.fromRGB(0, 255, 0)
+        moneyLabel.TextStrokeTransparency = 0
+        moneyLabel.TextScaled = true
+        
+        local healthLabel = Instance.new("TextLabel", billboard)
+        healthLabel.Size = UDim2.new(1, 0, 0.2, 0)
+        healthLabel.Position = UDim2.new(0, 0, 0.2, 0)
+        healthLabel.TextColor3 = Color3.fromRGB(255, 0, 0)
+        healthLabel.BackgroundTransparency = 1
+        healthLabel.TextStrokeColor3 = Color3.fromRGB(255, 255, 255)
+        healthLabel.TextStrokeTransparency = 0
+        healthLabel.TextScaled = true
+        
+        local function updateStats()
+            if player:FindFirstChild("Level") and player:FindFirstChild("Money") and player.Character:FindFirstChild("Humanoid") then
+                levelLabel.Text = "Level (" .. tostring(player.Level.Value) .. ")"
+                moneyLabel.Text = "$" .. tostring(player.Money.Value)
+                healthLabel.Text = "HP: " .. tostring(math.floor(player.Character.Humanoid.Health)) .. "/" .. tostring(math.floor(player.Character.Humanoid.MaxHealth))
+            end
+        end
+
+        updateStats()
+        player.Level:GetPropertyChangedSignal("Value"):Connect(updateStats)
+        player.Money:GetPropertyChangedSignal("Value"):Connect(updateStats)
+        if player.Character:FindFirstChild("Humanoid") then
+            player.Character.Humanoid:GetPropertyChangedSignal("Health"):Connect(updateStats)
+        end
+    end
+end
+
+local function removeESP(player)
+    for _, obj in ipairs(HighlightFolder:GetChildren()) do
+        if obj:IsA("Highlight") and obj.Adornee == player.Character then
+            obj:Destroy()
+        end
+    end
+    if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+        for _, gui in ipairs(player.Character.HumanoidRootPart:GetChildren()) do
+            if gui:IsA("BillboardGui") then
+                gui:Destroy()
+            end
+        end
+    end
+end
+
+EspButton.MouseButton1Click:Connect(function()
+    espEnabled = not espEnabled
+    if espEnabled then
+        for _, player in ipairs(Players:GetPlayers()) do
+            createESP(player)
+        end
+    else
+        for _, player in ipairs(Players:GetPlayers()) do
+            removeESP(player)
+        end
+    end
+end)
+
+Players.PlayerAdded:Connect(function(player)
+    player.CharacterAdded:Connect(function()
+        createESP(player)
+    end)
+end)
+
+Players.PlayerRemoving:Connect(function(player)
+    removeESP(player)
+end)
+
+-- เปิดใช้งาน ESP สำหรับผู้เล่นทุกคนที่อยู่ในเกมตอนเริ่มต้น
+for _, player in ipairs(Players:GetPlayers()) do
+    createESP(player)
+end
+
 
 
 local function stopFarming()
