@@ -19,7 +19,7 @@ UIListLayout.Padding = UDim.new(0, 5)
 -- Input สำหรับพิมพ์ Enemies
 local EnemyInput = Instance.new("TextBox")
 EnemyInput.Parent = MainFrame
-EnemyInput.PlaceholderText = "Enter Enemies Level"
+EnemyInput.PlaceholderText = "Enter Enemies Folder"
 EnemyInput.Size = UDim2.new(0, 280, 0, 30)
 EnemyInput.Position = UDim2.new(0, 10, 0, 10)
 EnemyInput.BackgroundColor3 = Color3.fromRGB(60, 0, 0)
@@ -47,12 +47,6 @@ UIListLayout2.Parent = EnemyList
 UIListLayout2.FillDirection = Enum.FillDirection.Vertical
 UIListLayout2.Padding = UDim.new(0, 5)
 
--- ฟังก์ชันดึงเลข Level จากชื่อ
-local function extractLevel(name)
-    local level = string.match(name, "%[(%d+)%]") -- ค้นหาตัวเลขที่อยู่ใน []
-    return level or "N/A" -- ถ้าไม่เจอให้ใช้ "N/A"
-end
-
 -- อัพเดทรายการ Enemies
 local function updateEnemyList()
     for _, child in pairs(EnemyList:GetChildren()) do
@@ -75,7 +69,7 @@ local function updateEnemyList()
             EnemyButton.BackgroundColor3 = Color3.fromRGB(80, 0, 0)
             EnemyButton.TextColor3 = Color3.fromRGB(255, 255, 255)
             EnemyButton.MouseButton1Click:Connect(function()
-                EnemyInput.Text = extractLevel(enemy.Name) -- ใช้ฟังก์ชัน extractLevel
+                EnemyInput.Text = enemy.Name
             end)
         end
     end
@@ -84,3 +78,7 @@ end
 ReloadButton.MouseButton1Click:Connect(updateEnemyList)
 
 updateEnemyList()
+
+ทำไมเวลา แก้ไขให้ เวลา กรอก ชื่อ กรอกแค่ ชื่อ เลขก็พอ เช่น Vemipre [Level 40] กรอกแค่ 40 เช่น God [Level 100] กรอกแค่ 100
+
+
