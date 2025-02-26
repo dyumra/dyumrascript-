@@ -103,32 +103,43 @@ ReloadButton.MouseButton1Click:Connect(function()
     loadEnemies(folderName)
 end)
 
+local farming = false
+local selectedEnemy = nil
+local farmingThread = nil
+
 local function startFarming()
     if not selectedEnemy then return end
     farming = true
-    while farming do
-        local enemiesFolder = game.Workspace:FindFirstChild(EnemyInput.Text)
-        if enemiesFolder then
-            local foundEnemy = nil
-            for _, enemy in pairs(enemiesFolder:GetChildren()) do
-                if enemy:IsA("Model") and enemy.Name == selectedEnemy and enemy:FindFirstChild("Humanoid") and enemy.Humanoid.Health > 2 then
-                    foundEnemy = enemy
-                    break
+    farmingThread = coroutine.create(function()  -- Create a new coroutine to run the farming loop
+        while farming do
+            local enemiesFolder = game.Workspace:FindFirstChild(EnemyInput.Text)
+            if enemiesFolder then
+                local foundEnemy = nil
+                for _, enemy in pairs(enemiesFolder:GetChildren()) do
+                    if enemy:IsA("Model") and enemy.Name == selectedEnemy and enemy:FindFirstChild("Humanoid") and enemy.Humanoid.Health > 2 then
+                        foundEnemy = enemy
+                        break
+                    end
+                end
+                
+                if foundEnemy then
+                    local enemyPos = foundEnemy.HumanoidRootPart.Position
+                    local player = game.Players.LocalPlayer.Character
+                    player:SetPrimaryPartCFrame(CFrame.new(enemyPos.X, enemyPos.Y, enemyPos.Z + 5))
                 end
             end
-            
-            if foundEnemy then
-                local enemyPos = foundEnemy.HumanoidRootPart.Position
-                local player = game.Players.LocalPlayer.Character
-                player:SetPrimaryPartCFrame(CFrame.new(enemyPos.X, enemyPos.Y, enemyPos.Z + 5))
-            end
+            wait(1)
         end
-        wait(1)
-    end
+    end)
+    coroutine.resume(farmingThread)  -- Start the farming thread
 end
 
 local function stopFarming()
     farming = false
+    if farmingThread then
+        coroutine.close(farmingThread)  -- Stop the farming thread
+        farmingThread = nil
+    end
 end
 
 StartButton.MouseButton1Click:Connect(function()
