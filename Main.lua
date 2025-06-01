@@ -1,10 +1,8 @@
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
-local TeleportService = game:GetService("TeleportService") -- อาจไม่จำเป็นสำหรับ Teleport ในเกมเดียวกัน แต่เตรียมไว้
 
 local localPlayer = Players.LocalPlayer
-local mouse = localPlayer:GetMouse()
 local camera = workspace.CurrentCamera
 
 -- GUI Setup --
@@ -40,15 +38,15 @@ local function createRoundedElement(elementType, size, position, backgroundColor
 
     if elementType == "TextButton" or isButton then -- ใช้ TextLabel ข้างในสำหรับปุ่ม
         local textLabel = Instance.new("TextLabel")
-        textLabel.Size = UDim2.new(1, 0, 1, 0)
-        textLabel.Text = text or ""
-        textLabel.TextColor3 = textColor or Color3.new(1, 1, 1)
-        textLabel.BackgroundColor3 = Color3.new(1, 1, 1)
-        textLabel.BackgroundTransparency = 1
-        textLabel.Font = Enum.Font.SourceSansBold
-        textLabel.TextScaled = true
-        textLabel.Parent = element
-        return element, textLabel -- คืนทั้งปุ่มและ TextLabel
+    textLabel.Size = UDim2.new(1, 0, 1, 0)
+    textLabel.Text = text or ""
+    textLabel.TextColor3 = textColor or Color3.new(1, 1, 1)
+    textLabel.BackgroundColor3 = Color3.new(1, 1, 1)
+    textLabel.BackgroundTransparency = 1
+    textLabel.Font = Enum.Font.SourceSansBold
+    textLabel.TextScaled = true
+    textLabel.Parent = element
+    return element, textLabel -- คืนทั้งปุ่มและ TextLabel
     elseif elementType == "TextBox" then
         element.Text = text or ""
         element.TextColor3 = textColor or Color3.new(1, 1, 1)
@@ -77,11 +75,10 @@ local flyButton, flyText = createRoundedElement("TextButton", UDim2.new(0, 110, 
 local noclipButton, noclipText = createRoundedElement("TextButton", UDim2.new(0, 110, 0, 35), UDim2.new(0, 10, 0, 100), Color3.fromRGB(45, 45, 45), Color3.new(1, 1, 1), "Noclip: OFF", true)
 
 -- Textbox สำหรับใส่ค่า (เช่น ความเร็ว, ชื่อผู้เล่น)
-local inputTextBox = createRoundedElement("TextBox", UDim2.new(0, 230, 0, 35), UDim2.new(0, 10, 0, 145), Color3.fromRGB(60, 60, 60), Color3.new(1, 1, 1), "Enter Value / Player Name", false)
+local inputTextBox = createRoundedElement("TextBox", UDim2.new(0, 230, 0, 35), UDim2.new(0, 10, 0, 145), Color3.fromRGB(60, 60, 60), Color3.new(1, 1, 1), "Enter Speed / Player Name", false)
 
 -- ปุ่ม Teleport
 local teleportButton, teleportText = createRoundedElement("TextButton", UDim2.new(0, 230, 0, 35), UDim2.new(0, 10, 0, 190), Color3.fromRGB(45, 45, 45), Color3.new(1, 1, 1), "Teleport to Player", true)
-
 
 -- Highlight Folder
 local highlightFolder = Instance.new("Folder")
@@ -94,8 +91,8 @@ local camlockEnabled = false
 local speedEnabled = false
 local flyEnabled = false
 local noclipEnabled = false
-local currentSpeedValue = 16 -- Default walkspeed
-local flyNoclipSpeed = 50 -- Default speed for fly/noclip movement
+local currentSpeedValue = 16 -- ค่าความเร็วในการเดินเริ่มต้นของ Roblox
+local flyNoclipSpeed = 50 -- ค่าความเร็วเริ่มต้นสำหรับ Fly/Noclip
 
 -- ฟังก์ชันสร้าง Highlight พร้อมตั้งสีตามทีม
 local function createHighlight(character, color)
@@ -103,17 +100,18 @@ local function createHighlight(character, color)
     highlight.Adornee = character
     highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
     highlight.FillColor = color
-    highlight.OutlineColor = color:lerp(Color3.new(1,1,1), 0.5)
+    highlight.OutlineColor = color:lerp(Color3.new(1,1,1), 0.5) -- สีขอบจะอ่อนกว่าสีเติมเล็กน้อย
     highlight.Name = "ESPHighlight"
     highlight.Parent = highlightFolder
     return highlight
 end
 
 local function getTeamColor(player)
-    if player.TeamColor and player.TeamColor ~= BrickColor.new("White") then
+    -- ตรวจสอบว่าผู้เล่นมี Team และ TeamColor เป็นสีที่ถูกต้อง
+    if player.Team and player.TeamColor and player.TeamColor ~= BrickColor.new("White") then
         return player.TeamColor.Color
     else
-        return Color3.new(1, 1, 1) -- สีขาวเป็นค่าเริ่มต้น
+        return Color3.new(1, 1, 1) -- สีขาวเป็นค่าเริ่มต้นสำหรับผู้ที่ไม่มีทีมหรือทีมสีขาว
     end
 end
 
@@ -124,13 +122,12 @@ local function disableESP()
 end
 
 local function enableESP()
-    disableESP()
+    disableESP() -- ลบ highlights เก่าทั้งหมดก่อนสร้างใหม่
     for _, player in pairs(Players:GetPlayers()) do
-        if player.Character and player.Character:FindFirstChildWhichIsA("Humanoid") and player.Character.Humanoid.Health > 0 then
-            if player ~= localPlayer then
-                local teamColor = getTeamColor(player)
-                createHighlight(player.Character, teamColor)
-            end
+        -- ตรวจสอบว่าไม่ใช่ตัวเอง, มี Character, มี Humanoid และยังมีชีวิตอยู่
+        if player ~= localPlayer and player.Character and player.Character:FindFirstChildWhichIsA("Humanoid") and player.Character.Humanoid.Health > 0 then
+            local teamColor = getTeamColor(player)
+            createHighlight(player.Character, teamColor)
         end
     end
 end
@@ -139,12 +136,10 @@ end
 Players.PlayerAdded:Connect(function(player)
     player.CharacterAdded:Connect(function(character)
         if espEnabled then
-            task.wait(0.5) -- รอให้ตัวละครโหลดเสร็จ
-            if character and character:FindFirstChildWhichIsA("Humanoid") and character.Humanoid.Health > 0 then
-                if player ~= localPlayer then
-                    local teamColor = getTeamColor(player)
-                    createHighlight(character, teamColor)
-                end
+            task.wait(0.5) -- รอให้ตัวละครโหลดเสร็จและพร้อมใช้งาน
+            if player ~= localPlayer and character and character:FindFirstChildWhichIsA("Humanoid") and character.Humanoid.Health > 0 then
+                local teamColor = getTeamColor(player)
+                createHighlight(character, teamColor)
             end
         end
     end)
@@ -183,7 +178,7 @@ local function getClosestTarget()
                             rayParams.FilterDescendantsInstances = {localPlayer.Character} -- ไม่ raycast โดนตัวเอง
                             rayParams.FilterType = Enum.RaycastFilterType.Exclude
 
-                            local ray = workspace:Raycast(camera.CFrame.Position, (torso.Position - camera.CFrame.Position).Unit * 500, rayParams) -- ยิง Ray ไปไกลหน่อย
+                            local ray = workspace:Raycast(camera.CFrame.Position, (torso.Position - camera.CFrame.Position).Unit * 500, rayParams) -- ยิง Ray ไปไกลหน่อย (500 studs)
                             if ray and ray.Instance then
                                 if ray.Instance:IsDescendantOf(player.Character) or ray.Instance.Parent == player.Character then
                                     local screenPos = Vector2.new(pos.X, pos.Y)
@@ -217,14 +212,10 @@ local function setNoClip(enabled)
         local rootPart = localPlayer.Character.HumanoidRootPart
         if enabled then
             rootPart.CanCollide = false
-            if localPlayer.Character:FindFirstChild("Humanoid") then
-                localPlayer.Character.Humanoid.PlatformStand = true -- ป้องกันการล้มเมื่อ No-clip
-            end
+            -- Humanoid.PlatformStand จะถูกจัดการใน RenderStepped
         else
             rootPart.CanCollide = true
-            if localPlayer.Character:FindFirstChild("Humanoid") and not flyEnabled then -- ปิด PlatformStand ถ้า Fly ไม่ได้เปิดอยู่
-                localPlayer.Character.Humanoid.PlatformStand = false
-            end
+            -- Humanoid.PlatformStand จะถูกจัดการใน RenderStepped
         end
     end
 end
@@ -234,7 +225,7 @@ local function teleportToPlayer(partialName)
     local targetPlayer = nil
     local lowerPartialName = string.lower(string.gsub(partialName, "%s+", "")) -- ทำให้เป็นตัวพิมพ์เล็กและลบช่องว่าง
 
-    if #lowerPartialName == 0 then return end
+    if #lowerPartialName == 0 then return end -- ไม่ทำอะไรถ้าไม่มีข้อความ
 
     for _, player in pairs(Players:GetPlayers()) do
         if player ~= localPlayer then
@@ -247,14 +238,17 @@ local function teleportToPlayer(partialName)
     end
 
     if targetPlayer and targetPlayer.Character and targetPlayer.Character:FindFirstChild("HumanoidRootPart") then
-        localPlayer.Character:SetPrimaryPartCFrame(targetPlayer.Character.HumanoidRootPart.CFrame + Vector3.new(0, 5, 0)) -- Teleport เหนือเป้าหมายเล็กน้อย
+        -- ตรวจสอบว่า RootPart ของผู้เล่นปัจจุบันมีอยู่ก่อนที่จะ Teleport
+        if localPlayer.Character and localPlayer.Character:FindFirstChild("HumanoidRootPart") then
+            localPlayer.Character:SetPrimaryPartCFrame(targetPlayer.Character.HumanoidRootPart.CFrame + Vector3.new(0, 5, 0)) -- Teleport เหนือเป้าหมายเล็กน้อย
+        end
     else
         warn("Could not find player matching '" .. partialName .. "' or target character/HumanoidRootPart is missing.")
     end
 end
 
 -- Core loop สำหรับ Camlock, Fly, No-clip
-RunService.RenderStepped:Connect(function()
+RunService.RenderStepped:Connect(function(dt) -- dt คือ Delta Time เพื่อการเคลื่อนไหวที่ราบรื่น
     -- Camlock Logic
     if camlockEnabled then
         targetPlayer = getClosestTarget()
@@ -273,46 +267,43 @@ RunService.RenderStepped:Connect(function()
     end
 
     -- Fly / No-clip Movement Logic
-    if (flyEnabled or noclipEnabled) and localPlayer.Character and localPlayer.Character:FindFirstChild("HumanoidRootPart") then
+    if localPlayer.Character and localPlayer.Character:FindFirstChild("HumanoidRootPart") and localPlayer.Character:FindFirstChildWhichIsA("Humanoid") then
         local rootPart = localPlayer.Character.HumanoidRootPart
-        local humanoid = localPlayer.Character:FindFirstChild("Humanoid")
+        local humanoid = localPlayer.Character.Humanoid
 
-        if humanoid then
+        if flyEnabled or noclipEnabled then
             humanoid.PlatformStand = true -- เปิด PlatformStand ถ้า Fly หรือ Noclip ทำงานอยู่
-        end
+            rootPart.CanCollide = not noclipEnabled -- ปิด CanCollide ถ้า Noclip ทำงานอยู่
 
-        rootPart.CanCollide = not noclipEnabled -- ปิด CanCollide ถ้า Noclip ทำงานอยู่
+            local cameraCFrame = camera.CFrame
+            local direction = Vector3.new(0,0,0)
 
-        local cameraCFrame = camera.CFrame
-        local direction = Vector3.new(0,0,0)
+            local currentMoveSpeed = flyNoclipSpeed
 
-        local currentMoveSpeed = flyNoclipSpeed
+            if UserInputService:IsKeyDown(Enum.KeyCode.W) then
+                direction = direction + cameraCFrame.LookVector
+            elseif UserInputService:IsKeyDown(Enum.KeyCode.S) then
+                direction = direction - cameraCFrame.LookVector
+            end
+            if UserInputService:IsKeyDown(Enum.KeyCode.A) then
+                direction = direction - cameraCFrame.RightVector
+            elseif UserInputService:IsKeyDown(Enum.KeyCode.D) then
+                direction = direction + cameraCFrame.RightVector
+            end
+            if UserInputService:IsKeyDown(Enum.KeyCode.Space) then
+                direction = direction + Vector3.new(0,1,0) -- ขึ้น
+            elseif UserInputService:IsKeyDown(Enum.KeyCode.LeftControl) or UserInputService:IsKeyDown(Enum.KeyCode.C) then
+                direction = direction - Vector3.new(0,1,0) -- ลง
+            end
 
-        if UserInputService:IsKeyDown(Enum.KeyCode.W) then
-            direction = direction + cameraCFrame.LookVector
-        elseif UserInputService:IsKeyDown(Enum.KeyCode.S) then
-            direction = direction - cameraCFrame.LookVector
-        end
-        if UserInputService:IsKeyDown(Enum.KeyCode.A) then
-            direction = direction - cameraCFrame.RightVector
-        elseif UserInputService:IsKeyDown(Enum.KeyCode.D) then
-            direction = direction + cameraCFrame.RightVector
-        end
-        if UserInputService:IsKeyDown(Enum.KeyCode.Space) then
-            direction = direction + Vector3.new(0,1,0) -- ขึ้น
-        elseif UserInputService:IsKeyDown(Enum.KeyCode.LeftControl) or UserInputService:IsKeyDown(Enum.KeyCode.C) then
-            direction = direction - Vector3.new(0,1,0) -- ลง
-        end
-
-        -- Normalize direction to prevent faster diagonal movement
-        if direction.Magnitude > 0 then
-            rootPart.CFrame = rootPart.CFrame + direction.Unit * currentMoveSpeed * RunService.RenderStepped:Wait() -- ใช้ delta time เพื่อการเคลื่อนไหวที่สม่ำเสมอ
-        end
-    else
-        -- เมื่อทั้ง Fly และ Noclip ไม่ได้เปิดใช้งาน, ตั้งค่าฟิสิกส์ตัวละครกลับเป็นปกติ
-        if localPlayer.Character and localPlayer.Character:FindFirstChild("Humanoid") and localPlayer.Character:FindFirstChild("HumanoidRootPart") then
-            localPlayer.Character.Humanoid.PlatformStand = false
-            localPlayer.Character.HumanoidRootPart.CanCollide = true
+            -- Normalize direction to prevent faster diagonal movement
+            if direction.Magnitude > 0 then
+                rootPart.CFrame = rootPart.CFrame + direction.Unit * currentMoveSpeed * dt
+            end
+        else
+            -- เมื่อทั้ง Fly และ Noclip ไม่ได้เปิดใช้งาน, ตั้งค่าฟิสิกส์ตัวละครกลับเป็นปกติ
+            humanoid.PlatformStand = false
+            rootPart.CanCollide = true
         end
     end
 end)
@@ -367,7 +358,7 @@ flyButton.MouseButton1Click:Connect(function()
         else
             flyNoclipSpeed = 50 -- ค่าเริ่มต้น
         end
-        -- setFly จะถูกจัดการใน RenderStepped แล้ว
+        -- setFly ถูกจัดการใน RenderStepped แล้ว
     else
         flyText.Text = "Fly: OFF"
     end
