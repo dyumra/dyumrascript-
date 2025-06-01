@@ -1,23 +1,20 @@
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
-local CoreGui = game:GetService("CoreGui") -- For displaying high-level GUI elements like Highlights
+local CoreGui = game:GetService("CoreGui") -- สำหรับซ่อน/แสดงปุ่มเมนูหลักจาก Roblox
 
 local localPlayer = Players.LocalPlayer
 local camera = workspace.CurrentCamera
-
--- Wait for the PlayerGui to be available before parenting anything to it
-local playerGui = localPlayer:WaitForChild("PlayerGui")
 
 -- GUI Setup --
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "CheatMenuGUI"
 screenGui.ResetOnSpawn = false
-screenGui.Parent = playerGui
+screenGui.Parent = localPlayer:WaitForChild("PlayerGui")
 
--- Main draggable frame
+-- Frame ข้างหลัง (สามารถลากได้)
 local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0, 250, 0, 320) -- Adjust size to fit new buttons
+frame.Size = UDim2.new(0, 250, 0, 320) -- ปรับขนาดให้ใหญ่ขึ้นเพื่อรองรับปุ่มใหม่
 frame.Position = UDim2.new(1, -260, 0, 10)
 frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 frame.BackgroundTransparency = 0.3
@@ -26,47 +23,49 @@ frame.Parent = screenGui
 frame.Active = true
 frame.Draggable = true
 frame.ClipsDescendants = true
-frame.Visible = true -- Starts visible
+frame.Visible = true -- เริ่มต้นให้มองเห็นได้
 
--- Toggle menu button
+-- ปุ่มเปิด/ปิดเมนูหลัก
 local toggleMenuButton = Instance.new("TextButton")
 toggleMenuButton.Name = "ToggleMenuButton"
 toggleMenuButton.Size = UDim2.new(0, 100, 0, 30)
-toggleMenuButton.Position = UDim2.new(0, 5, 1, -35) -- Bottom-left, above chat icon
+toggleMenuButton.Position = UDim2.new(0, 5, 1, -35) -- มุมล่างซ้าย เหนือไอคอนแชท
 toggleMenuButton.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
 toggleMenuButton.TextColor3 = Color3.new(1, 1, 1)
 toggleMenuButton.Text = "Hide Menu"
 toggleMenuButton.Font = Enum.Font.SourceSansBold
 toggleMenuButton.TextSize = 14
 toggleMenuButton.BorderSizePixel = 0
-toggleMenuButton.Parent = screenGui -- Parent directly to screenGui
+toggleMenuButton.Parent = screenGui
 
 local toggleMenuCorners = Instance.new("UICorner")
 toggleMenuCorners.CornerRadius = UDim.new(0, 8)
 toggleMenuCorners.Parent = toggleMenuButton
 
--- Function to create rounded GUI elements
+-- ฟังก์ชันสำหรับสร้างส่วนประกอบ GUI ที่มีขอบโค้ง
 local function createRoundedElement(elementType, size, position, backgroundColor, textColor, text, isButton)
     local element = Instance.new(elementType)
     element.Size = size
     element.Position = position
     element.BackgroundColor3 = backgroundColor
     element.BorderSizePixel = 0
-    element.Parent = frame -- Most elements are children of the main frame
+    element.Parent = frame
 
     local corners = Instance.new("UICorner")
     corners.CornerRadius = UDim.new(0, 8)
     corners.Parent = element
 
     if elementType == "TextButton" or isButton then
-        -- For TextButtons, the text is set directly on the button.
-        -- For other elements acting as buttons (e.g., a Frame with a TextLabel that is clickable),
-        -- we'd add a TextLabel as a child. Here, we're assuming `elementType` "TextButton".
-        element.Text = text or ""
-        element.TextColor3 = textColor or Color3.new(1, 1, 1)
-        element.Font = Enum.Font.SourceSansBold
-        element.TextScaled = true
-        return element, element -- Return the button itself for text updates
+        local textLabel = Instance.new("TextLabel")
+        textLabel.Size = UDim2.new(1, 0, 1, 0)
+        textLabel.Text = text or ""
+        textLabel.TextColor3 = textColor or Color3.new(1, 1, 1)
+        textLabel.BackgroundColor3 = Color3.new(1, 1, 1)
+        textLabel.BackgroundTransparency = 1
+        textLabel.Font = Enum.Font.SourceSansBold
+        textLabel.TextScaled = true
+        textLabel.Parent = element
+        return element, textLabel
     elseif elementType == "TextBox" then
         element.Text = text or ""
         element.TextColor3 = textColor or Color3.new(1, 1, 1)
@@ -79,142 +78,154 @@ local function createRoundedElement(elementType, size, position, backgroundColor
     return element
 end
 
--- GUI Buttons and TextBoxes
+-- ปุ่ม ESP
 local espButton, espText = createRoundedElement("TextButton", UDim2.new(0, 110, 0, 35), UDim2.new(0, 10, 0, 10), Color3.fromRGB(45, 45, 45), Color3.new(1, 1, 1), "ESP: OFF", true)
+
+-- ปุ่ม Camlock
 local camlockButton, camlockText = createRoundedElement("TextButton", UDim2.new(0, 110, 0, 35), UDim2.new(0, 130, 0, 10), Color3.fromRGB(45, 45, 45), Color3.new(1, 1, 1), "Camlock: OFF", true)
+
+-- ปุ่ม Speed
 local speedButton, speedText = createRoundedElement("TextButton", UDim2.new(0, 110, 0, 35), UDim2.new(0, 10, 0, 55), Color3.fromRGB(45, 45, 45), Color3.new(1, 1, 1), "Speed: OFF", true)
+
+-- ปุ่ม Fly
 local flyButton, flyText = createRoundedElement("TextButton", UDim2.new(0, 110, 0, 35), UDim2.new(0, 130, 0, 55), Color3.fromRGB(45, 45, 45), Color3.new(1, 1, 1), "Fly: OFF", true)
+
+-- ปุ่ม No-clip
 local noclipButton, noclipText = createRoundedElement("TextButton", UDim2.new(0, 110, 0, 35), UDim2.new(0, 10, 0, 100), Color3.fromRGB(45, 45, 45), Color3.new(1, 1, 1), "Noclip: OFF", true)
+
+-- Textbox สำหรับใส่ค่าความเร็ว Fly/Speed
 local speedInputTextBox = createRoundedElement("TextBox", UDim2.new(0, 230, 0, 35), UDim2.new(0, 10, 0, 145), Color3.fromRGB(60, 60, 60), Color3.new(1, 1, 1), "Enter Speed Value", false)
-local teleportNameInputTextBox = createRoundedElement("TextBox", UDim2.new(0, 230, 0, 35), UDim2.new(0, 10, 0, 190), Color3.fromRGB(60, 60, 60), Color3.new(1, 1, 1), "Enter Player Name", false)
+
+-- Textbox สำหรับใส่ชื่อผู้เล่นสำหรับ Teleport
+local teleportNameInputTextBox = createRoundedElement("TextBox", UDim2.new(0, 230, 0, 145), UDim2.new(0, 10, 0, 190), Color3.fromRGB(60, 60, 60), Color3.new(1, 1, 1), "Enter Player Name", false)
+-- ปรับตำแหน่งใหม่ของ teleportNameInputTextBox ให้เลื่อนลงไป
+
+-- ปุ่ม Teleport to Player (ใช้ Textbox ใหม่)
 local teleportButton, teleportText = createRoundedElement("TextButton", UDim2.new(0, 230, 0, 35), UDim2.new(0, 10, 0, 235), Color3.fromRGB(45, 45, 45), Color3.new(1, 1, 1), "Teleport to Player", true)
+-- ปรับตำแหน่งใหม่ของ teleportButton ให้เลื่อนลงไป
+
+-- ปุ่ม Teleport Random
 local teleportRandomButton, teleportRandomText = createRoundedElement("TextButton", UDim2.new(0, 230, 0, 35), UDim2.new(0, 10, 0, 270), Color3.fromRGB(45, 45, 45), Color3.new(1, 1, 1), "Teleport Random: OFF", true)
+-- ปรับตำแหน่งใหม่ของ teleportRandomButton ให้เลื่อนลงไป
+
 
 -- Highlight Folder
 local highlightFolder = Instance.new("Folder")
 highlightFolder.Name = "ESPHighlights"
-highlightFolder.Parent = CoreGui -- Use CoreGui to display highlights above all other game elements
+highlightFolder.Parent = game:GetService("CoreGui") -- ใช้ CoreGui เพื่อแสดง GUI ระดับสูงสุด
 
--- State variables
+-- ตัวแปรสถานะ
 local espEnabled = false
 local camlockEnabled = false
 local speedEnabled = false
 local flyEnabled = false
 local noclipEnabled = false
-local flyNoclipSpeed = 50 -- Initial speed for Fly/Noclip/Speed (CFrame)
+local flyNoclipSpeed = 50 -- ค่าความเร็วเริ่มต้นสำหรับ Fly/Noclip/Speed (CFrame)
 local teleportRandomEnabled = false
-local randomTeleportTarget = nil -- Current target player for Teleport Random
-local randomTeleportDeathConnection = nil -- Connection for detecting target player's death
+local currentRandomTarget = nil -- ผู้เล่นเป้าหมายปัจจุบันสำหรับ Teleport Random
+local randomTeleportConnection = nil -- Connection สำหรับการตรวจจับการตายของผู้เล่น
 
--- Table to store active Highlights for easy management
-local activeHighlights = {}
 
--- Functions for ESP
-local function createAndTrackHighlight(character)
-    if not character or not character:IsA("Model") or not character:FindFirstChildOfClass("Humanoid") then return end
-
-    -- Check if Highlight for this Character already exists
-    if activeHighlights[character] then return end
-
+-- ฟังก์ชันสร้าง Highlight (สำหรับ ESP)
+local function createHighlight(character, color)
     local highlight = Instance.new("Highlight")
     highlight.Adornee = character
     highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
-    highlight.FillColor = Color3.fromRGB(255, 0, 0) -- Red
-    highlight.OutlineColor = Color3.fromRGB(255, 100, 100) -- Lighter red outline
-    highlight.FillTransparency = 0.5
-    highlight.OutlineTransparency = 0
-    highlight.Name = "ESPHighlight_" .. character.Name
+    highlight.FillColor = color
+    highlight.OutlineColor = color:lerp(Color3.new(1,1,1), 0.5) -- สีขอบจะอ่อนกว่าสีเติมเล็กน้อย
+    highlight.Name = "ESPHighlight"
     highlight.Parent = highlightFolder
-
-    activeHighlights[character] = highlight -- Store highlight in table for tracking
-
-    -- Connect Humanoid.Died to remove Highlight when player dies
-    local humanoid = character:FindFirstChildOfClass("Humanoid")
-    if humanoid then
-        local diedConnection
-        diedConnection = humanoid.Died:Connect(function()
-            if activeHighlights[character] then
-                activeHighlights[character]:Destroy()
-                activeHighlights[character] = nil
-            end
-            if diedConnection then diedConnection:Disconnect() end
-        end)
-    end
+    return highlight
 end
 
-local function removeHighlight(character)
-    if activeHighlights[character] then
-        activeHighlights[character]:Destroy()
-        activeHighlights[character] = nil
-    end
-end
-
+-- ฟังก์ชันลบ Highlights ทั้งหมด
 local function disableESP()
-    for character, highlight in pairs(activeHighlights) do
+    for _, highlight in pairs(highlightFolder:GetChildren()) do
         highlight:Destroy()
-        activeHighlights[character] = nil
     end
 end
 
+-- ฟังก์ชันเปิดใช้งาน ESP
 local function enableESP()
-    disableESP() -- Clear all old highlights before creating new ones
+    disableESP() -- ลบ highlights เก่าทั้งหมดก่อนสร้างใหม่
     for _, player in pairs(Players:GetPlayers()) do
-        -- Check if not self, has a Character, Humanoid, and is alive
+        -- ตรวจสอบว่าไม่ใช่ตัวเอง, มี Character, มี Humanoid และยังมีชีวิตอยู่
         if player ~= localPlayer and player.Character and player.Character:FindFirstChildWhichIsA("Humanoid") and player.Character.Humanoid.Health > 0 then
-            createAndTrackHighlight(player.Character)
+            -- ไฮไลท์ทุกคน (ยกเว้นตัวเอง) เป็นสีแดง
+            createHighlight(player.Character, Color3.fromRGB(255, 0, 0)) -- สีแดง
         end
     end
 end
 
--- Event: When a new player enters the game
+-- Event: เมื่อผู้เล่นใหม่เข้ามาในเกม
 Players.PlayerAdded:Connect(function(player)
     player.CharacterAdded:Connect(function(character)
-        task.wait(0.5) -- Wait briefly for the character to load
+        -- รอสักครู่เพื่อให้ Character โหลดเสร็จและพร้อมใช้งาน
+        task.wait(0.5)
         if espEnabled then
             if player ~= localPlayer and character and character:FindFirstChildWhichIsA("Humanoid") and character.Humanoid.Health > 0 then
-                createAndTrackHighlight(character)
+                createHighlight(character, Color3.fromRGB(255, 0, 0))
             end
+        end
+        -- เพิ่ม listener สำหรับ Humanoid.Died เพื่อลบ Highlight เมื่อผู้เล่นตาย
+        local humanoid = character:FindFirstChildWhichIsA("Humanoid")
+        if humanoid then
+            humanoid.Died:Connect(function()
+                if espEnabled then
+                    for _, highlight in pairs(highlightFolder:GetChildren()) do
+                        if highlight.Adornee == character then
+                            highlight:Destroy()
+                            break
+                        end
+                    end
+                end
+            end)
         end
     end)
 end)
 
--- Event: When a player leaves the game
+-- Event: เมื่อผู้เล่นออกจากเกม
 Players.PlayerRemoving:Connect(function(player)
-    if player.Character then
-        removeHighlight(player.Character) -- Remove highlight of the leaving player
+    if espEnabled then
+        -- ลบ highlight ของผู้เล่นที่ออกจากเกม
+        for _, highlight in pairs(highlightFolder:GetChildren()) do
+            if highlight.Adornee and highlight.Adornee == player.Character then
+                highlight:Destroy()
+            end
+        end
     end
 end)
 
--- Function to find the closest target for camlock
+-- ฟังก์ชันหา player เป้าหมายสำหรับ camlock
 local function getClosestTarget()
-    local centerScreen = Vector2.new(camera.ViewportSize.X / 2, camera.ViewportSize.Y / 2)
+    local centerScreen = Vector2.new(camera.ViewportSize.X/2, camera.ViewportSize.Y/2)
     local closestPlayer = nil
     local closestDistance = math.huge
 
     for _, player in pairs(Players:GetPlayers()) do
-        local character = player.Character
-        if player ~= localPlayer and character then
-            local humanoid = character:FindFirstChildOfClass("Humanoid")
-            local rootPart = character:FindFirstChild("HumanoidRootPart") or character:FindFirstChild("Torso") or character:FindFirstChild("UpperTorso")
+        if player ~= localPlayer and player.Character and (player.Character:FindFirstChild("Torso") or player.Character:FindFirstChild("UpperTorso") or player.Character:FindFirstChild("HumanoidRootPart")) then
+            local humanoid = player.Character:FindFirstChildWhichIsA("Humanoid")
+            if humanoid and humanoid.Health > 0 then
+                -- เช็คทีม: ไม่ Camlock ทีมเดียวกัน
+                if localPlayer.Team ~= player.Team then
+                    local torso = player.Character:FindFirstChild("Torso") or player.Character:FindFirstChild("UpperTorso") or player.Character:FindFirstChild("HumanoidRootPart")
+                    if torso then
+                        local pos, onScreen = camera:WorldToViewportPoint(torso.Position)
+                        if onScreen then
+                            -- เช็คว่าผ่านกำแพงไหม โดยใช้ Raycast
+                            local rayParams = RaycastParams.new()
+                            rayParams.FilterDescendantsInstances = {localPlayer.Character} -- ไม่ Raycast โดนตัวเอง
+                            rayParams.FilterType = Enum.RaycastFilterType.Exclude
 
-            if humanoid and rootPart and humanoid.Health > 0 then
-                -- Check team: Don't camlock teammates (if teams exist)
-                if localPlayer.Team ~= player.Team or localPlayer.Team == nil then
-                    local pos, onScreen = camera:WorldToViewportPoint(rootPart.Position)
-                    if onScreen then
-                        -- Check if target is visible (not behind a wall) using Raycast
-                        local rayParams = RaycastParams.new()
-                        rayParams.FilterDescendantsInstances = {localPlayer.Character} -- Don't raycast against self
-                        rayParams.FilterType = Enum.RaycastFilterType.Exclude
-
-                        local ray = workspace:Raycast(camera.CFrame.Position, (rootPart.Position - camera.CFrame.Position).Unit * 500, rayParams)
-                        if ray and ray.Instance then
-                            if ray.Instance:IsDescendantOf(player.Character) or ray.Instance.Parent == player.Character then
-                                local screenPos = Vector2.new(pos.X, pos.Y)
-                                local distance = (screenPos - centerScreen).Magnitude
-                                if distance < closestDistance then
-                                    closestDistance = distance
-                                    closestPlayer = player
+                            local ray = workspace:Raycast(camera.CFrame.Position, (torso.Position - camera.CFrame.Position).Unit * 500, rayParams)
+                            if ray and ray.Instance then
+                                if ray.Instance:IsDescendantOf(player.Character) or ray.Instance.Parent == player.Character then
+                                    local screenPos = Vector2.new(pos.X, pos.Y)
+                                    local distance = (screenPos - centerScreen).Magnitude
+                                    if distance < closestDistance then
+                                        closestDistance = distance
+                                        closestPlayer = player
+                                    end
                                 end
                             end
                         end
@@ -226,70 +237,64 @@ local function getClosestTarget()
     return closestPlayer
 end
 
--- Function for No-clip (adjust CanCollide)
+-- ฟังก์ชันสำหรับ No-clip (ปรับเปลี่ยน CanCollide)
 local function setNoClip(enabled)
-    local character = localPlayer.Character
-    local rootPart = character and character:FindFirstChild("HumanoidRootPart")
-    if character and rootPart then
-        rootPart.CanCollide = not enabled -- Set to false if enabled, true if disabled
-        -- PlatformStand is handled in RenderStepped for consistency with Fly/Speed
+    if localPlayer.Character and localPlayer.Character:FindFirstChild("HumanoidRootPart") then
+        local rootPart = localPlayer.Character.HumanoidRootPart
+        if enabled then
+            rootPart.CanCollide = false
+            -- การจัดการ PlatformStand จะอยู่ใน RenderStepped เพื่อรวมกับ Fly/Speed
+        else
+            rootPart.CanCollide = true
+            -- การจัดการ PlatformStand จะอยู่ใน RenderStepped
+        end
     end
 end
 
--- Function to Teleport to Player (supports partial names)
+-- ฟังก์ชัน Teleport to Player (รองรับชื่อย่อ)
 local function teleportToPlayer(partialName)
     local targetPlayer = nil
-    local lowerPartialName = string.lower(string.gsub(partialName, "%s+", "")) -- Lowercase and remove spaces
+    local lowerPartialName = string.lower(string.gsub(partialName, "%s+", "")) -- ทำให้เป็นตัวพิมพ์เล็กและลบช่องว่าง
 
-    if #lowerPartialName == 0 then
-        warn("Please enter a player name for teleport.")
-        return
-    end
+    if #lowerPartialName == 0 then return end -- ไม่ทำอะไรถ้าไม่มีข้อความ
 
     for _, player in pairs(Players:GetPlayers()) do
         if player ~= localPlayer then
             local lowerPlayerName = string.lower(string.gsub(player.Name, "%s+", ""))
-            if string.sub(lowerPlayerName, 1, #lowerPartialName) == lowerPartialName then
+            if string.sub(lowerPlayerName, 1, #lowerPartialName) == lowerPlayerName then
                 targetPlayer = player
                 break
             end
         end
     end
 
-    local character = localPlayer.Character
-    local rootPart = character and character:FindFirstChild("HumanoidRootPart")
-
-    if targetPlayer and targetPlayer.Character and targetPlayer.Character:FindFirstChild("HumanoidRootPart") and character and rootPart then
-        -- Teleport slightly above the target to prevent getting stuck
-        character:SetPrimaryPartCFrame(targetPlayer.Character.HumanoidRootPart.CFrame + Vector3.new(0, 5, 0))
+    if targetPlayer and targetPlayer.Character and targetPlayer.Character:FindFirstChild("HumanoidRootPart") then
+        if localPlayer.Character and localPlayer.Character:FindFirstChild("HumanoidRootPart") then
+            -- Teleport เหนือเป้าหมายเล็กน้อยเพื่อป้องกันการติดขัด
+            localPlayer.Character:SetPrimaryPartCFrame(targetPlayer.Character.HumanoidRootPart.CFrame + Vector3.new(0, 5, 0))
+        end
     else
-        warn("Could not find player matching '" .. partialName .. "' or target/local character/HumanoidRootPart is missing.")
+        warn("Could not find player matching '" .. partialName .. "' or target character/HumanoidRootPart is missing.")
     end
 end
 
--- Function for Teleport Random
+-- ฟังก์ชันสำหรับ Teleport Random
 local function startRandomTeleport()
-    -- Ensure localPlayer.Character is ready
+    -- ตรวจสอบว่า localPlayer.Character พร้อมใช้งาน
     local character = localPlayer.Character
-    local humanoid = character and character:FindFirstChildOfClass("Humanoid")
-    local rootPart = character and character:FindFirstChild("HumanoidRootPart")
-
-    if not (character and humanoid and rootPart) then
-        localPlayer.CharacterAdded:Wait() -- Wait for character if not ready
+    if not character or not character:FindFirstChild("HumanoidRootPart") or not character:FindFirstChildOfClass("Humanoid") then
+        -- หากตัวละครยังไม่พร้อม ให้รอ characterAdded หรือออกไปก่อน
+        localPlayer.CharacterAdded:Wait()
         character = localPlayer.Character
-        humanoid = character and character:FindFirstChildOfClass("Humanoid")
-        rootPart = character and character:FindFirstChild("HumanoidRootPart")
-        if not (character and humanoid and rootPart) then
-            warn("Local character not ready for random teleport. Please retry.")
-            teleportRandomEnabled = false
-            teleportRandomText.Text = "Teleport Random: OFF"
+        if not character or not character:FindFirstChild("HumanoidRootPart") or not character:FindFirstChildOfClass("Humanoid") then
+            warn("Local character not ready for random teleport.")
             return
         end
     end
 
     local potentialTargets = {}
     for _, player in pairs(Players:GetPlayers()) do
-        -- Check for living players who are not self
+        -- ตรวจสอบผู้เล่นที่มีชีวิตอยู่และไม่ใช่ตัวเอง
         if player ~= localPlayer and player.Character and player.Character:FindFirstChildOfClass("Humanoid") and player.Character.Humanoid.Health > 0 then
             table.insert(potentialTargets, player)
         end
@@ -297,46 +302,46 @@ local function startRandomTeleport()
 
     if #potentialTargets > 0 then
         local randomIndex = math.random(1, #potentialTargets)
-        randomTeleportTarget = potentialTargets[randomIndex]
+        currentRandomTarget = potentialTargets[randomIndex]
 
-        if randomTeleportTarget and randomTeleportTarget.Character and randomTeleportTarget.Character:FindFirstChild("HumanoidRootPart") then
-            -- Disconnect old connection if it exists
-            if randomTeleportDeathConnection then
-                randomTeleportDeathConnection:Disconnect()
-                randomTeleportDeathConnection = nil
+        if currentRandomTarget and currentRandomTarget.Character and currentRandomTarget.Character:FindFirstChild("HumanoidRootPart") then
+            -- ยกเลิก connection เก่าถ้ามี
+            if randomTeleportConnection then
+                randomTeleportConnection:Disconnect()
+                randomTeleportConnection = nil
             end
 
-            -- Teleport to the target
-            localPlayer.Character:SetPrimaryPartCFrame(randomTeleportTarget.Character.HumanoidRootPart.CFrame + Vector3.new(0, 5, 0))
+            -- เทเลพอร์ตไปหาเป้าหมาย
+            localPlayer.Character:SetPrimaryPartCFrame(currentRandomTarget.Character.HumanoidRootPart.CFrame + Vector3.new(0, 5, 0))
 
-            -- Detect when the target player dies
-            local targetHumanoid = randomTeleportTarget.Character:FindFirstChildOfClass("Humanoid")
-            if targetHumanoid then
-                randomTeleportDeathConnection = targetHumanoid.Died:Connect(function()
+            -- ตรวจจับเมื่อผู้เล่นเป้าหมายตาย
+            local humanoid = currentRandomTarget.Character:FindFirstChildOfClass("Humanoid")
+            if humanoid then
+                randomTeleportConnection = humanoid.Died:Connect(function()
                     if teleportRandomEnabled then
-                        startRandomTeleport() -- Teleport to a new random player
+                        startRandomTeleport() -- เทเลพอร์ตไปหาคนใหม่
                     end
-                })
+                end)
             end
         else
-            -- If the randomly selected player has no Character or HumanoidRootPart, try again
-            warn("Selected random target was invalid, trying again...")
-            task.wait(0.1) -- Short wait to prevent spamming
+            -- ถ้าผู้เล่นที่สุ่มได้ไม่มี Character หรือ HumanoidRootPart ให้ลองสุ่มใหม่
             startRandomTeleport()
         end
     else
         warn("No other active players to teleport to for random teleport. Disabling random teleport.")
+        -- ถ้าไม่มีใครให้เทเลพอร์ตหา ให้ปิดฟังก์ชันอัตโนมัติ
         teleportRandomEnabled = false
         teleportRandomText.Text = "Teleport Random: OFF"
-        if randomTeleportDeathConnection then
-            randomTeleportDeathConnection:Disconnect()
-            randomTeleportDeathConnection = nil
+        if randomTeleportConnection then
+            randomTeleportConnection:Disconnect()
+            randomTeleportConnection = nil
         end
     end
 end
 
--- Core loop for Camlock, Fly, No-clip, Speed (CFrame)
-RunService.RenderStepped:Connect(function(dt) -- dt is Delta Time for smooth movement
+
+-- Core loop สำหรับ Camlock, Fly, No-clip, Speed (CFrame)
+RunService.RenderStepped:Connect(function(dt) -- dt คือ Delta Time เพื่อการเคลื่อนไหวที่ราบรื่น
     -- Camlock Logic
     if camlockEnabled then
         local target = getClosestTarget()
@@ -350,6 +355,8 @@ RunService.RenderStepped:Connect(function(dt) -- dt is Delta Time for smooth mov
                 camera.CFrame = newLookAt
             end
         end
+    else
+        targetPlayer = nil
     end
 
     -- Fly / No-clip / Speed (CFrame) Movement Logic
@@ -357,25 +364,23 @@ RunService.RenderStepped:Connect(function(dt) -- dt is Delta Time for smooth mov
     local humanoid = character and character:FindFirstChildWhichIsA("Humanoid")
     local rootPart = character and character:FindFirstChild("HumanoidRootPart")
 
-    if not (character and humanoid and rootPart) then -- Exit function if Character isn't ready
-        -- Reset state if character is lost mid-cheat
-        if humanoid then humanoid.PlatformStand = false end
-        if rootPart then rootPart.CanCollide = true end
-        return
+    if not (character and humanoid and rootPart) then -- ออกจากฟังก์ชันถ้า Character ไม่พร้อม
+        humanoid = nil -- Set to nil if character is not ready to avoid errors later
+        rootPart = nil
     end
 
     local usingCFrameMovement = flyEnabled or noclipEnabled or speedEnabled
 
-    if usingCFrameMovement then
-        humanoid.PlatformStand = true -- Enable PlatformStand for all CFrame movement modes
-        rootPart.CanCollide = not noclipEnabled -- Disable CanCollide only if Noclip is active
-        humanoid.WalkSpeed = 0 -- Set WalkSpeed to 0 to prevent interference
+    if usingCFrameMovement and humanoid and rootPart then
+        humanoid.PlatformStand = true -- เปิด PlatformStand สำหรับทุกโหมดการเคลื่อนที่แบบ CFrame
+        rootPart.CanCollide = not noclipEnabled -- ปิด CanCollide ถ้า Noclip ทำงานอยู่เท่านั้น
+        humanoid.WalkSpeed = 0 -- ตั้ง WalkSpeed เป็น 0 เพื่อไม่ให้รบกวนการเคลื่อนที่แบบ CFrame
 
         local cameraCFrame = camera.CFrame
-        local directionVector = Vector3.new(0, 0, 0)
-        local currentMoveSpeed = flyNoclipSpeed -- Use speed from textbox
+        local directionVector = Vector3.new(0,0,0)
+        local currentMoveSpeed = flyNoclipSpeed -- ใช้ความเร็วจาก textbox
 
-        -- Horizontal movement (WASD)
+        -- การเคลื่อนที่แนวนอน (WASD)
         if UserInputService:IsKeyDown(Enum.KeyCode.W) then
             directionVector = directionVector + cameraCFrame.LookVector
         elseif UserInputService:IsKeyDown(Enum.KeyCode.S) then
@@ -387,125 +392,144 @@ RunService.RenderStepped:Connect(function(dt) -- dt is Delta Time for smooth mov
             directionVector = directionVector + cameraCFrame.RightVector
         end
 
-        -- Vertical movement (Space, Ctrl/C) - Only for Fly and Noclip
+        -- การเคลื่อนที่แนวตั้ง (Space, Ctrl/C) - เฉพาะ Fly และ Noclip
         if flyEnabled or noclipEnabled then
             if UserInputService:IsKeyDown(Enum.KeyCode.Space) then
-                directionVector = directionVector + Vector3.new(0, 1, 0) -- Up
+                directionVector = directionVector + Vector3.new(0,1,0) -- ขึ้น
             elseif UserInputService:IsKeyDown(Enum.KeyCode.LeftControl) or UserInputService:IsKeyDown(Enum.KeyCode.C) then
-                directionVector = directionVector - Vector3.new(0, 1, 0) -- Down
+                directionVector = directionVector - Vector3.new(0,1,0) -- ลง
             end
         end
 
-        -- Apply CFrame movement
+        -- ใช้ CFrame เพื่อเคลื่อนที่
         if directionVector.Magnitude > 0 then
             rootPart.CFrame = rootPart.CFrame + directionVector.Unit * currentMoveSpeed * dt
         end
-    else
-        -- When no CFrame movement cheats are active, restore normal physics
+    elseif humanoid and rootPart then
+        -- เมื่อไม่มี Cheat การเคลื่อนที่แบบ CFrame ทำงาน, คืนค่าฟิสิกส์ปกติ
         humanoid.PlatformStand = false
         rootPart.CanCollide = true
-        humanoid.WalkSpeed = 16 -- Restore default Roblox walk speed
+        humanoid.WalkSpeed = 16 -- คืนค่าความเร็วในการเดินเริ่มต้นของ Roblox
     end
 end)
 
--- Button click connections
+-- ปุ่มกดเปิด/ปิด ESP
 espButton.MouseButton1Click:Connect(function()
     espEnabled = not espEnabled
-    espText.Text = "ESP: " .. (espEnabled and "ON" or "OFF")
     if espEnabled then
+        espText.Text = "ESP: ON"
         enableESP()
     else
+        espText.Text = "ESP: OFF"
         disableESP()
     end
 end)
 
+-- ปุ่มกดเปิด/ปิด Camlock
 camlockButton.MouseButton1Click:Connect(function()
     camlockEnabled = not camlockEnabled
-    camlockText.Text = "Camlock: " .. (camlockEnabled and "ON" or "OFF")
+    if camlockEnabled then
+        camlockText.Text = "Camlock: ON"
+    else
+        camlockText.Text = "Camlock: OFF"
+    end
 end)
 
+-- ปุ่มกดเปิด/ปิด Speed (CFrame)
 speedButton.MouseButton1Click:Connect(function()
     speedEnabled = not speedEnabled
-    speedText.Text = "Speed: " .. (speedEnabled and "ON" or "OFF")
     if speedEnabled then
-        local desiredSpeed = tonumber(speedInputTextBox.Text)
+        speedText.Text = "Speed: ON"
+        local desiredSpeed = tonumber(speedInputTextBox.Text) -- อ่านค่าจาก speedInputTextBox
         if desiredSpeed and desiredSpeed > 0 then
             flyNoclipSpeed = desiredSpeed
         else
-            flyNoclipSpeed = 50
+            flyNoclipSpeed = 50 -- ค่าเริ่มต้นหากไม่มีการป้อน
         end
+    else
+        speedText.Text = "Speed: OFF"
     end
 end)
 
+-- ปุ่มกดเปิด/ปิด Fly
 flyButton.MouseButton1Click:Connect(function()
     flyEnabled = not flyEnabled
-    flyText.Text = "Fly: " .. (flyEnabled and "ON" or "OFF")
     if flyEnabled then
-        local desiredSpeed = tonumber(speedInputTextBox.Text)
+        flyText.Text = "Fly: ON"
+        local desiredSpeed = tonumber(speedInputTextBox.Text) -- อ่านค่าจาก speedInputTextBox
         if desiredSpeed and desiredSpeed > 0 then
             flyNoclipSpeed = desiredSpeed
         else
-            flyNoclipSpeed = 50
+            flyNoclipSpeed = 50 -- ค่าเริ่มต้น
         end
+    else
+        flyText.Text = "Fly: OFF"
     end
 end)
 
+-- ปุ่มกดเปิด/ปิด No-clip
 noclipButton.MouseButton1Click:Connect(function()
     noclipEnabled = not noclipEnabled
-    noclipText.Text = "Noclip: " .. (noclipEnabled and "ON" or "OFF")
     if noclipEnabled then
-        local desiredSpeed = tonumber(speedInputTextBox.Text)
+        noclipText.Text = "Noclip: ON"
+        local desiredSpeed = tonumber(speedInputTextBox.Text) -- อ่านค่าจาก speedInputTextBox
         if desiredSpeed and desiredSpeed > 0 then
             flyNoclipSpeed = desiredSpeed
         else
-            flyNoclipSpeed = 50
+            flyNoclipSpeed = 50 -- ค่าเริ่มต้น
         end
         setNoClip(true)
     else
+        noclipText.Text = "Noclip: OFF"
         setNoClip(false)
     end
 end)
 
+-- ปุ่มกด Teleport (ใช้ Textbox ใหม่)
 teleportButton.MouseButton1Click:Connect(function()
-    teleportToPlayer(teleportNameInputTextBox.Text)
+    teleportToPlayer(teleportNameInputTextBox.Text) -- ใช้ teleportNameInputTextBox
 end)
 
+-- ปุ่มกด Teleport Random
 teleportRandomButton.MouseButton1Click:Connect(function()
     teleportRandomEnabled = not teleportRandomEnabled
-    teleportRandomText.Text = "Teleport Random: " .. (teleportRandomEnabled and "ON" or "OFF")
     if teleportRandomEnabled then
+        teleportRandomText.Text = "Teleport Random: ON"
         startRandomTeleport()
     else
-        if randomTeleportDeathConnection then
-            randomTeleportDeathConnection:Disconnect()
-            randomTeleportDeathConnection = nil
+        teleportRandomText.Text = "Teleport Random: OFF"
+        if randomTeleportConnection then
+            randomTeleportConnection:Disconnect()
+            randomTeleportConnection = nil
         end
-        randomTeleportTarget = nil
+        currentRandomTarget = nil
     end
 end)
 
--- speedInputTextBox value change
+-- เมื่อ speedInputTextBox เปลี่ยนค่า (ใช้สำหรับ Speed และ Fly/Noclip Speed)
 speedInputTextBox.FocusLost:Connect(function(enterPressed)
-    if enterPressed then
+    if enterPressed then -- ตรวจสอบว่าผู้ใช้กด Enter
         local value = tonumber(speedInputTextBox.Text)
         if value and value > 0 then
-            -- Update CFrame speed instantly if any CFrame mode is active
+            -- อัปเดตความเร็ว CFrame ทันทีหากโหมดใดๆ ที่ใช้ CFrame ทำงานอยู่
             if speedEnabled or flyEnabled or noclipEnabled then
                 flyNoclipSpeed = value
             end
-        else
-            warn("Invalid speed value entered. Please enter a positive number.")
         end
     end
 end)
 
--- Toggle main GUI menu visibility
+-- ปุ่มเปิด/ปิดเมนู GUI
 toggleMenuButton.MouseButton1Click:Connect(function()
     frame.Visible = not frame.Visible
-    toggleMenuButton.Text = (frame.Visible and "Hide Menu" or "Show Menu")
+    if frame.Visible then
+        toggleMenuButton.Text = "Hide Menu"
+    else
+        toggleMenuButton.Text = "Show Menu"
+    end
 end)
 
--- Drag GUI for mobile and PC
+-- Drag GUI สำหรับมือถือและ PC
 local dragging = false
 local dragInput, dragStart, startPos
 
