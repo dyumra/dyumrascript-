@@ -1,593 +1,499 @@
+-- Services
 local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
-local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
 
--- ## GUI สำหรับใส่ Key (หน้าแรก) ##
-local KeyScreenGui = Instance.new("ScreenGui")
-KeyScreenGui.Name = "KeyEntryGui"
-KeyScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
+local LocalPlayer = Players.LocalPlayer
+local playerGui = LocalPlayer:WaitForChild("PlayerGui")
 
-local KeyFrame = Instance.new("Frame")
-KeyFrame.Name = "KeyFrame"
-KeyFrame.Size = UDim2.new(0, 300, 0, 150)
-KeyFrame.Position = UDim2.new(0.5, -150, 0.5, -75)
-KeyFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30) -- ธีมดำ
-KeyFrame.BorderSizePixel = 2
-KeyFrame.BorderColor3 = Color3.fromRGB(255, 255, 255) -- ขอบขาว
-KeyFrame.CornerRadius = UDim.new(0, 15) -- ขอบกลม
-KeyFrame.Draggable = true
-KeyFrame.Parent = KeyScreenGui
+-- Default setting
+local correctKey = "dyumra"
+local wrongAttempts = 0
+local maxWrongAttempts = 3
 
-local KeyPrompt = Instance.new("TextLabel")
-KeyPrompt.Name = "KeyPrompt"
-KeyPrompt.Size = UDim2.new(1, -20, 0, 30)
-KeyPrompt.Position = UDim2.new(0, 10, 0, 20)
-KeyPrompt.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-KeyPrompt.BackgroundTransparency = 1
-KeyPrompt.Text = "Enter Key to Access GUI"
-KeyPrompt.TextColor3 = Color3.fromRGB(255, 255, 255)
-KeyPrompt.Font = Enum.Font.SourceSansBold
-KeyPrompt.TextSize = 20
-KeyPrompt.Parent = KeyFrame
+local headless = false
+local camlock = false
+local esp = false
 
-local KeyInput = Instance.new("TextBox")
-KeyInput.Name = "KeyInput"
-KeyInput.Size = UDim2.new(0, 250, 0, 40)
-KeyInput.Position = UDim2.new(0.5, -125, 0, 60)
-KeyInput.PlaceholderText = "Enter your key here..."
-KeyInput.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-KeyInput.TextColor3 = Color3.fromRGB(255, 255, 255)
-KeyInput.TextSize = 16
-KeyInput.CornerRadius = UDim.new(0, 5)
-KeyInput.Parent = KeyFrame
+-- Variables
+local camlockTarget = nil -- player ที่ถูกล็อค
+local lockPart = "Head" -- "Head" หรือ "Torso" (Torso = HumanoidRootPart)
 
-local SubmitKeyButton = Instance.new("TextButton")
-SubmitKeyButton.Name = "SubmitKeyButton"
-SubmitKeyButton.Size = UDim2.new(0, 100, 0, 35)
-SubmitKeyButton.Position = UDim2.new(0.5, -50, 0, 105)
-SubmitKeyButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-SubmitKeyButton.Text = "Submit"
-SubmitKeyButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-SubmitKeyButton.Font = Enum.Font.SourceSansBold
-SubmitKeyButton.TextSize = 18
-SubmitKeyButton.CornerRadius = UDim.new(0, 8)
-SubmitKeyButton.Parent = KeyFrame
+-- ====== Notification =======
+local notification = Instance.new("TextLabel")
+notification.Size = UDim2.new(0, 250, 0, 40)
+notification.Position = UDim2.new(1, -260, 1, -50)
+notification.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+notification.BackgroundTransparency = 0.6
+notification.TextColor3 = Color3.new(1, 1, 1)
+notification.Font = Enum.Font.SourceSansBold
+notification.TextSize = 18
+notification.Visible = false
+notification.Text = ""
+notification.ZIndex = 10
+notification.Parent = playerGui
 
-local correctKey = "dev" -- <<< **เปลี่ยน Key ตรงนี้!**
+local function showNotification(msg, duration)
+    notification.Text = msg
+    notification.Visible = true
+    spawn(function()
+        wait(duration or 3)
+        notification.Visible = false
+    end)
+end
 
-SubmitKeyButton.MouseButton1Click:Connect(function()
-    if KeyInput.Text == correctKey then
-        KeyScreenGui:Destroy() -- ปิด GUI ใส่ Key
-        MainFrame.Visible = true -- แสดง GUI หลัก
-        notify("Access Granted!", Color3.fromRGB(0, 200, 0))
-    else
-        warn("Incorrect Key!")
-        KeyInput.Text = ""
-        KeyInput.PlaceholderText = "Incorrect Key! Try again."
-        notify("Access Denied!", Color3.fromRGB(200, 0, 0))
-    end
-end)
+-- ====== GUI Main =======
+local mainGui = Instance.new("ScreenGui")
+mainGui.Name = "main"
+mainGui.Enabled = false
+mainGui.Parent = playerGui
 
--- Function สำหรับลาก GUI (ใช้ได้ทั้ง KeyFrame และ MainFrame)
+-- Background Frame (red theme, rounded corners)
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0, 400, 0, 300)
+frame.Position = UDim2.new(0.5, -200, 0.5, -150)
+frame.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+frame.BackgroundTransparency = 0
+frame.AnchorPoint = Vector2.new(0.5, 0.5)
+frame.ClipsDescendants = true
+frame.Parent = mainGui
+
+-- UI corner (round edges)
+local uicorner = Instance.new("UICorner")
+uicorner.CornerRadius = UDim.new(0, 15)
+uicorner.Parent = frame
+
+-- Draggable logic
 local dragging
 local dragInput
 local dragStart
 local startPos
 
-local function makeDraggable(guiFrame)
-    guiFrame.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            dragging = true
-            dragInput = input
-            dragStart = input.Position
-            startPos = guiFrame.Position
-        end
-    end)
+frame.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = true
+        dragStart = input.Position
+        startPos = frame.Position
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                dragging = false
+            end
+        end)
+    end
+end)
 
-    guiFrame.InputChanged:Connect(function(input)
-        if input == dragInput and dragging then
-            local delta = input.Position - dragStart
-            guiFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-        end
-    end)
+frame.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement then
+        dragInput = input
+    end
+end)
 
-    guiFrame.InputEnded:Connect(function(input)
-        if input == dragInput then
-            dragging = false
-        end
-    end)
+UserInputService.InputChanged:Connect(function(input)
+    if input == dragInput and dragging then
+        local delta = input.Position - dragStart
+        frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X,
+                                  startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
+end)
+
+-- ==== Close/Open Button (top right corner) ====
+
+local toggleBtn = Instance.new("TextButton")
+toggleBtn.Size = UDim2.new(0, 40, 0, 30)
+toggleBtn.Position = UDim2.new(1, -45, 0, 5)
+toggleBtn.BackgroundColor3 = Color3.fromRGB(180, 30, 30)
+toggleBtn.TextColor3 = Color3.new(1, 1, 1)
+toggleBtn.Text = "X"
+toggleBtn.Font = Enum.Font.SourceSansBold
+toggleBtn.TextSize = 20
+toggleBtn.AutoButtonColor = true
+toggleBtn.ZIndex = 11
+toggleBtn.Parent = frame
+
+local function toggleGui()
+    mainGui.Enabled = not mainGui.Enabled
 end
 
-makeDraggable(KeyFrame) -- ทำให้ KeyFrame ลากได้
+toggleBtn.MouseButton1Click:Connect(toggleGui)
 
--- ## GUI หลัก (แสดงหลังจากใส่ Key ถูกต้อง) ##
-local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "CustomAdminGui"
-ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
-ScreenGui.Enabled = false -- ปิดไว้ก่อน จะเปิดเมื่อใส่ Key ถูก
+-- ==== Title Label ====
 
-local MainFrame = Instance.new("Frame")
-MainFrame.Name = "MainFrame"
-MainFrame.Size = UDim2.new(0, 300, 0, 500)
-MainFrame.Position = UDim2.new(0.5, -150, 0.5, -250)
-MainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30) -- ธีมดำ
-MainFrame.BorderSizePixel = 2
-MainFrame.BorderColor3 = Color3.fromRGB(255, 255, 255) -- ขอบขาว
-MainFrame.CornerRadius = UDim.new(0, 15) -- ขอบกลม
-MainFrame.Draggable = true
-MainFrame.Visible = false -- ซ่อนไว้ก่อน
-MainFrame.Parent = ScreenGui
+local titleLabel = Instance.new("TextLabel")
+titleLabel.Size = UDim2.new(1, -10, 0, 30)
+titleLabel.Position = UDim2.new(0, 5, 0, 5)
+titleLabel.BackgroundTransparency = 1
+titleLabel.TextColor3 = Color3.new(1, 1, 1)
+titleLabel.Text = "Control Panel"
+titleLabel.Font = Enum.Font.SourceSansBold
+titleLabel.TextSize = 22
+titleLabel.TextXAlignment = Enum.TextXAlignment.Left
+titleLabel.Parent = frame
 
-makeDraggable(MainFrame) -- ทำให้ MainFrame ลากได้
+-- ==== Camlock Button ====
 
--- ปุ่มปิด/เปิด GUI หลัก (มุมขวาบน)
-local ToggleButton = Instance.new("TextButton")
-ToggleButton.Name = "ToggleButton"
-ToggleButton.Size = UDim2.new(0, 30, 0, 30)
-ToggleButton.Position = UDim2.new(1, -40, 0, 10)
-ToggleButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
-ToggleButton.Text = "X"
-ToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-ToggleButton.Font = Enum.Font.SourceSansBold
-ToggleButton.TextSize = 20
-ToggleButton.CornerRadius = UDim.new(0, 5)
-ToggleButton.Parent = MainFrame
+local camlockBtn = Instance.new("TextButton")
+camlockBtn.Size = UDim2.new(0, 120, 0, 35)
+camlockBtn.Position = UDim2.new(0, 10, 0, 50)
+camlockBtn.BackgroundColor3 = Color3.fromRGB(255, 100, 100)
+camlockBtn.TextColor3 = Color3.new(1, 1, 1)
+camlockBtn.Font = Enum.Font.SourceSansBold
+camlockBtn.TextSize = 18
+camlockBtn.Text = "Camlock: Off"
+camlockBtn.Parent = frame
 
-ToggleButton.MouseButton1Click:Connect(function()
-    MainFrame.Visible = not MainFrame.Visible
-end)
-
----
-
-### ส่วนของ Camlock
-
-local camlockTarget = nil
-local camlockActive = false
-local camlockPart = "Head" -- Default target part
-
-local CamlockButton = Instance.new("TextButton")
-CamlockButton.Name = "CamlockButton"
-CamlockButton.Size = UDim2.new(0, 120, 0, 40)
-CamlockButton.Position = UDim2.new(0.5, -60, 0, 50)
-CamlockButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
-CamlockButton.Text = "Camlock: Off"
-CamlockButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-CamlockButton.Font = Enum.Font.SourceSansBold
-CamlockButton.TextSize = 18
-CamlockButton.CornerRadius = UDim.new(0, 8)
-CamlockButton.Parent = MainFrame
-
-CamlockButton.MouseButton1Click:Connect(function()
-    camlockActive = not camlockActive
-    if camlockActive then
-        CamlockButton.Text = "Camlock: On"
-        local playersInGame = Players:GetPlayers()
-        for _, player in pairs(playersInGame) do
-            if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("Humanoid") and player.Character.Humanoid.Health > 0 then
-                camlockTarget = player
-                break
-            end
-        end
-        if not camlockTarget then
-            warn("No valid player found to camlock!")
-            camlockActive = false
-            CamlockButton.Text = "Camlock: Off"
-            notify("Camlock: No target found!", Color3.fromRGB(200, 0, 0))
-        else
-            notify("Camlock: Targeting " .. camlockTarget.Name, Color3.fromRGB(0, 150, 255))
-        end
-    else
-        CamlockButton.Text = "Camlock: Off"
+camlockBtn.MouseButton1Click:Connect(function()
+    camlock = not camlock
+    camlockBtn.Text = "Camlock: " .. (camlock and "On" or "Off")
+    if not camlock then
         camlockTarget = nil
-        notify("Camlock: Off", Color3.fromRGB(200, 0, 0))
     end
 end)
 
--- Lock Part Selector
-local LockPartToggle = Instance.new("TextButton")
-LockPartToggle.Name = "LockPartToggle"
-LockPartToggle.Size = UDim2.new(0, 120, 0, 40)
-LockPartToggle.Position = UDim2.new(0.5, -60, 0, 100)
-LockPartToggle.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
-LockPartToggle.Text = "Lock: Head"
-LockPartToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
-LockPartToggle.Font = Enum.Font.SourceSansBold
-LockPartToggle.TextSize = 18
-LockPartToggle.CornerRadius = UDim.new(0, 8)
-LockPartToggle.Parent = MainFrame
+-- ==== Lock Part Button ====
 
-LockPartToggle.MouseButton1Click:Connect(function()
-    if camlockPart == "Head" then
-        camlockPart = "Torso"
-        LockPartToggle.Text = "Lock: Torso"
+local lockPartBtn = Instance.new("TextButton")
+lockPartBtn.Size = UDim2.new(0, 120, 0, 35)
+lockPartBtn.Position = UDim2.new(0, 140, 0, 50)
+lockPartBtn.BackgroundColor3 = Color3.fromRGB(255, 100, 100)
+lockPartBtn.TextColor3 = Color3.new(1, 1, 1)
+lockPartBtn.Font = Enum.Font.SourceSansBold
+lockPartBtn.TextSize = 18
+lockPartBtn.Text = "Lock: Head"
+lockPartBtn.Parent = frame
+
+lockPartBtn.MouseButton1Click:Connect(function()
+    if lockPart == "Head" then
+        lockPart = "Torso"
     else
-        camlockPart = "Head"
-        LockPartToggle.Text = "Lock: Head"
+        lockPart = "Head"
     end
-    notify("Camlock Part: " .. camlockPart, Color3.fromRGB(0, 150, 255))
+    lockPartBtn.Text = "Lock: " .. lockPart
 end)
 
--- อัปเดตกล้อง
-RunService.RenderStepped:Connect(function()
-    if camlockActive and camlockTarget and camlockTarget.Character and camlockTarget.Character:FindFirstChild(camlockPart) and camlockTarget.Character:FindFirstChild("Humanoid") and camlockTarget.Character.Humanoid.Health > 0 then
-        local partToLock = camlockTarget.Character[camlockPart]
-        if partToLock then
-            LocalPlayer.CameraMinZoomDistance = 0.5
-            LocalPlayer.CameraMaxZoomDistance = 0.5
-            LocalPlayer.CameraMode = Enum.CameraMode.LockFirstPerson
-            LocalPlayer.CameraTarget = partToLock
-        end
-    elseif camlockActive and (not camlockTarget or not camlockTarget.Character or not camlockTarget.Character:FindFirstChild("Humanoid") or camlockTarget.Character.Humanoid.Health <= 0) then
-        -- เป้าหมายตายหรือไม่มีอยู่แล้ว ให้หาเป้าหมายใหม่
-        local foundNewTarget = false
-        for _, player in pairs(Players:GetPlayers()) do
-            if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("Humanoid") and player.Character.Humanoid.Health > 0 then
-                camlockTarget = player
-                foundNewTarget = true
-                notify("Camlock: New target - " .. camlockTarget.Name, Color3.fromRGB(0, 150, 255))
-                break
-            end
-        end
-        if not foundNewTarget then
-            camlockActive = false
-            CamlockButton.Text = "Camlock: Off"
-            LocalPlayer.CameraMode = Enum.CameraMode.Follow
-            LocalPlayer.CameraTarget = nil
-            LocalPlayer.CameraMinZoomDistance = 0.5
-            LocalPlayer.CameraMaxZoomDistance = 400
-            notify("Camlock: No more valid targets, turning off.", Color3.fromRGB(200, 0, 0))
-        end
-    elseif not camlockActive then
-        LocalPlayer.CameraMode = Enum.CameraMode.Follow
-        LocalPlayer.CameraTarget = nil
-        LocalPlayer.CameraMinZoomDistance = 0.5
-        LocalPlayer.CameraMaxZoomDistance = 400
+-- ==== Headless Button ====
+
+local headlessBtn = Instance.new("TextButton")
+headlessBtn.Size = UDim2.new(0, 120, 0, 35)
+headlessBtn.Position = UDim2.new(0, 270, 0, 50)
+headlessBtn.BackgroundColor3 = Color3.fromRGB(255, 100, 100)
+headlessBtn.TextColor3 = Color3.new(1, 1, 1)
+headlessBtn.Font = Enum.Font.SourceSansBold
+headlessBtn.TextSize = 18
+headlessBtn.Text = "Headless: Off"
+headlessBtn.Parent = frame
+
+headlessBtn.MouseButton1Click:Connect(function()
+    headless = not headless
+    headlessBtn.Text = "Headless: " .. (headless and "On" or "Off")
+    -- update transparency of head and face immediately
+    local character = LocalPlayer.Character
+    if character then
+        local head = character:FindFirstChild("Head")
+        local face = head and head:FindFirstChild("face")
+        if head then head.Transparency = headless and 1 or 0 end
+        if face then face.Transparency = headless and 1 or 0 end
     end
 end)
 
----
+-- ==== Hitbox TextBox and Buttons ====
 
-### ส่วนของ Headless
+local hitboxLabel = Instance.new("TextLabel")
+hitboxLabel.Size = UDim2.new(0, 150, 0, 25)
+hitboxLabel.Position = UDim2.new(0, 10, 0, 100)
+hitboxLabel.BackgroundTransparency = 1
+hitboxLabel.TextColor3 = Color3.new(1,1,1)
+hitboxLabel.Font = Enum.Font.SourceSansBold
+hitboxLabel.TextSize = 16
+hitboxLabel.Text = "Hitbox Size (number):"
+hitboxLabel.Parent = frame
 
-local headlessActive = false
+local hitboxTextBox = Instance.new("TextBox")
+hitboxTextBox.Size = UDim2.new(0, 120, 0, 30)
+hitboxTextBox.Position = UDim2.new(0, 170, 0, 95)
+hitboxTextBox.BackgroundColor3 = Color3.fromRGB(255,255,255)
+hitboxTextBox.TextColor3 = Color3.new(0,0,0)
+hitboxTextBox.Font = Enum.Font.SourceSans
+hitboxTextBox.TextSize = 18
+hitboxTextBox.Text = "1"
+hitboxTextBox.ClearTextOnFocus = false
+hitboxTextBox.Parent = frame
 
-local HeadlessButton = Instance.new("TextButton")
-HeadlessButton.Name = "HeadlessButton"
-HeadlessButton.Size = UDim2.new(0, 120, 0, 40)
-HeadlessButton.Position = UDim2.new(0.5, -60, 0, 160)
-HeadlessButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
-HeadlessButton.Text = "Headless: Off"
-HeadlessButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-HeadlessButton.Font = Enum.Font.SourceSansBold
-HeadlessButton.TextSize = 18
-HeadlessButton.CornerRadius = UDim.new(0, 8)
-HeadlessButton.Parent = MainFrame
+-- ปุ่ม Enter Hitbox
+local enterHitboxBtn = Instance.new("TextButton")
+enterHitboxBtn.Size = UDim2.new(0, 100, 0, 30)
+enterHitboxBtn.Position = UDim2.new(0, 10, 0, 140)
+enterHitboxBtn.BackgroundColor3 = Color3.fromRGB(255, 100, 100)
+enterHitboxBtn.TextColor3 = Color3.new(1, 1, 1)
+enterHitboxBtn.Font = Enum.Font.SourceSansBold
+enterHitboxBtn.TextSize = 18
+enterHitboxBtn.Text = "Enter Hitbox"
+enterHitboxBtn.Parent = frame
 
-HeadlessButton.MouseButton1Click:Connect(function()
-    headlessActive = not headlessActive
-    if headlessActive then
-        HeadlessButton.Text = "Headless: On"
-        notify("Headless: On", Color3.fromRGB(0, 150, 255))
-    else
-        HeadlessButton.Text = "Headless: Off"
-        notify("Headless: Off", Color3.fromRGB(200, 0, 0))
+-- ปุ่ม Enter Head
+local enterHeadBtn = Instance.new("TextButton")
+enterHeadBtn.Size = UDim2.new(0, 100, 0, 30)
+enterHeadBtn.Position = UDim2.new(0, 130, 0, 140)
+enterHeadBtn.BackgroundColor3 = Color3.fromRGB(255, 100, 100)
+enterHeadBtn.TextColor3 = Color3.new(1, 1, 1)
+enterHeadBtn.Font = Enum.Font.SourceSansBold
+enterHeadBtn.TextSize = 18
+enterHeadBtn.Text = "Enter Head"
+enterHeadBtn.Parent = frame
+
+-- ปุ่ม Enter Humanoid
+local enterHumanoidBtn = Instance.new("TextButton")
+enterHumanoidBtn.Size = UDim2.new(0, 100, 0, 30)
+enterHumanoidBtn.Position = UDim2.new(0, 250, 0, 140)
+enterHumanoidBtn.BackgroundColor3 = Color3.fromRGB(255, 100, 100)
+enterHumanoidBtn.TextColor3 = Color3.new(1, 1, 1)
+enterHumanoidBtn.Font = Enum.Font.SourceSansBold
+enterHumanoidBtn.TextSize = 18
+enterHumanoidBtn.Text = "Enter Humanoid"
+enterHumanoidBtn.Parent = frame
+
+-- ==== ESP Button ====
+
+local espBtn = Instance.new("TextButton")
+espBtn.Size = UDim2.new(0, 120, 0, 35)
+espBtn.Position = UDim2.new(0, 10, 0, 190)
+espBtn.BackgroundColor3 = Color3.fromRGB(255, 100, 100)
+espBtn.TextColor3 = Color3.new(1, 1, 1)
+espBtn.Font = Enum.Font.SourceSansBold
+espBtn.TextSize = 18
+espBtn.Text = "ESP: Off"
+espBtn.Parent = frame
+
+-- =================================
+-- ฟังก์ชันช่วย
+
+local function resizePart(part, size, transparency)
+    if part and part:IsA("BasePart") then
+        part.Size = Vector3.new(size, size, size)
+        part.Transparency = transparency
+    end
+end
+
+local function resizeHead(character, size, transparency)
+    local head = character and character:FindFirstChild("Head")
+    if head then
+        resizePart(head, size, transparency)
+    end
+end
+
+local function resizeHumanoidRootPart(character, size, transparency)
+    local root = character and character:FindFirstChild("HumanoidRootPart")
+    if root then
+        resizePart(root, size, transparency)
+    end
+end
+
+local function createHighlight(player)
+    -- ตรวจสอบว่า player.Character อยู่
+    if not player.Character then return end
+    local char = player.Character
+    local highlight = char:FindFirstChild("ESPHighlight")
+    if highlight then highlight:Destroy() end
+    
+    highlight = Instance.new("Highlight")
+    highlight.Name = "ESPHighlight"
+    highlight.FillColor = Color3.fromRGB(0, 255, 0)
+    highlight.OutlineColor = Color3.fromRGB(255, 255, 255)
+    highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+    highlight.Parent = char
+end
+
+local function removeHighlight(player)
+    if not player.Character then return end
+    local highlight = player.Character:FindFirstChild("ESPHighlight")
+    if highlight then
+        highlight:Destroy()
+    end
+end
+
+-- ฟังก์ชัน update headless
+local function updateHeadless()
+    local character = LocalPlayer.Character
+    if character then
+        local head = character:FindFirstChild("Head")
+        local face = head and head:FindFirstChild("face")
+        if head then head.Transparency = headless and 1 or 0 end
+        if face then face.Transparency = headless and 1 or 0 end
+    end
+end
+
+-- ฟังก์ชัน update hitbox ตามขนาดใน textbox
+local function updateHitbox(sizeNum)
+    local character = LocalPlayer.Character
+    if not character then return end
+    local size = tonumber(sizeNum)
+    if not size or size <= 0 then
+        showNotification("Invalid size! Use positive number.", 3)
+        return
+    end
+    local head = character:FindFirstChild("Head")
+    if head then
+        resizePart(head, size, 0.7)
+    end
+end
+
+-- ฟังก์ชัน Enter Head (เปลี่ยน head เป็นขนาดที่ textbox ระบุ)
+local function enterHead()
+    local size = tonumber(hitboxTextBox.Text)
+    if not size or size <= 0 then
+        showNotification("Invalid size for head!", 3)
+        return
     end
     local character = LocalPlayer.Character
-    if character and character:FindFirstChild("Head") then
-        local head = character.Head
-        local face = head:FindFirstChildOfClass("Decal") or head:FindFirstChildOfClass("Texture") or head:FindFirstChild("face") -- เพิ่ม "face" สำหรับ R15
-        if headlessActive then
-            head.Transparency = 1
-            if face then face.Transparency = 1 end
-        else
-            head.Transparency = 0
-            if face then face.Transparency = 0 end
-        end
-    end
-end)
-
-LocalPlayer.CharacterAdded:Connect(function(character)
-    if headlessActive then
-        local head = character:WaitForChild("Head")
-        local face = head:FindFirstChildOfClass("Decal") or head:FindFirstChildOfClass("Texture") or head:FindFirstChild("face")
-        head.Transparency = 1
-        if face then face.Transparency = 1 end
-        if face and not face.IsLoaded then
-            face.Changed:Connect(function(property)
-                if property == "Texture" and face.IsLoaded then
-                    face.Transparency = 1
-                end
-            end)
-        end
-    end
-end)
-
----
-
-### ส่วนของ Hitbox Modifier
-
-local targetPlayerHitbox = nil
-local hitboxExpansionValue = 0 -- ค่าเริ่มต้นการขยาย hitbox
-
-local HitboxPlayerInput = Instance.new("TextBox")
-HitboxPlayerInput.Name = "HitboxPlayerInput"
-HitboxPlayerInput.Size = UDim2.new(0, 200, 0, 30)
-HitboxPlayerInput.Position = UDim2.new(0.5, -100, 0, 220)
-HitboxPlayerInput.PlaceholderText = "Player Name for Hitbox"
-HitboxPlayerInput.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-HitboxPlayerInput.TextColor3 = Color3.fromRGB(255, 255, 255)
-HitboxPlayerInput.TextSize = 16
-HitboxPlayerInput.CornerRadius = UDim.new(0, 5)
-HitboxPlayerInput.Parent = MainFrame
-
-local HitboxValueInput = Instance.new("TextBox")
-HitboxValueInput.Name = "HitboxValueInput"
-HitboxValueInput.Size = UDim2.new(0, 200, 0, 30)
-HitboxValueInput.Position = UDim2.new(0.5, -100, 0, 260)
-HitboxValueInput.PlaceholderText = "Enter hitbox expansion value (e.g., 0.5)"
-HitboxValueInput.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-HitboxValueInput.TextColor3 = Color3.fromRGB(255, 255, 255)
-HitboxValueInput.TextSize = 16
-HitboxValueInput.CornerRadius = UDim.new(0, 5)
-HitboxValueInput.Parent = MainFrame
-
-HitboxValueInput.Changed:Connect(function(property)
-    if property == "Text" then
-        local num = tonumber(HitboxValueInput.Text)
-        if num and num >= 0 then
-            hitboxExpansionValue = num
-            HitboxValueInput.BackgroundColor3 = Color3.fromRGB(50, 50, 50) -- สีปกติ
-        else
-            HitboxValueInput.BackgroundColor3 = Color3.fromRGB(150, 50, 50) -- สีแดงเตือน
-        end
-    end
-end)
-
-local function applyHitboxModifications(character, transparency, expansion)
     if not character then return end
-
-    local originalSizes = {} -- เก็บขนาดเดิม
-
-    for _, part in pairs(character:GetDescendants()) do
-        if part:IsA("BasePart") then
-            -- ขยาย Hitbox
-            if part.Name ~= "HumanoidRootPart" and part.Name ~= "Head" then
-                if not originalSizes[part] then
-                    originalSizes[part] = part.Size -- เก็บขนาดเดิมไว้
-                end
-                part.Size = part.Size + Vector3.new(expansion, expansion, expansion)
-            end
-
-            -- ปรับ Transparency
-            if part.Name ~= "Head" and part.Name ~= "HumanoidRootPart" then
-                part.Transparency = transparency
-                if part:IsA("MeshPart") then
-                    part.Material = Enum.Material.Plastic
-                end
-            end
-        end
-    end
-
-    -- HumanoidRootPart และ Head ยังคงปรับ Transparency ได้ตามปุ่มแยก
-    if character:FindFirstChild("Head") then
-        character.Head.Transparency = character.Head.Transparency -- ไม่ต้องเปลี่ยนตรงนี้
-    end
-    if character:FindFirstChild("HumanoidRootPart") then
-        character.HumanoidRootPart.Transparency = character.HumanoidRootPart.Transparency -- ไม่ต้องเปลี่ยนตรงนี้
-    end
+    resizeHead(character, size, 0.7)
 end
 
+-- ฟังก์ชัน Enter HumanoidRootPart
+local function enterHumanoid()
+    local size = tonumber(hitboxTextBox.Text)
+    if not size or size <= 0 then
+        showNotification("Invalid size for humanoid!", 3)
+        return
+    end
+    local character = LocalPlayer.Character
+    if not character then return end
+    resizeHumanoidRootPart(character, size, 0.7)
+end
 
-local ApplyHitboxButton = Instance.new("TextButton")
-ApplyHitboxButton.Name = "ApplyHitboxButton"
-ApplyHitboxButton.Size = UDim2.new(0, 80, 0, 40)
-ApplyHitboxButton.Position = UDim2.new(0.5, -140, 0, 300)
-ApplyHitboxButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
-ApplyHitboxButton.Text = "Apply All"
-ApplyHitboxButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-ApplyHitboxButton.Font = Enum.Font.SourceSansBold
-ApplyHitboxButton.TextSize = 16
-ApplyHitboxButton.CornerRadius = UDim.new(0, 8)
-ApplyHitboxButton.Parent = MainFrame
+-- ======= Event Connect ======
 
-ApplyHitboxButton.MouseButton1Click:Connect(function()
-    local playerName = HitboxPlayerInput.Text
-    local player = Players:FindFirstChild(playerName)
-    if player and player ~= LocalPlayer then
-        targetPlayerHitbox = player
-        if targetPlayerHitbox.Character then
-            applyHitboxModifications(targetPlayerHitbox.Character, 0.5, hitboxExpansionValue)
-            notify("Applied Hitbox to " .. playerName .. " with expansion: " .. hitboxExpansionValue, Color3.fromRGB(0, 150, 255))
+enterHitboxBtn.MouseButton1Click:Connect(function()
+    updateHitbox(hitboxTextBox.Text)
+end)
+
+enterHeadBtn.MouseButton1Click:Connect(enterHead)
+
+enterHumanoidBtn.MouseButton1Click:Connect(enterHumanoid)
+
+espBtn.MouseButton1Click:Connect(function()
+    esp = not esp
+    espBtn.Text = "ESP: " .. (esp and "On" or "Off")
+    if not esp then
+        for _, plr in pairs(Players:GetPlayers()) do
+            removeHighlight(plr)
         end
+    end
+end)
+
+-- ==== Camlock Implementation ====
+RunService.RenderStepped:Connect(function()
+    if camlock and camlockTarget and camlockTarget.Character and camlockTarget.Character:FindFirstChild(lockPart == "Head" and "Head" or "HumanoidRootPart") then
+        local cam = workspace.CurrentCamera
+        local part = camlockTarget.Character[lockPart == "Head" and "Head" or "HumanoidRootPart"]
+        cam.CameraType = Enum.CameraType.Scriptable
+        cam.CFrame = CFrame.new(cam.CFrame.Position, part.Position)
     else
-        notify("Player not found or is yourself: " .. playerName, Color3.fromRGB(200, 0, 0))
-    end
-end)
-
-local HeadTransparencyButton = Instance.new("TextButton")
-HeadTransparencyButton.Name = "HeadTransparencyButton"
-HeadTransparencyButton.Size = UDim2.new(0, 80, 0, 40)
-HeadTransparencyButton.Position = UDim2.new(0.5, -40, 0, 300)
-HeadTransparencyButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
-HeadTransparencyButton.Text = "Head Only"
-HeadTransparencyButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-HeadTransparencyButton.Font = Enum.Font.SourceSansBold
-HeadTransparencyButton.TextSize = 16
-HeadTransparencyButton.CornerRadius = UDim.new(0, 8)
-HeadTransparencyButton.Parent = MainFrame
-
-HeadTransparencyButton.MouseButton1Click:Connect(function()
-    if targetPlayerHitbox and targetPlayerHitbox.Character and targetPlayerHitbox.Character:FindFirstChild("Head") then
-        targetPlayerHitbox.Character.Head.Transparency = 0.5
-        notify("Applied transparency to Head of: " .. targetPlayerHitbox.Name, Color3.fromRGB(0, 150, 255))
-    end
-end)
-
-local HumanoidTransparencyButton = Instance.new("TextButton")
-HumanoidTransparencyButton.Name = "HumanoidTransparencyButton"
-HumanoidTransparencyButton.Size = UDim2.new(0, 80, 0, 40)
-HumanoidTransparencyButton.Position = UDim2.new(0.5, 60, 0, 300)
-HumanoidTransparencyButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
-HumanoidTransparencyButton.Text = "Humanoid Only"
-HumanoidTransparencyButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-HumanoidTransparencyButton.Font = Enum.Font.SourceSansBold
-HumanoidTransparencyButton.TextSize = 16
-HumanoidTransparencyButton.CornerRadius = UDim.new(0, 8)
-HumanoidTransparencyButton.Parent = MainFrame
-
-HumanoidTransparencyButton.MouseButton1Click:Connect(function()
-    if targetPlayerHitbox and targetPlayerHitbox.Character and targetPlayerHitbox.Character:FindFirstChild("HumanoidRootPart") then
-        targetPlayerHitbox.Character.HumanoidRootPart.Transparency = 0.5
-        notify("Applied transparency to HumanoidRootPart of: " .. targetPlayerHitbox.Name, Color3.fromRGB(0, 150, 255))
-    end
-end)
-
--- เมื่อผู้เล่นเป้าหมายเกิดใหม่ ให้ปรับ hitbox ใหม่
-Players.PlayerAdded:Connect(function(player)
-    if player == targetPlayerHitbox then
-        player.CharacterAdded:Connect(function(character)
-            applyHitboxModifications(character, 0.5, hitboxExpansionValue) -- ใช้ค่า expansion ล่าสุด
-            notify("Re-applied hitbox to " .. player.Name .. " after respawn.", Color3.fromRGB(0, 150, 255))
-        end)
-    end
-end)
-
-
----
-
-### ส่วนของ ESP
-
-local espActive = false
-local espConnections = {}
-
-local EspButton = Instance.new("TextButton")
-EspButton.Name = "EspButton"
-EspButton.Size = UDim2.new(0, 120, 0, 360)
-EspButton.Position = UDim2.new(0.5, -60, 0, 360)
-EspButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
-EspButton.Text = "ESP: Off"
-EspButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-EspButton.Font = Enum.Font.SourceSansBold
-EspButton.TextSize = 18
-EspButton.CornerRadius = UDim.new(0, 8)
-EspButton.Parent = MainFrame
-
-local function createESPOutline(character)
-    if not character or not character:FindFirstChildOfClass("Humanoid") or character:FindFirstChild("ESPOutline") then return end
-
-    local humanoid = character.Humanoid
-    local rootPart = character:FindFirstChild("HumanoidRootPart")
-    if not rootPart then return end
-
-    local outline = Instance.new("BillboardGui")
-    outline.Name = "ESPOutline"
-    outline.AlwaysOnTop = true
-    outline.Size = UDim2.new(2, 0, 2, 0)
-    outline.StudsOffset = Vector3.new(0, rootPart.Size.Y / 2, 0)
-    outline.Parent = rootPart
-
-    local frame = Instance.new("Frame")
-    frame.Size = UDim2.new(1, 0, 1, 0)
-    frame.BackgroundColor3 = Color3.fromRGB(255, 0, 0) -- สีแดง
-    frame.BackgroundTransparency = 0.7
-    frame.BorderSizePixel = 2
-    frame.BorderColor3 = Color3.fromRGB(255, 255, 255)
-    frame.Parent = outline
-
-    local function onHumanoidStateChanged(state)
-        if state == Enum.HumanoidStateType.Dead then
-            outline.Enabled = true
+        local cam = workspace.CurrentCamera
+        if cam.CameraType == Enum.CameraType.Scriptable then
+            cam.CameraType = Enum.CameraType.Custom
         end
     end
-    local conn = humanoid.StateChanged:Connect(onHumanoidStateChanged)
-    table.insert(espConnections, conn)
-end
+end)
 
-local function removeESPOutline(character)
-    if character and character:FindFirstChild("ESPOutline") then
-        character.ESPOutline:Destroy()
-    end
-end
-
-local function toggleESP(active)
-    espActive = active
-    if espActive then
-        EspButton.Text = "ESP: On"
-        for _, player in pairs(Players:GetPlayers()) do
-            if player ~= LocalPlayer then
-                if player.Character then
-                    createESPOutline(player.Character)
-                end
-                local charAddedConn = player.CharacterAdded:Connect(function(char)
-                    createESPOutline(char)
-                end)
-                table.insert(espConnections, charAddedConn)
+-- เลือกเป้าหมาย camlock โดยคลิกที่ player ในโลก (ใช้ Mouse Target)
+local mouse = LocalPlayer:GetMouse()
+mouse.Button1Down:Connect(function()
+    if camlock then
+        local target = mouse.Target
+        if target then
+            local plr = Players:GetPlayerFromCharacter(target.Parent)
+            if plr and plr ~= LocalPlayer then
+                camlockTarget = plr
+                showNotification("Camlock on " .. plr.Name, 3)
             end
         end
-        local playerAddedConn = Players.PlayerAdded:Connect(function(player)
-            if player ~= LocalPlayer then
-                local charAddedConn = player.CharacterAdded:Connect(function(char)
-                    createESPOutline(char)
-                end)
-                table.insert(espConnections, charAddedConn)
-            end
-        end)
-        table.insert(espConnections, playerAddedConn)
-        notify("ESP: On", Color3.fromRGB(0, 150, 255))
-    else
-        EspButton.Text = "ESP: Off"
-        for _, player in pairs(Players:GetPlayers()) do
-            removeESPOutline(player.Character)
-        end
-        for _, conn in pairs(espConnections) do
-            if typeof(conn) == "RBXScriptConnection" then
-                conn:Disconnect()
-            end
-        end
-        espConnections = {}
-        notify("ESP: Off", Color3.fromRGB(200, 0, 0))
     end
-end
-
-EspButton.MouseButton1Click:Connect(function()
-    toggleESP(not espActive)
 end)
 
-local function notify(message, color)
-    local notifyGui = Instance.new("ScreenGui")
-    notifyGui.Name = "NotifyGui"
-    notifyGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
+-- ===== Headless Update Loop =====
+RunService.RenderStepped:Connect(function()
+    updateHeadless()
+end)
 
-    local notifyFrame = Instance.new("Frame")
-    notifyFrame.Size = UDim2.new(0, 300, 0, 60)
-    notifyFrame.Position = UDim2.new(1, -310, 1, -70) -- มุมขวาล่าง
-    notifyFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-    notifyFrame.BorderSizePixel = 0
-    notifyFrame.CornerRadius = UDim.new(0, 10)
-    notifyFrame.Parent = notifyGui
-
-    local notifyText = Instance.new("TextLabel")
-    notifyText.Size = UDim2.new(1, 0, 1, 0)
-    notifyText.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-    notifyText.BackgroundTransparency = 1
-    notifyText.Text = message
-    notifyText.TextColor3 = color or Color3.fromRGB(255, 255, 255) -- สามารถระบุสีได้
-    notifyText.Font = Enum.Font.SourceSans
-    notifyText.TextSize = 16
-    notifyText.TextWrapped = true
-    notifyText.TextXAlignment = Enum.TextXAlignment.Center
-    notifyText.TextYAlignment = Enum.TextYAlignment.Center
-    notifyText.Parent = notifyFrame
-
-    notifyFrame:TweenPosition(UDim2.new(1, -310, 1, -70), "Out", "Quad", 0.5, true, function()
-        wait(3)
-        notifyFrame:TweenPosition(UDim2.new(1, 310, 1, -70), "In", "Quad", 0.5, true, function() -- เลื่อนออกไปขวา
-            notifyGui:Destroy()
-        end)
+-- ===== ESP Update Loop =====
+Players.PlayerAdded:Connect(function(plr)
+    plr.CharacterAdded:Connect(function()
+        if esp then
+            wait(1)
+            createHighlight(plr)
+        end
     end)
+end)
+
+-- รีแอคทีฟ ESP สำหรับคนที่อยู่แล้ว
+for _, plr in pairs(Players:GetPlayers()) do
+    if esp and plr ~= LocalPlayer then
+        if plr.Character then
+            createHighlight(plr)
+        end
+        plr.CharacterAdded:Connect(function()
+            wait(1)
+            createHighlight(plr)
+        end)
+    end
 end
 
--- ซ่อน GUI หลักไว้ก่อนจนกว่าจะใส่ Key ถูก
-ScreenGui.Enabled = true -- ต้องเปิดใช้งาน ScreenGui เพื่อให้เฟรม KeyEntryGui มองเห็นได้
-MainFrame.Visible = false
+-- ===== ระบบป้อน Key เปิด GUI =====
+local inputGui = Instance.new("ScreenGui")
+inputGui.Name = "InputGui"
+inputGui.Parent = playerGui
+
+local inputFrame = Instance.new("Frame")
+inputFrame.Size = UDim2.new(0, 300, 0, 120)
+inputFrame.Position = UDim2.new(0.5, -150, 0.5, -60)
+inputFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+inputFrame.BackgroundTransparency = 0
+inputFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+inputFrame.Parent = inputGui
+
+local inputUICorner = Instance.new("UICorner")
+inputUICorner.CornerRadius = UDim.new(0, 10)
+inputUICorner.Parent = inputFrame
+
+local promptLabel = Instance.new("TextLabel")
+promptLabel.Size = UDim2.new(1, -20, 0, 30)
+promptLabel.Position = UDim2.new(0, 10, 0, 10)
+promptLabel.BackgroundTransparency = 1
+promptLabel.TextColor3 = Color3.new(1, 1, 1)
+promptLabel.Font = Enum.Font.SourceSansBold
+promptLabel.TextSize = 20
+promptLabel.Text = "Enter Key to Universal Script"
+promptLabel.Parent = inputFrame
+
+local keyBox = Instance.new("TextBox")
+keyBox.Size = UDim2.new(1, -20, 0, 40)
+keyBox.Position = UDim2.new(0, 10, 0, 50)
+keyBox.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+keyBox.TextColor3 = Color3.new(0, 0, 0)
+keyBox.Font = Enum.Font.SourceSansBold
+keyBox.TextSize = 25
+keyBox.ClearTextOnFocus = true
+keyBox.PlaceholderText = "Type key here..."
+keyBox.Parent = inputFrame
+
+local function resetKeyBox()
+    keyBox.Text = ""
+end
+
+keyBox.FocusLost:Connect(function(enterPressed)
+    if enterPressed then
+        if keyBox.Text:lower() == correctKey then
+            mainGui.Enabled = true
+            inputGui.Enabled = false
+            showNotification("Welcome! GUI Enabled.", 3)
+        else
+            wrongAttempts = wrongAttempts + 1
+            showNotification("Wrong key! Attempts: " .. wrongAttempts, 3)
+            if wrongAttempts >= maxWrongAttempts then
+                LocalPlayer:Kick("Too many wrong key attempts!")
+            else
+                resetKeyBox()
+            end
+        end
+    end
+end)
