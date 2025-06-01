@@ -204,7 +204,7 @@ hitboxLabel.BackgroundTransparency = 1
 hitboxLabel.TextColor3 = Color3.new(1,1,1)
 hitboxLabel.Font = Enum.Font.SourceSansBold
 hitboxLabel.TextSize = 16
-hitboxLabel.Text = "Hitbox Size (e.g 2, 3):"
+hitboxLabel.Text = "Hitbox Size (e.g 1, 2):"
 hitboxLabel.Parent = frame
 
 local hitboxTextBox = Instance.new("TextBox")
