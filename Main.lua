@@ -36,7 +36,7 @@ toggleMenuButton.Text = "Hide Menu"
 toggleMenuButton.Font = Enum.Font.SourceSansBold
 toggleMenuButton.TextSize = 14
 toggleMenuButton.BorderSizePixel = 0
-toggleMenuButton.Parent = screenGui
+toggleMenuButton.Parent = screenGui -- **ย้ายให้ปุ่มนี้อยู่ภายใต้ screenGui โดยตรง**
 
 local toggleMenuCorners = Instance.new("UICorner")
 toggleMenuCorners.CornerRadius = UDim.new(0, 8)
@@ -49,7 +49,7 @@ local function createRoundedElement(elementType, size, position, backgroundColor
     element.Position = position
     element.BackgroundColor3 = backgroundColor
     element.BorderSizePixel = 0
-    element.Parent = frame
+    element.Parent = frame -- **ยังคงให้ element อื่นๆ อยู่ภายใต้ frame**
 
     local corners = Instance.new("UICorner")
     corners.CornerRadius = UDim.new(0, 8)
@@ -79,11 +79,10 @@ local function createRoundedElement(elementType, size, position, backgroundColor
 end
 
 -- ปุ่ม ESP
-local espButton, espText = createRoundedElement("TextButton", UDim2.new(0, 110, 0, 10), Color3.fromRGB(45, 45, 45), Color3.new(1, 1, 1), "ESP: OFF", true)
+local espButton, espText = createRoundedElement("TextButton", UDim2.new(0, 110, 0, 35), UDim2.new(0, 10, 0, 10), Color3.fromRGB(45, 45, 45), Color3.new(1, 1, 1), "ESP: OFF", true)
 
 -- ปุ่ม Camlock
 local camlockButton, camlockText = createRoundedElement("TextButton", UDim2.new(0, 110, 0, 35), UDim2.new(0, 130, 0, 10), Color3.fromRGB(45, 45, 45), Color3.new(1, 1, 1), "Camlock: OFF", true)
--- ปรับตำแหน่ง camlock ให้ถูกต้อง
 
 -- ปุ่ม Speed
 local speedButton, speedText = createRoundedElement("TextButton", UDim2.new(0, 110, 0, 35), UDim2.new(0, 10, 0, 55), Color3.fromRGB(45, 45, 45), Color3.new(1, 1, 1), "Speed: OFF", true)
@@ -331,7 +330,7 @@ local function startRandomTeleport()
                     if teleportRandomEnabled then
                         startRandomTeleport() -- เทเลพอร์ตไปหาคนใหม่
                     end
-                end)
+                })
             end
         else
             -- ถ้าผู้เล่นที่สุ่มได้ไม่มี Character หรือ HumanoidRootPart ให้ลองสุ่มใหม่
