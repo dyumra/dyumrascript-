@@ -1,7 +1,3 @@
---[ Roblox Edition - @ by dyumra]
---[ Version: 5.3.0 ]
-
-
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
@@ -83,10 +79,11 @@ local function createRoundedElement(elementType, size, position, backgroundColor
 end
 
 -- ปุ่ม ESP
-local espButton, espText = createRoundedElement("TextButton", UDim2.new(0, 110, 0, 35), UDim2.new(0, 10, 0, 10), Color3.fromRGB(45, 45, 45), Color3.new(1, 1, 1), "ESP: OFF", true)
+local espButton, espText = createRoundedElement("TextButton", UDim2.new(0, 110, 0, 10), Color3.fromRGB(45, 45, 45), Color3.new(1, 1, 1), "ESP: OFF", true)
 
 -- ปุ่ม Camlock
 local camlockButton, camlockText = createRoundedElement("TextButton", UDim2.new(0, 110, 0, 35), UDim2.new(0, 130, 0, 10), Color3.fromRGB(45, 45, 45), Color3.new(1, 1, 1), "Camlock: OFF", true)
+-- ปรับตำแหน่ง camlock ให้ถูกต้อง
 
 -- ปุ่ม Speed
 local speedButton, speedText = createRoundedElement("TextButton", UDim2.new(0, 110, 0, 35), UDim2.new(0, 10, 0, 55), Color3.fromRGB(45, 45, 45), Color3.new(1, 1, 1), "Speed: OFF", true)
@@ -101,22 +98,19 @@ local noclipButton, noclipText = createRoundedElement("TextButton", UDim2.new(0,
 local speedInputTextBox = createRoundedElement("TextBox", UDim2.new(0, 230, 0, 35), UDim2.new(0, 10, 0, 145), Color3.fromRGB(60, 60, 60), Color3.new(1, 1, 1), "Enter Speed Value", false)
 
 -- Textbox สำหรับใส่ชื่อผู้เล่นสำหรับ Teleport
-local teleportNameInputTextBox = createRoundedElement("TextBox", UDim2.new(0, 230, 0, 145), UDim2.new(0, 10, 0, 190), Color3.fromRGB(60, 60, 60), Color3.new(1, 1, 1), "Enter Player Name", false)
--- ปรับตำแหน่งใหม่ของ teleportNameInputTextBox ให้เลื่อนลงไป
+local teleportNameInputTextBox = createRoundedElement("TextBox", UDim2.new(0, 230, 0, 35), UDim2.new(0, 10, 0, 190), Color3.fromRGB(60, 60, 60), Color3.new(1, 1, 1), "Enter Player Name", false)
 
 -- ปุ่ม Teleport to Player (ใช้ Textbox ใหม่)
 local teleportButton, teleportText = createRoundedElement("TextButton", UDim2.new(0, 230, 0, 35), UDim2.new(0, 10, 0, 235), Color3.fromRGB(45, 45, 45), Color3.new(1, 1, 1), "Teleport to Player", true)
--- ปรับตำแหน่งใหม่ของ teleportButton ให้เลื่อนลงไป
 
 -- ปุ่ม Teleport Random
 local teleportRandomButton, teleportRandomText = createRoundedElement("TextButton", UDim2.new(0, 230, 0, 35), UDim2.new(0, 10, 0, 270), Color3.fromRGB(45, 45, 45), Color3.new(1, 1, 1), "Teleport Random: OFF", true)
--- ปรับตำแหน่งใหม่ของ teleportRandomButton ให้เลื่อนลงไป
 
 
 -- Highlight Folder
 local highlightFolder = Instance.new("Folder")
 highlightFolder.Name = "ESPHighlights"
-highlightFolder.Parent = game:GetService("CoreGui") -- ใช้ CoreGui เพื่อแสดง GUI ระดับสูงสุด
+highlightFolder.Parent = CoreGui -- ใช้ CoreGui เพื่อแสดง GUI ระดับสูงสุด
 
 -- ตัวแปรสถานะ
 local espEnabled = false
@@ -129,23 +123,55 @@ local teleportRandomEnabled = false
 local currentRandomTarget = nil -- ผู้เล่นเป้าหมายปัจจุบันสำหรับ Teleport Random
 local randomTeleportConnection = nil -- Connection สำหรับการตรวจจับการตายของผู้เล่น
 
+-- ตารางสำหรับเก็บ Highlight ที่สร้างขึ้น เพื่อจัดการง่ายขึ้น
+local activeHighlights = {}
 
 -- ฟังก์ชันสร้าง Highlight (สำหรับ ESP)
-local function createHighlight(character, color)
+local function createAndTrackHighlight(character)
+    if not character or not character:IsA("Model") or not character:FindFirstChildOfClass("Humanoid") then return end
+    
+    -- ตรวจสอบว่ามี Highlight สำหรับ Character นี้อยู่แล้วหรือไม่
+    if activeHighlights[character] then return end
+
     local highlight = Instance.new("Highlight")
     highlight.Adornee = character
     highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
-    highlight.FillColor = color
-    highlight.OutlineColor = color:lerp(Color3.new(1,1,1), 0.5) -- สีขอบจะอ่อนกว่าสีเติมเล็กน้อย
-    highlight.Name = "ESPHighlight"
+    highlight.FillColor = Color3.fromRGB(255, 0, 0) -- สีแดง
+    highlight.OutlineColor = Color3.fromRGB(255, 100, 100) -- สีขอบแดงอ่อน
+    highlight.FillTransparency = 0.5 -- ความโปร่งใส
+    highlight.OutlineTransparency = 0 -- ไม่โปร่งใส
+    highlight.Name = "ESPHighlight_" .. character.Name
     highlight.Parent = highlightFolder
-    return highlight
+    
+    activeHighlights[character] = highlight -- เก็บ highlight ในตารางเพื่อติดตาม
+
+    -- เชื่อมต่อ Humanoid.Died เพื่อลบ Highlight เมื่อผู้เล่นตาย
+    local humanoid = character:FindFirstChildOfClass("Humanoid")
+    if humanoid then
+        local diedConnection
+        diedConnection = humanoid.Died:Connect(function()
+            if activeHighlights[character] then
+                activeHighlights[character]:Destroy()
+                activeHighlights[character] = nil
+            end
+            if diedConnection then diedConnection:Disconnect() end
+        end)
+    end
+end
+
+-- ฟังก์ชันลบ Highlight ของผู้เล่นที่กำหนด
+local function removeHighlight(character)
+    if activeHighlights[character] then
+        activeHighlights[character]:Destroy()
+        activeHighlights[character] = nil
+    end
 end
 
 -- ฟังก์ชันลบ Highlights ทั้งหมด
 local function disableESP()
-    for _, highlight in pairs(highlightFolder:GetChildren()) do
+    for character, highlight in pairs(activeHighlights) do
         highlight:Destroy()
+        activeHighlights[character] = nil
     end
 end
 
@@ -155,8 +181,7 @@ local function enableESP()
     for _, player in pairs(Players:GetPlayers()) do
         -- ตรวจสอบว่าไม่ใช่ตัวเอง, มี Character, มี Humanoid และยังมีชีวิตอยู่
         if player ~= localPlayer and player.Character and player.Character:FindFirstChildWhichIsA("Humanoid") and player.Character.Humanoid.Health > 0 then
-            -- ไฮไลท์ทุกคน (ยกเว้นตัวเอง) เป็นสีแดง
-            createHighlight(player.Character, Color3.fromRGB(255, 0, 0)) -- สีแดง
+            createAndTrackHighlight(player.Character)
         end
     end
 end
@@ -165,38 +190,19 @@ end
 Players.PlayerAdded:Connect(function(player)
     player.CharacterAdded:Connect(function(character)
         -- รอสักครู่เพื่อให้ Character โหลดเสร็จและพร้อมใช้งาน
-        task.wait(0.5)
+        task.wait(0.5) -- อาจปรับค่านี้ได้ตามความเหมาะสม
         if espEnabled then
             if player ~= localPlayer and character and character:FindFirstChildWhichIsA("Humanoid") and character.Humanoid.Health > 0 then
-                createHighlight(character, Color3.fromRGB(255, 0, 0))
+                createAndTrackHighlight(character)
             end
-        end
-        -- เพิ่ม listener สำหรับ Humanoid.Died เพื่อลบ Highlight เมื่อผู้เล่นตาย
-        local humanoid = character:FindFirstChildWhichIsA("Humanoid")
-        if humanoid then
-            humanoid.Died:Connect(function()
-                if espEnabled then
-                    for _, highlight in pairs(highlightFolder:GetChildren()) do
-                        if highlight.Adornee == character then
-                            highlight:Destroy()
-                            break
-                        end
-                    end
-                end
-            end)
         end
     end)
 end)
 
 -- Event: เมื่อผู้เล่นออกจากเกม
 Players.PlayerRemoving:Connect(function(player)
-    if espEnabled then
-        -- ลบ highlight ของผู้เล่นที่ออกจากเกม
-        for _, highlight in pairs(highlightFolder:GetChildren()) do
-            if highlight.Adornee and highlight.Adornee == player.Character then
-                highlight:Destroy()
-            end
-        end
+    if player.Character then
+        removeHighlight(player.Character) -- ลบ highlight ของผู้เล่นที่ออกจากเกม
     end
 end)
 
