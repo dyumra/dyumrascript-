@@ -16,7 +16,7 @@ KeyFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30) -- ธีมดำ
 KeyFrame.BorderSizePixel = 2
 KeyFrame.BorderColor3 = Color3.fromRGB(255, 255, 255) -- ขอบขาว
 KeyFrame.CornerRadius = UDim.new(0, 15) -- ขอบกลม
-KeyFrame.Draggable = true
+KeyFrame.Draggable = true -- ทำให้ลากได้
 KeyFrame.Parent = KeyScreenGui
 
 local KeyPrompt = Instance.new("TextLabel")
@@ -51,15 +51,17 @@ SubmitKeyButton.Text = "Submit"
 SubmitKeyButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 SubmitKeyButton.Font = Enum.Font.SourceSansBold
 SubmitKeyButton.TextSize = 18
-SubmitKeyButton.CornerRadius = UDim.new(0, 8)
+SubmitKeyButton.CornerRadius = UDim.new(0, 8) -- ขอบกลม
 SubmitKeyButton.Parent = KeyFrame
 
-local correctKey = "your_secret_key" -- <<< **เปลี่ยน Key ตรงนี้!**
+local correctKey = "dyumra" -- <<< เปลี่ยน Key เป็น "dyumra" แล้ว!
 
 SubmitKeyButton.MouseButton1Click:Connect(function()
     if KeyInput.Text == correctKey then
         KeyScreenGui:Destroy() -- ปิด GUI ใส่ Key
         MainFrame.Visible = true -- แสดง GUI หลัก
+        ScreenGui.Enabled = true -- เปิดใช้งาน ScreenGui หลัก
+        MainToggleButton.Visible = true -- แสดงปุ่ม Toggle GUI หลัก
         notify("Access Granted!", Color3.fromRGB(0, 200, 0))
     else
         warn("Incorrect Key!")
@@ -70,12 +72,12 @@ SubmitKeyButton.MouseButton1Click:Connect(function()
 end)
 
 -- Function สำหรับลาก GUI (ใช้ได้ทั้ง KeyFrame และ MainFrame)
-local dragging
-local dragInput
-local dragStart
-local startPos
-
 local function makeDraggable(guiFrame)
+    local dragging = false
+    local dragInput
+    local dragStart
+    local startPos
+
     guiFrame.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
             dragging = true
@@ -121,22 +123,31 @@ MainFrame.Parent = ScreenGui
 
 makeDraggable(MainFrame) -- ทำให้ MainFrame ลากได้
 
--- ปุ่มปิด/เปิด GUI หลัก (มุมขวาบน)
-local ToggleButton = Instance.new("TextButton")
-ToggleButton.Name = "ToggleButton"
-ToggleButton.Size = UDim2.new(0, 30, 0, 30)
-ToggleButton.Position = UDim2.new(1, -40, 0, 10)
-ToggleButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
-ToggleButton.Text = "X"
-ToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-ToggleButton.Font = Enum.Font.SourceSansBold
-ToggleButton.TextSize = 20
-ToggleButton.CornerRadius = UDim.new(0, 5)
-ToggleButton.Parent = MainFrame
+-- ปุ่มเปิด/ปิด GUI หลัก (มุมขวาบน)
+-- ย้ายปุ่มนี้ไปอยู่ใน PlayerGui โดยตรง เพื่อให้เห็นได้แม้ GUI หลักจะซ่อนอยู่
+local MainToggleButton = Instance.new("TextButton")
+MainToggleButton.Name = "MainToggleButton"
+MainToggleButton.Size = UDim2.new(0, 40, 0, 40)
+MainToggleButton.Position = UDim2.new(1, -50, 0, 10) -- มุมขวาบน
+MainToggleButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+MainToggleButton.Text = "O" -- เปลี่ยนเป็น 'O' หรือไอคอนอื่น
+MainToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+MainToggleButton.Font = Enum.Font.SourceSansBold
+MainToggleButton.TextSize = 25
+MainToggleButton.CornerRadius = UDim.new(0, 20) -- ทำให้กลม
+MainToggleButton.Parent = LocalPlayer:WaitForChild("PlayerGui")
+MainToggleButton.Visible = false -- ซ่อนไว้ก่อนจนกว่าจะใส่ Key ถูก
 
-ToggleButton.MouseButton1Click:Connect(function()
+MainToggleButton.MouseButton1Click:Connect(function()
     MainFrame.Visible = not MainFrame.Visible
+    if MainFrame.Visible then
+        notify("Main GUI: Visible", Color3.fromRGB(0, 150, 255))
+    else
+        notify("Main GUI: Hidden", Color3.fromRGB(0, 150, 255))
+    end
 end)
+
+makeDraggable(MainToggleButton) -- ทำให้ปุ่ม Toggle GUI หลักลากได้
 
 ---
 
@@ -162,6 +173,7 @@ CamlockButton.MouseButton1Click:Connect(function()
     camlockActive = not camlockActive
     if camlockActive then
         CamlockButton.Text = "Camlock: On"
+        -- หาเป้าหมายเริ่มต้น
         local playersInGame = Players:GetPlayers()
         for _, player in pairs(playersInGame) do
             if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("Humanoid") and player.Character.Humanoid.Health > 0 then
@@ -171,7 +183,7 @@ CamlockButton.MouseButton1Click:Connect(function()
         end
         if not camlockTarget then
             warn("No valid player found to camlock!")
-            camlockActive = false
+            camlockActive = false -- ปิด Camlock ถ้าไม่มีเป้าหมาย
             CamlockButton.Text = "Camlock: Off"
             notify("Camlock: No target found!", Color3.fromRGB(200, 0, 0))
         else
@@ -213,10 +225,13 @@ RunService.RenderStepped:Connect(function()
     if camlockActive and camlockTarget and camlockTarget.Character and camlockTarget.Character:FindFirstChild(camlockPart) and camlockTarget.Character:FindFirstChild("Humanoid") and camlockTarget.Character.Humanoid.Health > 0 then
         local partToLock = camlockTarget.Character[camlockPart]
         if partToLock then
-            LocalPlayer.CameraMinZoomDistance = 0.5
-            LocalPlayer.CameraMaxZoomDistance = 0.5
-            LocalPlayer.CameraMode = Enum.CameraMode.LockFirstPerson
-            LocalPlayer.CameraTarget = partToLock
+            -- ตั้งค่ากล้องให้มองไปยังส่วนของเป้าหมาย
+            LocalPlayer.CameraMode = Enum.CameraMode.Scriptable
+            LocalPlayer.Camera.CFrame = CFrame.lookAt(LocalPlayer.Camera.CFrame.Position, partToLock.Position)
+            -- ป้องกันการขยับตัวละครของผู้เล่น (ทำไม่ได้โดยตรงบน LocalScript ในทุกกรณี)
+            -- การตั้งค่า CameraMode เป็น Scriptable อาจทำให้ผู้เล่นขยับกล้องได้ยาก
+            -- แต่ไม่ได้ "ล็อคตัวละคร" ไม่ให้เคลื่อนไหว
+            -- สำหรับการล็อคตัวละครจริงๆ ต้องทำผ่าน ServerScript
         end
     elseif camlockActive and (not camlockTarget or not camlockTarget.Character or not camlockTarget.Character:FindFirstChild("Humanoid") or camlockTarget.Character.Humanoid.Health <= 0) then
         -- เป้าหมายตายหรือไม่มีอยู่แล้ว ให้หาเป้าหมายใหม่
@@ -232,17 +247,13 @@ RunService.RenderStepped:Connect(function()
         if not foundNewTarget then
             camlockActive = false
             CamlockButton.Text = "Camlock: Off"
-            LocalPlayer.CameraMode = Enum.CameraMode.Follow
+            LocalPlayer.CameraMode = Enum.CameraMode.Follow -- กลับสู่โหมดกล้องปกติ
             LocalPlayer.CameraTarget = nil
-            LocalPlayer.CameraMinZoomDistance = 0.5
-            LocalPlayer.CameraMaxZoomDistance = 400
             notify("Camlock: No more valid targets, turning off.", Color3.fromRGB(200, 0, 0))
         end
-    elseif not camlockActive then
-        LocalPlayer.CameraMode = Enum.CameraMode.Follow
+    elseif not camlockActive and LocalPlayer.CameraMode == Enum.CameraMode.Scriptable then
+        LocalPlayer.CameraMode = Enum.CameraMode.Follow -- กลับสู่โหมดกล้องปกติเมื่อปิด Camlock
         LocalPlayer.CameraTarget = nil
-        LocalPlayer.CameraMinZoomDistance = 0.5
-        LocalPlayer.CameraMaxZoomDistance = 400
     end
 end)
 
@@ -274,15 +285,17 @@ HeadlessButton.MouseButton1Click:Connect(function()
         notify("Headless: Off", Color3.fromRGB(200, 0, 0))
     end
     local character = LocalPlayer.Character
-    if character and character:FindFirstChild("Head") then
-        local head = character.Head
-        local face = head:FindFirstChildOfClass("Decal") or head:FindFirstChildOfClass("Texture") or head:FindFirstChild("face") -- เพิ่ม "face" สำหรับ R15
-        if headlessActive then
-            head.Transparency = 1
-            if face then face.Transparency = 1 end
-        else
-            head.Transparency = 0
-            if face then face.Transparency = 0 end
+    if character then
+        local head = character:FindFirstChild("Head")
+        if head then
+            local face = head:FindFirstChildOfClass("Decal") or head:FindFirstChildOfClass("Texture") or head:FindFirstChild("face") -- เพิ่ม "face" สำหรับ R15
+            if headlessActive then
+                head.Transparency = 1
+                if face then face.Transparency = 1 end
+            else
+                head.Transparency = 0
+                if face then face.Transparency = 0 end
+            end
         end
     end
 end)
@@ -294,6 +307,7 @@ LocalPlayer.CharacterAdded:Connect(function(character)
         head.Transparency = 1
         if face then face.Transparency = 1 end
         if face and not face.IsLoaded then
+            -- รอโหลด Face ให้ครบก่อนแล้วค่อยปรับ (กรณี Face เป็น Decal/Texture ที่โหลดช้า)
             face.Changed:Connect(function(property)
                 if property == "Texture" and face.IsLoaded then
                     face.Transparency = 1
@@ -305,14 +319,14 @@ end)
 
 ---
 
-### ส่วนของ Hitbox Modifier
+### ส่วนของ Hitbox Modifier (เน้นย้ำ: CLIENT-SIDE VISUAL ONLY)
 
 local targetPlayerHitbox = nil
 local hitboxExpansionValue = 0 -- ค่าเริ่มต้นการขยาย hitbox
 
 local HitboxPlayerInput = Instance.new("TextBox")
 HitboxPlayerInput.Name = "HitboxPlayerInput"
-HitboxPlayerInput.Size = UDim2.new(0, 200, 0, 30)
+HitboxPlayerInput.Size = UDim2.new(0, 200, 0, 220)
 HitboxPlayerInput.Position = UDim2.new(0.5, -100, 0, 220)
 HitboxPlayerInput.PlaceholderText = "Player Name for Hitbox"
 HitboxPlayerInput.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
@@ -344,18 +358,24 @@ HitboxValueInput.Changed:Connect(function(property)
     end
 end)
 
+local originalSizes = {} -- เก็บขนาดเดิมของ Part สำหรับ Hitbox (Local Only)
+
 local function applyHitboxModifications(character, transparency, expansion)
     if not character then return end
 
-    local originalSizes = {} -- เก็บขนาดเดิม
+    -- รีเซ็ตขนาดเดิมก่อน ถ้ามีการปรับไปแล้ว
+    for part, originalSize in pairs(originalSizes) do
+        if part and part.Parent == character then -- ตรวจสอบว่า part ยังอยู่กับ character
+            part.Size = originalSize
+        end
+    end
+    originalSizes = {} -- ล้างค่าเก่า
 
     for _, part in pairs(character:GetDescendants()) do
-        if part:IsA("BasePart") then
-            -- ขยาย Hitbox
+        if part:IsA("BasePart") and part.CanCollide then -- พิจารณาเฉพาะ Part ที่ชนได้
             if part.Name ~= "HumanoidRootPart" and part.Name ~= "Head" then
-                if not originalSizes[part] then
-                    originalSizes[part] = part.Size -- เก็บขนาดเดิมไว้
-                end
+                -- ขยาย Hitbox (Visual Only)
+                originalSizes[part] = part.Size -- เก็บขนาดเดิม
                 part.Size = part.Size + Vector3.new(expansion, expansion, expansion)
             end
 
@@ -363,21 +383,15 @@ local function applyHitboxModifications(character, transparency, expansion)
             if part.Name ~= "Head" and part.Name ~= "HumanoidRootPart" then
                 part.Transparency = transparency
                 if part:IsA("MeshPart") then
-                    part.Material = Enum.Material.Plastic
+                    part.Material = Enum.Material.Plastic -- หรือ Material อื่นๆ ที่เหมาะสม
                 end
             end
         end
     end
 
     -- HumanoidRootPart และ Head ยังคงปรับ Transparency ได้ตามปุ่มแยก
-    if character:FindFirstChild("Head") then
-        character.Head.Transparency = character.Head.Transparency -- ไม่ต้องเปลี่ยนตรงนี้
-    end
-    if character:FindFirstChild("HumanoidRootPart") then
-        character.HumanoidRootPart.Transparency = character.HumanoidRootPart.Transparency -- ไม่ต้องเปลี่ยนตรงนี้
-    end
+    -- แต่ไม่ได้ถูกขยายด้วยค่า expansion ทั่วไป
 end
-
 
 local ApplyHitboxButton = Instance.new("TextButton")
 ApplyHitboxButton.Name = "ApplyHitboxButton"
@@ -444,12 +458,79 @@ HumanoidTransparencyButton.MouseButton1Click:Connect(function()
 end)
 
 -- เมื่อผู้เล่นเป้าหมายเกิดใหม่ ให้ปรับ hitbox ใหม่
+-- ใช้ table เพื่อเก็บ originalSizes สำหรับแต่ละ Character ที่ถูกแก้ไข
+local characterModifiedData = {}
+
 Players.PlayerAdded:Connect(function(player)
-    if player == targetPlayerHitbox then
+    if player ~= LocalPlayer then
         player.CharacterAdded:Connect(function(character)
-            applyHitboxModifications(character, 0.5, hitboxExpansionValue) -- ใช้ค่า expansion ล่าสุด
-            notify("Re-applied hitbox to " .. player.Name .. " after respawn.", Color3.fromRGB(0, 150, 255))
+            -- ตรวจสอบว่าผู้เล่นคนนี้เคยถูกปรับ Hitbox หรือไม่
+            if characterModifiedData[player.UserId] then
+                local data = characterModifiedData[player.UserId]
+                -- Reapply modifications
+                applyHitboxModifications(character, data.transparency, data.expansion)
+                if data.headTransparency then
+                    local head = character:FindFirstChild("Head")
+                    if head then head.Transparency = data.headTransparency end
+                end
+                if data.humanoidTransparency then
+                    local hrp = character:FindFirstChild("HumanoidRootPart")
+                    if hrp then hrp.Transparency = data.humanoidTransparency end
+                end
+                notify("Re-applied hitbox to " .. player.Name .. " after respawn.", Color3.fromRGB(0, 150, 255))
+            end
         end)
+    end
+end)
+
+-- Update characterModifiedData when applying
+ApplyHitboxButton.MouseButton1Click:Connect(function()
+    local playerName = HitboxPlayerInput.Text
+    local player = Players:FindFirstChild(playerName)
+    if player and player ~= LocalPlayer then
+        targetPlayerHitbox = player
+        if targetPlayerHitbox.Character then
+            applyHitboxModifications(targetPlayerHitbox.Character, 0.5, hitboxExpansionValue)
+            characterModifiedData[player.UserId] = {
+                transparency = 0.5,
+                expansion = hitboxExpansionValue,
+                headTransparency = nil,
+                humanoidTransparency = nil
+            }
+            notify("Applied Hitbox to " .. playerName .. " with expansion: " .. hitboxExpansionValue, Color3.fromRGB(0, 150, 255))
+        end
+    else
+        notify("Player not found or is yourself: " .. playerName, Color3.fromRGB(200, 0, 0))
+    end
+end)
+
+HeadTransparencyButton.MouseButton1Click:Connect(function()
+    if targetPlayerHitbox and targetPlayerHitbox.Character and targetPlayerHitbox.Character:FindFirstChild("Head") then
+        targetPlayerHitbox.Character.Head.Transparency = 0.5
+        if not characterModifiedData[targetPlayerHitbox.UserId] then
+            characterModifiedData[targetPlayerHitbox.UserId] = {
+                transparency = 0, expansion = 0,
+                headTransparency = 0.5, humanoidTransparency = 0
+            }
+        else
+            characterModifiedData[targetPlayerHitbox.UserId].headTransparency = 0.5
+        end
+        notify("Applied transparency to Head of: " .. targetPlayerHitbox.Name, Color3.fromRGB(0, 150, 255))
+    end
+end)
+
+HumanoidTransparencyButton.MouseButton1Click:Connect(function()
+    if targetPlayerHitbox and targetPlayerHitbox.Character and targetPlayerHitbox.Character:FindFirstChild("HumanoidRootPart") then
+        targetPlayerHitbox.Character.HumanoidRootPart.Transparency = 0.5
+        if not characterModifiedData[targetPlayerHitbox.UserId] then
+            characterModifiedData[targetPlayerHitbox.UserId] = {
+                transparency = 0, expansion = 0,
+                headTransparency = 0, humanoidTransparency = 0.5
+            }
+        else
+            characterModifiedData[targetPlayerHitbox.UserId].humanoidTransparency = 0.5
+        end
+        notify("Applied transparency to HumanoidRootPart of: " .. targetPlayerHitbox.Name, Color3.fromRGB(0, 150, 255))
     end
 end)
 
@@ -459,7 +540,7 @@ end)
 ### ส่วนของ ESP
 
 local espActive = false
-local espConnections = {}
+local espConnections = {} -- Keep track of connections for cleanup
 
 local EspButton = Instance.new("TextButton")
 EspButton.Name = "EspButton"
@@ -497,7 +578,7 @@ local function createESPOutline(character)
 
     local function onHumanoidStateChanged(state)
         if state == Enum.HumanoidStateType.Dead then
-            outline.Enabled = true
+            outline.Enabled = true -- Keep ESP even if dead
         end
     end
     local conn = humanoid.StateChanged:Connect(onHumanoidStateChanged)
@@ -595,3 +676,4 @@ end
 -- ซ่อน GUI หลักไว้ก่อนจนกว่าจะใส่ Key ถูก
 ScreenGui.Enabled = true -- ต้องเปิดใช้งาน ScreenGui เพื่อให้เฟรม KeyEntryGui มองเห็นได้
 MainFrame.Visible = false
+MainToggleButton.Visible = false -- ซ่อนปุ่ม Toggle GUI หลักไว้ก่อน
