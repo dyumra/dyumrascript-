@@ -70,7 +70,7 @@ local function createRoundedElement(elementType, size, position, backgroundColor
         element.Text = text or ""
         element.TextColor3 = textColor or Color3.new(1, 1, 1)
         element.Font = Enum.Font.SourceSansBold
-        element.TextScaled = true
+        -- Removed TextScaled for TextBoxes
         element.PlaceholderText = text or ""
         element.ClearTextOnFocus = false
         return element
@@ -96,17 +96,14 @@ local noclipButton, noclipText = createRoundedElement("TextButton", UDim2.new(0,
 -- Textbox สำหรับใส่ค่าความเร็ว Fly/Speed
 local speedInputTextBox = createRoundedElement("TextBox", UDim2.new(0, 230, 0, 35), UDim2.new(0, 10, 0, 145), Color3.fromRGB(60, 60, 60), Color3.new(1, 1, 1), "Enter Speed Value", false)
 
--- Textbox สำหรับใส่ชื่อผู้เล่นสำหรับ Teleport
-local teleportNameInputTextBox = createRoundedElement("TextBox", UDim2.new(0, 230, 0, 145), UDim2.new(0, 10, 0, 190), Color3.fromRGB(60, 60, 60), Color3.new(1, 1, 1), "Enter Player Name", false)
--- ปรับตำแหน่งใหม่ของ teleportNameInputTextBox ให้เลื่อนลงไป
+-- Textbox สำหรับใส่ชื่อผู้เล่นสำหรับ Teleport (Adjusted size)
+local teleportNameInputTextBox = createRoundedElement("TextBox", UDim2.new(0, 230, 0, 35), UDim2.new(0, 10, 0, 190), Color3.fromRGB(60, 60, 60), Color3.new(1, 1, 1), "Enter Player Name", false)
 
--- ปุ่ม Teleport to Player (ใช้ Textbox ใหม่)
-local teleportButton, teleportText = createRoundedElement("TextButton", UDim2.new(0, 230, 0, 35), UDim2.new(0, 10, 0, 235), Color3.fromRGB(45, 45, 45), Color3.new(1, 1, 1), "Teleport to Player", true)
--- ปรับตำแหน่งใหม่ของ teleportButton ให้เลื่อนลงไป
+-- ปุ่ม Teleport to Player (Adjusted position)
+local teleportButton, teleportText = createRoundedElement("TextButton", UDim2.new(0, 230, 0, 35), UDim2.new(0, 10, 0, 230), Color3.fromRGB(45, 45, 45), Color3.new(1, 1, 1), "Teleport to Player", true)
 
--- ปุ่ม Teleport Random
+-- ปุ่ม Teleport Random (Adjusted position)
 local teleportRandomButton, teleportRandomText = createRoundedElement("TextButton", UDim2.new(0, 230, 0, 35), UDim2.new(0, 10, 0, 270), Color3.fromRGB(45, 45, 45), Color3.new(1, 1, 1), "Teleport Random: OFF", true)
--- ปรับตำแหน่งใหม่ของ teleportRandomButton ให้เลื่อนลงไป
 
 
 -- Highlight Folder
@@ -237,17 +234,14 @@ local function getClosestTarget()
     return closestPlayer
 end
 
--- ฟังก์ชันสำหรับ No-clip (ปรับเปลี่ยน CanCollide)
+-- ฟังก์ชันสำหรับ No-clip (ปรับเปลี่ยน CanCollide) - This function will now be largely redundant
+-- as CanCollide is always set in RenderStepped based on noclipEnabled.
 local function setNoClip(enabled)
+    -- This function is now mainly conceptual for the button click
+    -- The actual CanCollide logic is handled in RenderStepped
     if localPlayer.Character and localPlayer.Character:FindFirstChild("HumanoidRootPart") then
         local rootPart = localPlayer.Character.HumanoidRootPart
-        if enabled then
-            rootPart.CanCollide = false
-            -- การจัดการ PlatformStand จะอยู่ใน RenderStepped เพื่อรวมกับ Fly/Speed
-        else
-            rootPart.CanCollide = true
-            -- การจัดการ PlatformStand จะอยู่ใน RenderStepped
-        end
+        rootPart.CanCollide = not enabled -- Ensure it matches the state
     end
 end
 
@@ -340,7 +334,12 @@ local function startRandomTeleport()
 end
 
 
--- Core loop สำหรับ Camlock, Fly, No-clip, Speed (CFrame)
+---
+## Core CFrame Movement and Cheat Logic
+
+This section handles all character movement via CFrame, ensuring smooth transitions between cheat states and normal movement.
+
+---
 RunService.RenderStepped:Connect(function(dt) -- dt คือ Delta Time เพื่อการเคลื่อนไหวที่ราบรื่น
     -- Camlock Logic
     if camlockEnabled then
@@ -355,8 +354,6 @@ RunService.RenderStepped:Connect(function(dt) -- dt คือ Delta Time เพ�
                 camera.CFrame = newLookAt
             end
         end
-    else
-        targetPlayer = nil
     end
 
     -- Fly / No-clip / Speed (CFrame) Movement Logic
@@ -364,54 +361,67 @@ RunService.RenderStepped:Connect(function(dt) -- dt คือ Delta Time เพ�
     local humanoid = character and character:FindFirstChildWhichIsA("Humanoid")
     local rootPart = character and character:FindFirstChild("HumanoidRootPart")
 
-    if not (character and humanoid and rootPart) then -- ออกจากฟังก์ชันถ้า Character ไม่พร้อม
-        humanoid = nil -- Set to nil if character is not ready to avoid errors later
-        rootPart = nil
+    if not (character and humanoid and rootPart) then
+        return -- Exit from function if Character components aren't ready
     end
 
-    local usingCFrameMovement = flyEnabled or noclipEnabled or speedEnabled
+    -- Always keep PlatformStand and Sit properties for CFrame movement
+    humanoid.PlatformStand = true
+    humanoid.Sit = false
 
-    if usingCFrameMovement and humanoid and rootPart then
-        humanoid.PlatformStand = true -- เปิด PlatformStand สำหรับทุกโหมดการเคลื่อนที่แบบ CFrame
-        rootPart.CanCollide = not noclipEnabled -- ปิด CanCollide ถ้า Noclip ทำงานอยู่เท่านั้น
-        humanoid.WalkSpeed = 0 -- ตั้ง WalkSpeed เป็น 0 เพื่อไม่ให้รบกวนการเคลื่อนที่แบบ CFrame
+    -- Set WalkSpeed to 0 as we are handling all movement with CFrame
+    humanoid.WalkSpeed = 0
 
-        local cameraCFrame = camera.CFrame
-        local directionVector = Vector3.new(0,0,0)
-        local currentMoveSpeed = flyNoclipSpeed -- ใช้ความเร็วจาก textbox
+    -- Determine the current movement speed
+    local currentMoveSpeed = 0 -- Default to 0 speed if no keys are pressed
 
-        -- การเคลื่อนที่แนวนอน (WASD)
-        if UserInputService:IsKeyDown(Enum.KeyCode.W) then
-            directionVector = directionVector + cameraCFrame.LookVector
-        elseif UserInputService:IsKeyDown(Enum.KeyCode.S) then
-            directionVector = directionVector - cameraCFrame.LookVector
+    -- If any of the CFrame movement cheats are active, use the custom speed
+    if speedEnabled or flyEnabled or noclipEnabled then
+        currentMoveSpeed = flyNoclipSpeed
+    else
+        -- If no CFrame movement cheats are active, use a default CFrame speed (like normal walkspeed)
+        currentMoveSpeed = 16 -- This is your desired "normal" CFrame walkspeed
+    end
+
+    -- Handle CanCollide for Noclip
+    rootPart.CanCollide = not noclipEnabled
+
+    local cameraCFrame = camera.CFrame
+    local directionVector = Vector3.new(0,0,0)
+
+    -- Horizontal Movement (WASD)
+    if UserInputService:IsKeyDown(Enum.KeyCode.W) then
+        directionVector = directionVector + cameraCFrame.LookVector
+    elseif UserInputService:IsKeyDown(Enum.KeyCode.S) then
+        directionVector = directionVector - cameraCFrame.LookVector
+    end
+    if UserInputService:IsKeyDown(Enum.KeyCode.A) then
+        directionVector = directionVector - cameraCFrame.RightVector
+    elseif UserInputService:IsKeyDown(Enum.KeyCode.D) then
+        directionVector = directionVector + cameraCFrame.RightVector
+    end
+
+    -- Vertical Movement (Space, Ctrl/C) - Only for Fly and Noclip
+    if flyEnabled or noclipEnabled then -- Only allow vertical movement if Fly or Noclip is on
+        if UserInputService:IsKeyDown(Enum.KeyCode.Space) then
+            directionVector = directionVector + Vector3.new(0,1,0) -- Up
+        elseif UserInputService:IsKeyDown(Enum.KeyCode.LeftControl) or UserInputService:IsKeyDown(Enum.KeyCode.C) then
+            directionVector = directionVector - Vector3.new(0,1,0) -- Down
         end
-        if UserInputService:IsKeyDown(Enum.KeyCode.A) then
-            directionVector = directionVector - cameraCFrame.RightVector
-        elseif UserInputService:IsKeyDown(Enum.KeyCode.D) then
-            directionVector = directionVector + cameraCFrame.RightVector
-        end
+    end
 
-        -- การเคลื่อนที่แนวตั้ง (Space, Ctrl/C) - เฉพาะ Fly และ Noclip
-        if flyEnabled or noclipEnabled then
-            if UserInputService:IsKeyDown(Enum.KeyCode.Space) then
-                directionVector = directionVector + Vector3.new(0,1,0) -- ขึ้น
-            elseif UserInputService:IsKeyDown(Enum.KeyCode.LeftControl) or UserInputService:IsKeyDown(Enum.KeyCode.C) then
-                directionVector = directionVector - Vector3.new(0,1,0) -- ลง
-            end
-        end
-
-        -- ใช้ CFrame เพื่อเคลื่อนที่
-        if directionVector.Magnitude > 0 then
-            rootPart.CFrame = rootPart.CFrame + directionVector.Unit * currentMoveSpeed * dt
-        end
-    elseif humanoid and rootPart then
-        -- เมื่อไม่มี Cheat การเคลื่อนที่แบบ CFrame ทำงาน, คืนค่าฟิสิกส์ปกติ
-        humanoid.PlatformStand = false
-        rootPart.CanCollide = true
-        humanoid.WalkSpeed = 16 -- คืนค่าความเร็วในการเดินเริ่มต้นของ Roblox
+    -- Apply CFrame movement if there's any directional input
+    if directionVector.Magnitude > 0 then
+        rootPart.CFrame = rootPart.CFrame + directionVector.Unit * currentMoveSpeed * dt
     end
 end)
+
+---
+## Button Event Connections
+
+These connect your GUI buttons to their respective functions and state changes.
+
+---
 
 -- ปุ่มกดเปิด/ปิด ESP
 espButton.MouseButton1Click:Connect(function()
@@ -478,10 +488,10 @@ noclipButton.MouseButton1Click:Connect(function()
         else
             flyNoclipSpeed = 50 -- ค่าเริ่มต้น
         end
-        setNoClip(true)
+        -- setNoClip(true) -- This call is now redundant as logic is in RenderStepped
     else
         noclipText.Text = "Noclip: OFF"
-        setNoClip(false)
+        -- setNoClip(false) -- This call is now redundant
     end
 end)
 
@@ -512,9 +522,8 @@ speedInputTextBox.FocusLost:Connect(function(enterPressed)
         local value = tonumber(speedInputTextBox.Text)
         if value and value > 0 then
             -- อัปเดตความเร็ว CFrame ทันทีหากโหมดใดๆ ที่ใช้ CFrame ทำงานอยู่
-            if speedEnabled or flyEnabled or noclipEnabled then
-                flyNoclipSpeed = value
-            end
+            -- flyNoclipSpeed is now always updated if any CFrame mode is on or off
+            flyNoclipSpeed = value
         end
     end
 end)
@@ -529,7 +538,13 @@ toggleMenuButton.MouseButton1Click:Connect(function()
     end
 end)
 
--- Drag GUI สำหรับมือถือและ PC
+---
+## GUI Dragging Logic
+
+This makes your GUI frame draggable on both PC and mobile.
+
+---
+
 local dragging = false
 local dragInput, dragStart, startPos
 
