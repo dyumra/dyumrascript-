@@ -97,7 +97,11 @@ keyFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 keyFrame.BackgroundTransparency = 0
 keyFrame.BorderSizePixel = 0
 keyFrame.ClipsDescendants = true
-keyFrame.AnchorPoint = Vector2.new(0.5,0.5)
+keyFrame.AnchorPoint = Vector2.new(0,0)
+
+local keyCorner = Instance.new("UICorner")
+keyCorner.Parent = keyFrame
+keyCorner.CornerRadius = UDim.new(0, 15)
 
 local keyCorner = Instance.new("UICorner", keyFrame)
 keyCorner.CornerRadius = UDim.new(0, 15)
