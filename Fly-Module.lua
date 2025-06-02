@@ -1,3 +1,10 @@
+-- [[ Open Source Code !!! ]]
+
+-- [[ ⚙️ Roblox Execution Module ]]
+-- [[ 🔮 Powered by Dyumra's Innovations ]]
+-- [[ 📊 Version: 2.15.0 - Authenticated Interface Edition ]]
+-- [[ 🔗 Other Script : https://github.com/dyumra - Thank for Support ]]
+
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local StarterGui = game:GetService("StarterGui")
