@@ -1,6 +1,6 @@
 -- [[ ⚙️ Roblox Execution Module ]]
 -- [[ 🔮 Powered by Dyumra's Innovations ]]
--- [[ 📊 Version: 2.14.0 - Authenticated Interface Edition ]]
+-- [[ 📊 Version: 2.14.5 - Authenticated Interface Edition ]]
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -125,6 +125,10 @@ keyTitle.Font = Enum.Font.GothamBold
 keyTitle.TextSize = 22
 keyTitle.Text = "ACCESS AUTHENTICATION"
 keyTitle.AnchorPoint = Vector2.new(0,0)
+
+local keyTitleCorner = Instance.new("UICorner")
+keyTitleCorner.Parent = keyTitle
+keyTitleCorner.CornerRadius = UDim.new(0, 15)
 
 local keyInputBox = Instance.new("TextBox")
 keyInputBox.Parent = keyFrame
