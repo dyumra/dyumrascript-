@@ -1,6 +1,6 @@
--- [[ Roblox Execution Module ]]
--- [[ Powered by Dyumra Innovations ]]
--- [[ Version: 2.12.0 - Authenticated Interface Edition ]]
+-- [[ ⚙️ Roblox Execution Module ]]
+-- [[ 🔮 Powered by Dyumra's Innovations ]]
+-- [[ 📊 Version: 2.13.5 - Authenticated Interface Edition ]]
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
