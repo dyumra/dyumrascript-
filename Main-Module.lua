@@ -2,7 +2,7 @@
 
 -- [[ ⚙️ Roblox Execution Module ]]
 -- [[ 🔮 Powered by Dyumra's Innovations ]]
--- [[ 📊 Version: 2.17.5 - Authenticated Interface Edition ]]
+-- [[ 📊 Version: 2.18.5 - Authenticated Interface Edition ]]
 -- [[ 🔗 Other Script : https://github.com/dyumra - Thank for Support ]]
 
 local Players = game:GetService("Players")
@@ -136,7 +136,7 @@ keyTitleCorner.CornerRadius = UDim.new(0, 15)
 local keyInputBox = Instance.new("TextBox")
 keyInputBox.Parent = keyFrame
 keyInputBox.Size = UDim2.new(0, 280, 0, 45)
-keyInputBox.Position = UDim2.new(0.5, 0, 0.55, -25)
+keyInputBox.Position = UDim2.new(0.5, 0, 0.57, -25)
 keyInputBox.BackgroundColor3 = Color3.fromRGB(55, 55, 55)
 keyInputBox.TextColor3 = Color3.fromRGB(200, 200, 200)
 keyInputBox.Font = Enum.Font.GothamBold
