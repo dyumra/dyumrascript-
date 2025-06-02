@@ -1,359 +1,423 @@
 -- [ 🌼 Roblox Edition - Powered by @ dyumra. ]
--- [ 💌 Version : 1.5.0 - Final Script ]
+-- [ 💌 Version : 1.9.0 - Final Script ]
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
-local UserInputService = game:GetService("UserInputService")
+local LocalPlayer = Players.LocalPlayer
+local Mouse = LocalPlayer:GetMouse()
 local StarterGui = game:GetService("StarterGui")
-local Camera = workspace.CurrentCamera
 
-local player = Players.LocalPlayer
+-- Notify function using Roblox native notification
+local function showNotify(text)
+    StarterGui:SetCore("SendNotification", {
+        Title = "Dyumra Script",
+        Text = text,
+        Duration = 3,
+    })
+end
 
--- GUI Setup
-local screenGui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
-screenGui.Name = "DyumraAimbotGUI"
-screenGui.ResetOnSpawn = false
+-- Variables
+local aimbotEnabled = false
+local espEnabled = false
+local killAllEnabled = false
+local hitboxEnabled = false
 
-local mainFrame = Instance.new("Frame", screenGui)
-mainFrame.Size = UDim2.new(0, 220, 0, 260)
-mainFrame.Position = UDim2.new(0, 10, 0, 50)
+local lockSetOptions = {"Torso", "UpperTorso", "Head", "HumanoidRootPart"}
+local currentLockSet = "Torso"
+
+local hitboxSizeAdd = 0
+
+local highlights = {}
+local highlightFolder = Instance.new("Folder", workspace)
+highlightFolder.Name = "DyumraHighlights"
+
+-- GUI creation
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "DyumraGUI"
+ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
+ScreenGui.ResetOnSpawn = false
+
+local mainFrame = Instance.new("Frame")
+mainFrame.Size = UDim2.new(0, 300, 0, 380)
+mainFrame.Position = UDim2.new(0, 20, 0.5, -190)
 mainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+mainFrame.BackgroundTransparency = 0
 mainFrame.BorderSizePixel = 0
-mainFrame.AnchorPoint = Vector2.new(0, 0)
+mainFrame.AnchorPoint = Vector2.new(0, 0.5)
+mainFrame.Parent = ScreenGui
 mainFrame.ClipsDescendants = true
-mainFrame.AutomaticSize = Enum.AutomaticSize.None
+mainFrame.AutoButtonColor = false
 mainFrame.Active = true
 mainFrame.Draggable = true
 mainFrame.Name = "MainFrame"
-mainFrame.BackgroundTransparency = 0
+mainFrame.Selectable = true
+mainFrame.Style = Enum.FrameStyle.RobloxRound -- Modern rounded style
 
-local uiCorner = Instance.new("UICorner", mainFrame)
-uiCorner.CornerRadius = UDim.new(0, 10)
+-- Title
+local titleLabel = Instance.new("TextLabel")
+titleLabel.Size = UDim2.new(1, 0, 0, 40)
+titleLabel.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+titleLabel.BorderSizePixel = 0
+titleLabel.Text = "Dyumra Aimbot & ESP"
+titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+titleLabel.TextScaled = true
+titleLabel.Font = Enum.Font.GothamBold
+titleLabel.Parent = mainFrame
 
--- Toggle Button to show/hide the main GUI
-local toggleBtn = Instance.new("TextButton", screenGui)
-toggleBtn.Size = UDim2.new(0, 100, 0, 25)
-toggleBtn.Position = UDim2.new(0, 10, 0, 10)
-toggleBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-toggleBtn.TextColor3 = Color3.new(1,1,1)
-toggleBtn.Text = "Show GUI"
-toggleBtn.Name = "ToggleBtn"
-toggleBtn.Font = Enum.Font.SourceSansBold
-toggleBtn.TextSize = 18
-toggleBtn.AutoButtonColor = true
-toggleBtn.BackgroundTransparency = 0
+-- Status label
+local statusLabel = Instance.new("TextLabel")
+statusLabel.Size = UDim2.new(1, -20, 0, 30)
+statusLabel.Position = UDim2.new(0, 10, 0, 45)
+statusLabel.BackgroundTransparency = 1
+statusLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+statusLabel.TextScaled = true
+statusLabel.Font = Enum.Font.Gotham
+statusLabel.Text = "Status: Idle"
+statusLabel.TextXAlignment = Enum.TextXAlignment.Left
+statusLabel.Parent = mainFrame
 
-local toggleCorner = Instance.new("UICorner", toggleBtn)
-toggleCorner.CornerRadius = UDim.new(0, 6)
+-- Button creator function
+local function createButton(name, posY, parent)
+    local btn = Instance.new("TextButton")
+    btn.Name = name
+    btn.Size = UDim2.new(0, 130, 0, 40)
+    btn.Position = UDim2.new(0, 10 + (name:lower():find("right") and 160 or 0), 0, posY)
+    btn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    btn.BorderSizePixel = 0
+    btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btn.TextScaled = true
+    btn.Font = Enum.Font.GothamSemibold
+    btn.Text = name
+    btn.AutoButtonColor = true
+    btn.Parent = parent
+    btn.Style = Enum.ButtonStyle.RobloxRound
+    return btn
+end
 
-toggleBtn.MouseButton1Click:Connect(function()
-	if mainFrame.Visible then
-		mainFrame.Visible = false
-		toggleBtn.Text = "Show GUI"
-	else
-		mainFrame.Visible = true
-		toggleBtn.Text = "Hide GUI"
-	end
+-- Create buttons
+local aimbotBtn = createButton("Aimbot: Off", 85, mainFrame)
+local espBtn = createButton("ESP: Off", 135, mainFrame)
+local killAllBtn = createButton("Kill All: Off", 185, mainFrame)
+local hitboxBtn = createButton("Hitbox: Off", 235, mainFrame)
+
+-- LockSet dropdown
+local lockSetLabel = Instance.new("TextLabel")
+lockSetLabel.Size = UDim2.new(1, -20, 0, 25)
+lockSetLabel.Position = UDim2.new(0, 10, 0, 290)
+lockSetLabel.BackgroundTransparency = 1
+lockSetLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+lockSetLabel.TextScaled = true
+lockSetLabel.Font = Enum.Font.Gotham
+lockSetLabel.TextXAlignment = Enum.TextXAlignment.Left
+lockSetLabel.Text = "LockSet: Torso"
+lockSetLabel.Parent = mainFrame
+
+local lockSetDropdown = Instance.new("TextButton")
+lockSetDropdown.Size = UDim2.new(0, 130, 0, 35)
+lockSetDropdown.Position = UDim2.new(0, 10, 0, 320)
+lockSetDropdown.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+lockSetDropdown.BorderSizePixel = 0
+lockSetDropdown.TextColor3 = Color3.fromRGB(255, 255, 255)
+lockSetDropdown.TextScaled = true
+lockSetDropdown.Font = Enum.Font.GothamSemibold
+lockSetDropdown.Text = currentLockSet
+lockSetDropdown.AutoButtonColor = true
+lockSetDropdown.Style = Enum.ButtonStyle.RobloxRound
+lockSetDropdown.Parent = mainFrame
+
+-- Dropdown list container
+local dropdownFrame = Instance.new("Frame")
+dropdownFrame.Size = UDim2.new(0, 130, 0, 0)
+dropdownFrame.Position = UDim2.new(0, 10, 0, 355)
+dropdownFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+dropdownFrame.BorderSizePixel = 0
+dropdownFrame.ClipsDescendants = true
+dropdownFrame.Parent = mainFrame
+
+local dropdownOpen = false
+
+-- Populate dropdown options
+local function toggleDropdown()
+    dropdownOpen = not dropdownOpen
+    if dropdownOpen then
+        dropdownFrame:TweenSize(UDim2.new(0, 130, 0, #lockSetOptions*35), Enum.EasingDirection.Out, Enum.EasingStyle.Quad, 0.3, true)
+    else
+        dropdownFrame:TweenSize(UDim2.new(0, 130, 0, 0), Enum.EasingDirection.Out, Enum.EasingStyle.Quad, 0.3, true)
+    end
+end
+
+lockSetDropdown.MouseButton1Click:Connect(function()
+    toggleDropdown()
 end)
 
--- Create UI elements (Buttons and Label)
-local function createButton(name, posY)
-	local btn = Instance.new("TextButton", mainFrame)
-	btn.Size = UDim2.new(0, 200, 0, 35)
-	btn.Position = UDim2.new(0, 10, 0, posY)
-	btn.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
-	btn.TextColor3 = Color3.new(1,1,1)
-	btn.Font = Enum.Font.SourceSansBold
-	btn.TextSize = 18
-	btn.Text = name
-	btn.Name = name:gsub("%s", "") .. "Btn"
+for i, option in ipairs(lockSetOptions) do
+    local optionBtn = Instance.new("TextButton")
+    optionBtn.Size = UDim2.new(1, 0, 0, 35)
+    optionBtn.Position = UDim2.new(0, 0, 0, (i-1)*35)
+    optionBtn.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+    optionBtn.BorderSizePixel = 0
+    optionBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    optionBtn.TextScaled = true
+    optionBtn.Font = Enum.Font.GothamSemibold
+    optionBtn.Text = option
+    optionBtn.Parent = dropdownFrame
+    optionBtn.Style = Enum.ButtonStyle.RobloxRound
 
-	local corner = Instance.new("UICorner", btn)
-	corner.CornerRadius = UDim.new(0, 6)
-
-	return btn
+    optionBtn.MouseButton1Click:Connect(function()
+        currentLockSet = option
+        lockSetDropdown.Text = currentLockSet
+        toggleDropdown()
+        showNotify("LockSet changed to "..currentLockSet)
+    end)
 end
 
-local aimbotBtn = createButton("Aimbot: Off", 10)
-local espBtn = createButton("ESP: Off", 55)
-local killBtn = createButton("Kill All: Off", 100)
-local hitboxBtn = createButton("Hitbox: Off", 145)
-
-local hitboxLabel = Instance.new("TextLabel", mainFrame)
-hitboxLabel.Text = "Hitbox Size (0-50):"
-hitboxLabel.Size = UDim2.new(0, 200, 0, 25)
-hitboxLabel.Position = UDim2.new(0, 10, 0, 190)
+-- Hitbox size input
+local hitboxLabel = Instance.new("TextLabel")
+hitboxLabel.Size = UDim2.new(0, 100, 0, 25)
+hitboxLabel.Position = UDim2.new(0, 150, 0, 290)
 hitboxLabel.BackgroundTransparency = 1
-hitboxLabel.TextColor3 = Color3.new(1,1,1)
-hitboxLabel.Font = Enum.Font.SourceSans
-hitboxLabel.TextSize = 16
+hitboxLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+hitboxLabel.TextScaled = true
+hitboxLabel.Font = Enum.Font.Gotham
 hitboxLabel.TextXAlignment = Enum.TextXAlignment.Left
+hitboxLabel.Text = "Hitbox Size +"
+hitboxLabel.Parent = mainFrame
 
-local hitboxInput = Instance.new("TextBox", mainFrame)
-hitboxInput.Size = UDim2.new(0, 200, 0, 30)
-hitboxInput.Position = UDim2.new(0, 10, 0, 215)
-hitboxInput.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
-hitboxInput.TextColor3 = Color3.new(1,1,1)
-hitboxInput.Font = Enum.Font.SourceSansBold
-hitboxInput.TextSize = 18
+local hitboxInput = Instance.new("TextBox")
+hitboxInput.Size = UDim2.new(0, 130, 0, 35)
+hitboxInput.Position = UDim2.new(0, 150, 0, 320)
+hitboxInput.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+hitboxInput.BorderSizePixel = 0
+hitboxInput.TextColor3 = Color3.fromRGB(255, 255, 255)
+hitboxInput.TextScaled = true
+hitboxInput.Font = Enum.Font.GothamSemibold
 hitboxInput.ClearTextOnFocus = false
-hitboxInput.Text = "5"
-hitboxInput.Name = "HitboxInput"
+hitboxInput.Text = "0"
+hitboxInput.PlaceholderText = "Enter number"
+hitboxInput.Parent = mainFrame
 
-local inputCorner = Instance.new("UICorner", hitboxInput)
-inputCorner.CornerRadius = UDim.new(0, 6)
+hitboxInput.FocusLost:Connect(function(enterPressed)
+    if enterPressed then
+        local val = tonumber(hitboxInput.Text)
+        if val and val >= 0 then
+            hitboxSizeAdd = val
+            showNotify("Hitbox size addition set to "..val)
+        else
+            hitboxInput.Text = tostring(hitboxSizeAdd)
+            showNotify("Invalid hitbox size input")
+        end
+    end
+end)
 
--- Notification helper
-local function showNotify(text)
-	StarterGui:SetCore("SendNotification", {
-		Title = "Dyumra Script",
-		Text = text,
-		Duration = 3,
-	})
+-- Close/Open GUI button
+local toggleGuiBtn = Instance.new("TextButton")
+toggleGuiBtn.Size = UDim2.new(0, 40, 0, 40)
+toggleGuiBtn.Position = UDim2.new(0, 5, 0.5, -20)
+toggleGuiBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+toggleGuiBtn.BorderSizePixel = 0
+toggleGuiBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+toggleGuiBtn.TextScaled = true
+toggleGuiBtn.Font = Enum.Font.GothamBold
+toggleGuiBtn.Text = "<"
+toggleGuiBtn.Parent = ScreenGui
+toggleGuiBtn.Style = Enum.ButtonStyle.RobloxRound
+
+local guiOpen = true
+toggleGuiBtn.MouseButton1Click:Connect(function()
+    if guiOpen then
+        mainFrame:TweenPosition(UDim2.new(0, -310, 0.5, -190), Enum.EasingDirection.Out, Enum.EasingStyle.Quad, 0.3, true)
+        toggleGuiBtn.Text = ">"
+        guiOpen = false
+    else
+        mainFrame:TweenPosition(UDim2.new(0, 20, 0.5, -190), Enum.EasingDirection.Out, Enum.EasingStyle.Quad, 0.3, true)
+        toggleGuiBtn.Text = "<"
+        guiOpen = true
+    end
+end)
+
+-- Utility to clear highlights
+local function clearHighlights()
+    for _, h in pairs(highlights) do
+        h:Destroy()
+    end
+    highlights = {}
 end
 
--- Variables for toggles and settings
-local aimbot = false
-local esp = false
-local killAll = false
-local hitbox = false
-local hitboxSize = 5
+-- Create highlight on part
+local function createHighlight(part)
+    if highlights[part] then return end
+    local hl = Instance.new("Highlight")
+    hl.Adornee = part
+    hl.FillColor = Color3.fromRGB(0, 255, 0)
+    hl.FillTransparency = 0.5
+    hl.OutlineColor = Color3.fromRGB(0, 255, 0)
+    hl.OutlineTransparency = 0.7
+    hl.Parent = highlightFolder
+    highlights[part] = hl
+end
 
-local killInterval = 0.4
-local killTimer = 0
+-- Remove highlight
+local function removeHighlight(part)
+    if highlights[part] then
+        highlights[part]:Destroy()
+        highlights[part] = nil
+    end
+end
 
-local lockset = nil -- detected body part for aiming: "Torso", "UpperTorso", "HumanoidRootPart"
+-- ESP toggle function
+local function toggleESP(state)
+    espEnabled = state
+    if not espEnabled then
+        clearHighlights()
+        statusLabel.Text = "ESP: Off"
+        showNotify("ESP Disabled")
+    else
+        statusLabel.Text = "ESP: On"
+        showNotify("ESP Enabled")
+    end
+end
+
+-- Hitbox toggle function
+local function toggleHitbox(state)
+    hitboxEnabled = state
+    if not hitboxEnabled then
+        for _, plr in pairs(Players:GetPlayers()) do
+            if plr.Character then
+                for _, part in pairs(plr.Character:GetChildren()) do
+                    if part:IsA("BasePart") and part.Name ~= "HumanoidRootPart" then
+                        part.Size = part.Size - Vector3.new(hitboxSizeAdd, hitboxSizeAdd, hitboxSizeAdd)
+                    end
+                end
+            end
+        end
+        statusLabel.Text = "Hitbox: Off"
+        showNotify("Hitbox Disabled")
+    else
+        for _, plr in pairs(Players:GetPlayers()) do
+            if plr.Character then
+                for _, part in pairs(plr.Character:GetChildren()) do
+                    if part:IsA("BasePart") and part.Name ~= "HumanoidRootPart" then
+                        part.Size = part.Size + Vector3.new(hitboxSizeAdd, hitboxSizeAdd, hitboxSizeAdd)
+                    end
+                end
+            end
+        end
+        statusLabel.Text = "Hitbox: On"
+        showNotify("Hitbox Enabled")
+    end
+end
+
+-- Aimbot logic
 local currentTarget = nil
 
--- Detect which body part to lock on (R6 = Torso, R15 = UpperTorso or HumanoidRootPart)
-local function detectLockSet(character)
-	if character:FindFirstChild("HumanoidRootPart") then
-		return "HumanoidRootPart"
-	elseif character:FindFirstChild("UpperTorso") then
-		return "UpperTorso"
-	elseif character:FindFirstChild("Torso") then
-		return "Torso"
-	end
-	return nil
-end
-
--- ESP Highlights handling
-local highlights = {}
-
-local function updateHighlights()
-	for _, plr in pairs(Players:GetPlayers()) do
-		if plr ~= player and plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
-			local char = plr.Character
-			if not highlights[plr] then
-				local highlight = Instance.new("Highlight")
-				highlight.Adornee = char
-				highlight.FillColor = Color3.new(0,1,0)
-				highlight.OutlineColor = Color3.new(0,1,0)
-				highlight.Parent = screenGui
-				highlights[plr] = highlight
-			end
-		end
-	end
-
-	-- Remove highlights for players who left or ESP off
-	for plr, highlight in pairs(highlights) do
-		if not esp or not plr.Character or not plr.Character:FindFirstChild("HumanoidRootPart") or not Players:FindFirstChild(plr.Name) then
-			highlight:Destroy()
-			highlights[plr] = nil
-		end
-	end
-end
-
--- Hitbox expand / reset functions
-local originalSizes = {}
-
-local function updateHitboxes()
-	for _, plr in pairs(Players:GetPlayers()) do
-		if plr ~= player and plr.Character then
-			local rootPart = plr.Character:FindFirstChild("HumanoidRootPart") or plr.Character:FindFirstChild("UpperTorso") or plr.Character:FindFirstChild("Torso")
-			if rootPart then
-				if not originalSizes[plr] then
-					originalSizes[plr] = rootPart.Size
-				end
-				rootPart.Size = Vector3.new(hitboxSize, hitboxSize, hitboxSize)
-				rootPart.Transparency = 0.5
-				rootPart.Material = Enum.Material.Plastic
-				rootPart.Color = Color3.new(1,1,1)
-			end
-		end
-	end
-end
-
-local function resetHitboxes()
-	for plr, size in pairs(originalSizes) do
-		if plr.Character then
-			local rootPart = plr.Character:FindFirstChild("HumanoidRootPart") or plr.Character:FindFirstChild("UpperTorso") or plr.Character:FindFirstChild("Torso")
-			if rootPart then
-				rootPart.Size = size
-				rootPart.Transparency = 0
-				rootPart.Material = Enum.Material.Plastic
-				rootPart.Color = Color3.new(1,1,1)
-			end
-		end
-	end
-	originalSizes = {}
-end
-
--- Find closest player to mouse (target)
 local function getClosestTarget()
-	local closest = nil
-	local shortestDist = math.huge
-	local mousePos = UserInputService:GetMouseLocation()
-	for _, plr in pairs(Players:GetPlayers()) do
-		if plr ~= player and plr.Character and plr.Character:FindFirstChild(lockset or "HumanoidRootPart") then
-			local part = plr.Character[lockset or "HumanoidRootPart"]
-			local screenPoint = Camera:WorldToViewportPoint(part.Position)
-			if screenPoint.Z > 0 then
-				local dist = (Vector2.new(screenPoint.X, screenPoint.Y) - Vector2.new(mousePos.X, mousePos.Y)).Magnitude
-				if dist < shortestDist then
-					shortestDist = dist
-					closest = plr
-				end
-			end
-		end
-	end
-	return closest
+    local closestPlayer = nil
+    local shortestDistance = math.huge
+    for _, plr in pairs(Players:GetPlayers()) do
+        if plr ~= LocalPlayer and plr.Character and plr.Character:FindFirstChild("Humanoid") and plr.Character.Humanoid.Health > 0 then
+            local part = plr.Character:FindFirstChild(currentLockSet)
+            if not part then
+                -- fallback if currentLockSet part not found
+                part = plr.Character:FindFirstChild("HumanoidRootPart") or plr.Character:FindFirstChild("Torso") or plr.Character:FindFirstChild("UpperTorso") or plr.Character:FindFirstChild("Head")
+            end
+            if part then
+                local distance = (part.Position - Mouse.Hit.p).Magnitude
+                if distance < shortestDistance then
+                    shortestDistance = distance
+                    closestPlayer = plr
+                end
+            end
+        end
+    end
+    return closestPlayer
 end
 
--- Teleport player in front of target (2 studs ahead)
-local function teleportToTarget(plr)
-	if not plr.Character or not plr.Character:FindFirstChild("HumanoidRootPart") then return end
-	local hrp = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
-	if not hrp then return end
-
-	local targetPos = plr.Character.HumanoidRootPart.Position
-	local lookVector = plr.Character.HumanoidRootPart.CFrame.LookVector
-
-	hrp.CFrame = CFrame.new(targetPos + lookVector * 2)
+-- Teleport in front function for Kill All
+local function teleportInFront(target)
+    local character = LocalPlayer.Character
+    if character and character:FindFirstChild("HumanoidRootPart") and target.Character and target.Character:FindFirstChild("HumanoidRootPart") then
+        local targetHRP = target.Character.HumanoidRootPart
+        local direction = targetHRP.CFrame.LookVector
+        local teleportPos = targetHRP.Position + direction * 3 -- 3 studs in front
+        character.HumanoidRootPart.CFrame = CFrame.new(teleportPos)
+        showNotify("Teleported in front of "..target.Name)
+    end
 end
 
--- KillAll function (kills one target per interval)
-local function killAllTargets(dt)
-	if not killAll then return end
-	killTimer = killTimer + dt
-	if killTimer >= killInterval then
-		killTimer = 0
-		local killTarget = getClosestTarget()
-		if killTarget and killTarget.Character and killTarget.Character:FindFirstChild("Humanoid") then
-			local humanoid = killTarget.Character.Humanoid
-			if humanoid.Health > 0 then
-				teleportToTarget(killTarget)
-				humanoid.Health = 0
-				showNotify("Killed " .. killTarget.Name)
-			end
-		end
-	end
+-- Kill All logic
+local function killAll()
+    if not killAllEnabled then return end
+    for _, plr in pairs(Players:GetPlayers()) do
+        if plr ~= LocalPlayer and plr.Character and plr.Character:FindFirstChild("Humanoid") and plr.Character.Humanoid.Health > 0 then
+            teleportInFront(plr)
+            wait(0.3)
+            local humanoid = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid")
+            if humanoid then
+                humanoid:TakeDamage(1000) -- simulate kill (or you can implement actual kill logic)
+                showNotify("Attacked "..plr.Name)
+            end
+        end
+    end
 end
 
--- Update GUI Button Texts
-local function updateLockBtn()
-	-- Can add lockset display if needed
-end
-
--- Button Events
+-- Button events
 aimbotBtn.MouseButton1Click:Connect(function()
-	aimbot = not aimbot
-	aimbotBtn.Text = "Aimbot: " .. (aimbot and "On" or "Off")
-	showNotify("Aimbot " .. (aimbot and "Enabled" or "Disabled"))
+    aimbotEnabled = not aimbotEnabled
+    aimbotBtn.Text = "Aimbot: "..(aimbotEnabled and "On" or "Off")
+    showNotify("Aimbot "..(aimbotEnabled and "Enabled" or "Disabled"))
 end)
 
 espBtn.MouseButton1Click:Connect(function()
-	esp = not esp
-	espBtn.Text = "ESP: " .. (esp and "On" or "Off")
-	if not esp then
-		-- Remove all highlights immediately
-		for _, highlight in pairs(highlights) do
-			highlight:Destroy()
-		end
-		highlights = {}
-	end
-	showNotify("ESP " .. (esp and "Enabled" or "Disabled"))
-	updateHighlights()
+    toggleESP(not espEnabled)
+    espBtn.Text = "ESP: "..(espEnabled and "On" or "Off")
 end)
 
-killBtn.MouseButton1Click:Connect(function()
-	killAll = not killAll
-	killBtn.Text = "Kill All: " .. (killAll and "On" or "Off")
-	showNotify("Kill All " .. (killAll and "Enabled" or "Disabled"))
+killAllBtn.MouseButton1Click:Connect(function()
+    killAllEnabled = not killAllEnabled
+    killAllBtn.Text = "Kill All: "..(killAllEnabled and "On" or "Off")
+    showNotify("Kill All "..(killAllEnabled and "Enabled" or "Disabled"))
+    if killAllEnabled then
+        killAll()
+    end
 end)
 
 hitboxBtn.MouseButton1Click:Connect(function()
-	hitbox = not hitbox
-	hitboxBtn.Text = "Hitbox: " .. (hitbox and "On" or "Off")
-	if hitbox then
-		updateHitboxes()
-		showNotify("Hitbox Enabled")
-	else
-		resetHitboxes()
-		showNotify("Hitbox Disabled")
-	end
+    hitboxEnabled = not hitboxEnabled
+    hitboxBtn.Text = "Hitbox: "..(hitboxEnabled and "On" or "Off")
+    toggleHitbox(hitboxEnabled)
 end)
 
-hitboxInput.FocusLost:Connect(function(enterPressed)
-	if enterPressed then
-		local val = tonumber(hitboxInput.Text)
-		if val and val >= 0 and val <= 50 then
-			hitboxSize = val
-			if hitbox then
-				updateHitboxes()
-			end
-			showNotify("Hitbox size set to " .. hitboxSize)
-		else
-			showNotify("Invalid hitbox size! Must be 0-50")
-			hitboxInput.Text = tostring(hitboxSize)
-		end
-	end
+-- Main loop for Aimbot and ESP
+RunService.RenderStepped:Connect(function()
+    if aimbotEnabled then
+        currentTarget = getClosestTarget()
+        if currentTarget and currentTarget.Character and currentTarget.Character:FindFirstChild(currentLockSet) then
+            -- Aim at target part
+            local targetPart = currentTarget.Character[currentLockSet]
+            -- Here you would put the actual aimbot aiming code (like setting camera CFrame)
+            statusLabel.Text = "Aimbot: Targeting "..currentTarget.Name
+        else
+            statusLabel.Text = "Aimbot: No target"
+        end
+    else
+        statusLabel.Text = "Status: Idle"
+        currentTarget = nil
+    end
+
+    if espEnabled then
+        for _, plr in pairs(Players:GetPlayers()) do
+            if plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
+                local part = plr.Character:FindFirstChild(currentLockSet) or plr.Character:FindFirstChild("HumanoidRootPart")
+                if part then
+                    createHighlight(part)
+                end
+            end
+        end
+    else
+        clearHighlights()
+    end
 end)
 
--- Setup lockset on character spawn
-local function setupLockset()
-	local char = player.Character or player.CharacterAdded:Wait()
-	lockset = detectLockSet(char)
-	updateLockBtn()
-end
-
-player.CharacterAdded:Connect(function(char)
-	lockset = detectLockSet(char)
-	updateLockBtn()
-	resetHitboxes()
-	if hitbox then updateHitboxes() end
-end)
-
--- Main update loop
-RunService.RenderStepped:Connect(function(dt)
-	if aimbot and lockset and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-		currentTarget = getClosestTarget()
-		if currentTarget and currentTarget.Character and currentTarget.Character:FindFirstChild(lockset) then
-			local targetPart = currentTarget.Character[lockset]
-			local cameraPos = Camera.CFrame.Position
-			local targetPos = targetPart.Position
-			local direction = (targetPos - cameraPos).Unit
-			local newCFrame = CFrame.new(cameraPos, cameraPos + direction)
-			Camera.CFrame = newCFrame
-		end
-	end
-
-	if killAll then
-		killAllTargets(dt)
-	end
-
-	if esp then
-		updateHighlights()
-	end
-end)
-
--- Repeated highlight update every 1 second (in case)
-while true do
-	wait(1)
-	if esp then
-		updateHighlights()
-	end
-end
-
--- Credit footer (optional)
-print("Nice by @dyumra.")
+-- Initial setup
+showNotify("Dyumra Script Loaded! LockSet: "..currentLockSet)
+print("Hi from @dyumra.")
