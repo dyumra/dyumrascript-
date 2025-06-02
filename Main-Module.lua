@@ -32,7 +32,7 @@ local appliedHitboxes = {}
 local currentLockPartIndex = 2
 local lockset = lockParts[currentLockPartIndex]
 
-local TELEPORT_OFFSET_DISTANCE = 0
+local TELEPORT_OFFSET_DISTANCE = 1.5
 local TELEPORT_VERTICAL_OFFSET = 0 
 
 local AIMBOT_SWITCH_DISTANCE = 10 
