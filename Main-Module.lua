@@ -1,3 +1,5 @@
+-- [[ Open Source Code !!! ]]
+
 -- [[ ⚙️ Roblox Execution Module ]]
 -- [[ 🔮 Powered by Dyumra's Innovations ]]
 -- [[ 📊 Version: 2.15.5 - Authenticated Interface Edition ]]
