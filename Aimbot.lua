@@ -1,184 +1,218 @@
--- [ 🌼 Roblox Edition - Powered by @ dyumra.
--- 💌 Version : 1.0.0 - Final Script ]
+-- [ 🌼 Roblox Edition - Powered by @ dyumra. ]
+-- [ 💌 Version : 1.5.0 - Final Script ]
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
+local StarterGui = game:GetService("StarterGui")
 local Camera = workspace.CurrentCamera
 
 local player = Players.LocalPlayer
-local playerGui = player:WaitForChild("PlayerGui")
 
--- สร้าง GUI หลัก (Frame) ที่ลากได้
-local mainGui = Instance.new("ScreenGui")
-mainGui.Name = "AimbotEspGui"
-mainGui.Parent = playerGui
-mainGui.ResetOnSpawn = false
+-- GUI Setup
+local screenGui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
+screenGui.Name = "DyumraAimbotGUI"
+screenGui.ResetOnSpawn = false
 
-local mainFrame = Instance.new("Frame")
-mainFrame.Size = UDim2.new(0, 280, 0, 260)
-mainFrame.Position = UDim2.new(0.5, -140, 0.5, -130)
+local mainFrame = Instance.new("Frame", screenGui)
+mainFrame.Size = UDim2.new(0, 220, 0, 260)
+mainFrame.Position = UDim2.new(0, 10, 0, 50)
 mainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 mainFrame.BorderSizePixel = 0
-mainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
-mainFrame.Parent = mainGui
+mainFrame.AnchorPoint = Vector2.new(0, 0)
+mainFrame.ClipsDescendants = true
+mainFrame.AutomaticSize = Enum.AutomaticSize.None
+mainFrame.Active = true
+mainFrame.Draggable = true
+mainFrame.Name = "MainFrame"
+mainFrame.BackgroundTransparency = 0
 
--- ทำให้ mainFrame ลากได้
-local dragging = false
-local dragInput, mousePos, framePos
+local uiCorner = Instance.new("UICorner", mainFrame)
+uiCorner.CornerRadius = UDim.new(0, 10)
 
-mainFrame.InputBegan:Connect(function(input)
-	if input.UserInputType == Enum.UserInputType.MouseButton1 then
-		dragging = true
-		mousePos = input.Position
-		framePos = mainFrame.Position
-		
-		input.Changed:Connect(function()
-			if input.UserInputState == Enum.UserInputState.End then
-				dragging = false
-			end
-		end)
+-- Toggle Button to show/hide the main GUI
+local toggleBtn = Instance.new("TextButton", screenGui)
+toggleBtn.Size = UDim2.new(0, 100, 0, 25)
+toggleBtn.Position = UDim2.new(0, 10, 0, 10)
+toggleBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+toggleBtn.TextColor3 = Color3.new(1,1,1)
+toggleBtn.Text = "Show GUI"
+toggleBtn.Name = "ToggleBtn"
+toggleBtn.Font = Enum.Font.SourceSansBold
+toggleBtn.TextSize = 18
+toggleBtn.AutoButtonColor = true
+toggleBtn.BackgroundTransparency = 0
+
+local toggleCorner = Instance.new("UICorner", toggleBtn)
+toggleCorner.CornerRadius = UDim.new(0, 6)
+
+toggleBtn.MouseButton1Click:Connect(function()
+	if mainFrame.Visible then
+		mainFrame.Visible = false
+		toggleBtn.Text = "Show GUI"
+	else
+		mainFrame.Visible = true
+		toggleBtn.Text = "Hide GUI"
 	end
 end)
 
-mainFrame.InputChanged:Connect(function(input)
-	if input.UserInputType == Enum.UserInputType.MouseMovement then
-		dragInput = input
-	end
-end)
+-- Create UI elements (Buttons and Label)
+local function createButton(name, posY)
+	local btn = Instance.new("TextButton", mainFrame)
+	btn.Size = UDim2.new(0, 200, 0, 35)
+	btn.Position = UDim2.new(0, 10, 0, posY)
+	btn.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+	btn.TextColor3 = Color3.new(1,1,1)
+	btn.Font = Enum.Font.SourceSansBold
+	btn.TextSize = 18
+	btn.Text = name
+	btn.Name = name:gsub("%s", "") .. "Btn"
 
-UserInputService.InputChanged:Connect(function(input)
-	if input == dragInput and dragging then
-		local delta = input.Position - mousePos
-		mainFrame.Position = UDim2.new(framePos.X.Scale, framePos.X.Offset + delta.X,
-										framePos.Y.Scale, framePos.Y.Offset + delta.Y)
-	end
-end)
+	local corner = Instance.new("UICorner", btn)
+	corner.CornerRadius = UDim.new(0, 6)
 
--- สร้างปุ่ม Toggle GUI ที่มุมซ้ายบน
-local toggleButton = Instance.new("TextButton")
-toggleButton.Size = UDim2.new(0, 100, 0, 30)
-toggleButton.Position = UDim2.new(0, 10, 0, 10)
-toggleButton.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-toggleButton.BorderSizePixel = 0
-toggleButton.TextColor3 = Color3.new(1,1,1)
-toggleButton.Text = "Toggle GUI"
-toggleButton.Parent = playerGui
+	return btn
+end
 
-toggleButton.MouseButton1Click:Connect(function()
-	mainGui.Enabled = not mainGui.Enabled
-end)
+local aimbotBtn = createButton("Aimbot: Off", 10)
+local espBtn = createButton("ESP: Off", 55)
+local killBtn = createButton("Kill All: Off", 100)
+local hitboxBtn = createButton("Hitbox: Off", 145)
 
--- ฟังก์ชันแสดง Notify แบบ Roblox default (Notification GUI)
+local hitboxLabel = Instance.new("TextLabel", mainFrame)
+hitboxLabel.Text = "Hitbox Size (0-50):"
+hitboxLabel.Size = UDim2.new(0, 200, 0, 25)
+hitboxLabel.Position = UDim2.new(0, 10, 0, 190)
+hitboxLabel.BackgroundTransparency = 1
+hitboxLabel.TextColor3 = Color3.new(1,1,1)
+hitboxLabel.Font = Enum.Font.SourceSans
+hitboxLabel.TextSize = 16
+hitboxLabel.TextXAlignment = Enum.TextXAlignment.Left
+
+local hitboxInput = Instance.new("TextBox", mainFrame)
+hitboxInput.Size = UDim2.new(0, 200, 0, 30)
+hitboxInput.Position = UDim2.new(0, 10, 0, 215)
+hitboxInput.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+hitboxInput.TextColor3 = Color3.new(1,1,1)
+hitboxInput.Font = Enum.Font.SourceSansBold
+hitboxInput.TextSize = 18
+hitboxInput.ClearTextOnFocus = false
+hitboxInput.Text = "5"
+hitboxInput.Name = "HitboxInput"
+
+local inputCorner = Instance.new("UICorner", hitboxInput)
+inputCorner.CornerRadius = UDim.new(0, 6)
+
+-- Notification helper
 local function showNotify(text)
-	game.StarterGui:SetCore("SendNotification", {
-		Title = "AimbotESP";
-		Text = text;
-		Duration = 3;
+	StarterGui:SetCore("SendNotification", {
+		Title = "Dyumra Script",
+		Text = text,
+		Duration = 3,
 	})
 end
 
--- ตัวแปรสถานะเริ่มต้น
+-- Variables for toggles and settings
 local aimbot = false
 local esp = false
 local killAll = false
 local hitbox = false
-local hitboxSize = 0
-local lockParts = {"Head", "Torso", "UpperTorso"}
-local lockIndex = 2 -- เริ่มที่ Torso
-local lockset = lockParts[lockIndex]
+local hitboxSize = 5
 
--- สร้างปุ่มแบบง่ายๆ ฟังก์ชันช่วยสร้าง
-local function createButton(name, pos)
-	local btn = Instance.new("TextButton")
-	btn.Size = UDim2.new(0, 120, 0, 30)
-	btn.Position = pos
-	btn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-	btn.BorderSizePixel = 0
-	btn.TextColor3 = Color3.new(1,1,1)
-	btn.Text = name
-	btn.Parent = mainFrame
-	return btn
-end
+local killInterval = 0.4
+local killTimer = 0
 
-local function createLabel(text, pos)
-	local label = Instance.new("TextLabel")
-	label.Size = UDim2.new(0, 120, 0, 20)
-	label.Position = pos
-	label.BackgroundTransparency = 1
-	label.TextColor3 = Color3.new(1,1,1)
-	label.Text = text
-	label.TextXAlignment = Enum.TextXAlignment.Left
-	label.Parent = mainFrame
-	return label
-end
+local lockset = nil -- detected body part for aiming: "Torso", "UpperTorso", "HumanoidRootPart"
+local currentTarget = nil
 
-local aimbotBtn = createButton("Aimbot: Off", UDim2.new(0, 10, 0, 40))
-local espBtn = createButton("ESP: Off", UDim2.new(0, 150, 0, 40))
-local lockBtn = createButton("Lock Set: "..lockset, UDim2.new(0, 10, 0, 80))
-local killBtn = createButton("Kill All: Off", UDim2.new(0, 150, 0, 80))
-local hitboxBtn = createButton("Hitbox: Off", UDim2.new(0, 10, 0, 120))
-
-createLabel("Hitbox Size:", UDim2.new(0, 150, 0, 125))
-
-local hitboxInput = Instance.new("TextBox")
-hitboxInput.Size = UDim2.new(0, 110, 0, 25)
-hitboxInput.Position = UDim2.new(0, 150, 0, 145)
-hitboxInput.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-hitboxInput.BorderSizePixel = 0
-hitboxInput.TextColor3 = Color3.new(1,1,1)
-hitboxInput.Text = tostring(hitboxSize)
-hitboxInput.ClearTextOnFocus = false
-hitboxInput.Parent = mainFrame
-
--- Highlight สำหรับ ESP
-local highlightFolder = Instance.new("Folder", mainGui)
-highlightFolder.Name = "HighlightFolder"
-
--- ฟังก์ชันสร้าง Highlight ตามทีม
-local function updateHighlights()
-	-- เคลียร์ไฮไลท์เก่า
-	for _, h in pairs(highlightFolder:GetChildren()) do
-		h:Destroy()
+-- Detect which body part to lock on (R6 = Torso, R15 = UpperTorso or HumanoidRootPart)
+local function detectLockSet(character)
+	if character:FindFirstChild("HumanoidRootPart") then
+		return "HumanoidRootPart"
+	elseif character:FindFirstChild("UpperTorso") then
+		return "UpperTorso"
+	elseif character:FindFirstChild("Torso") then
+		return "Torso"
 	end
-	for _, p in pairs(Players:GetPlayers()) do
-		if p ~= player and p.Character and p.Character:FindFirstChild("HumanoidRootPart") and p.Character:FindFirstChild("Humanoid") and p.Character.Humanoid.Health > 0 then
-			local hl = Instance.new("Highlight")
-			hl.Adornee = p.Character
-			hl.Parent = highlightFolder
-			hl.Name = p.Name.."Highlight"
-			local teamColor = p.TeamColor.Color
-			if p.Team == nil or p.Team == Players:GetPlayers()[1].Team then
-				hl.FillColor = Color3.new(1,1,1)
-			else
-				hl.FillColor = teamColor
+	return nil
+end
+
+-- ESP Highlights handling
+local highlights = {}
+
+local function updateHighlights()
+	for _, plr in pairs(Players:GetPlayers()) do
+		if plr ~= player and plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
+			local char = plr.Character
+			if not highlights[plr] then
+				local highlight = Instance.new("Highlight")
+				highlight.Adornee = char
+				highlight.FillColor = Color3.new(0,1,0)
+				highlight.OutlineColor = Color3.new(0,1,0)
+				highlight.Parent = screenGui
+				highlights[plr] = highlight
 			end
-			hl.OutlineColor = hl.FillColor
+		end
+	end
+
+	-- Remove highlights for players who left or ESP off
+	for plr, highlight in pairs(highlights) do
+		if not esp or not plr.Character or not plr.Character:FindFirstChild("HumanoidRootPart") or not Players:FindFirstChild(plr.Name) then
+			highlight:Destroy()
+			highlights[plr] = nil
 		end
 	end
 end
 
--- ฟังก์ชันหาเป้าหมายที่ใกล้ที่สุด
+-- Hitbox expand / reset functions
+local originalSizes = {}
+
+local function updateHitboxes()
+	for _, plr in pairs(Players:GetPlayers()) do
+		if plr ~= player and plr.Character then
+			local rootPart = plr.Character:FindFirstChild("HumanoidRootPart") or plr.Character:FindFirstChild("UpperTorso") or plr.Character:FindFirstChild("Torso")
+			if rootPart then
+				if not originalSizes[plr] then
+					originalSizes[plr] = rootPart.Size
+				end
+				rootPart.Size = Vector3.new(hitboxSize, hitboxSize, hitboxSize)
+				rootPart.Transparency = 0.5
+				rootPart.Material = Enum.Material.Plastic
+				rootPart.Color = Color3.new(1,1,1)
+			end
+		end
+	end
+end
+
+local function resetHitboxes()
+	for plr, size in pairs(originalSizes) do
+		if plr.Character then
+			local rootPart = plr.Character:FindFirstChild("HumanoidRootPart") or plr.Character:FindFirstChild("UpperTorso") or plr.Character:FindFirstChild("Torso")
+			if rootPart then
+				rootPart.Size = size
+				rootPart.Transparency = 0
+				rootPart.Material = Enum.Material.Plastic
+				rootPart.Color = Color3.new(1,1,1)
+			end
+		end
+	end
+	originalSizes = {}
+end
+
+-- Find closest player to mouse (target)
 local function getClosestTarget()
 	local closest = nil
-	local closestDist = math.huge
-	for _, p in pairs(Players:GetPlayers()) do
-		if p ~= player and p.Character and p.Character:FindFirstChild(lockset) and p.Character:FindFirstChild("Humanoid") and p.Character.Humanoid.Health > 0 then
-			local part = p.Character[lockset]
-			-- เช็คว่ามองเห็น (raycast) หรือไม่ (ไม่ล็อคหลังผนัง)
-			local origin = Camera.CFrame.Position
-			local direction = (part.Position - origin).Unit * (part.Position - origin).Magnitude
-			local raycastParams = RaycastParams.new()
-			raycastParams.FilterDescendantsInstances = {player.Character, workspace.Terrain}
-			raycastParams.FilterType = Enum.RaycastFilterType.Blacklist
-			local raycastResult = workspace:Raycast(origin, direction, raycastParams)
-			if raycastResult then
-				if raycastResult.Instance and raycastResult.Instance:IsDescendantOf(p.Character) then
-					local dist = (Camera.CFrame.Position - part.Position).Magnitude
-					if dist < closestDist then
-						closest = p
-						closestDist = dist
-					end
+	local shortestDist = math.huge
+	local mousePos = UserInputService:GetMouseLocation()
+	for _, plr in pairs(Players:GetPlayers()) do
+		if plr ~= player and plr.Character and plr.Character:FindFirstChild(lockset or "HumanoidRootPart") then
+			local part = plr.Character[lockset or "HumanoidRootPart"]
+			local screenPoint = Camera:WorldToViewportPoint(part.Position)
+			if screenPoint.Z > 0 then
+				local dist = (Vector2.new(screenPoint.X, screenPoint.Y) - Vector2.new(mousePos.X, mousePos.Y)).Magnitude
+				if dist < shortestDist then
+					shortestDist = dist
+					closest = plr
 				end
 			end
 		end
@@ -186,108 +220,140 @@ local function getClosestTarget()
 	return closest
 end
 
-local currentTarget = nil
+-- Teleport player in front of target (2 studs ahead)
+local function teleportToTarget(plr)
+	if not plr.Character or not plr.Character:FindFirstChild("HumanoidRootPart") then return end
+	local hrp = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+	if not hrp then return end
 
--- ฟังก์ชันอัพเดต Hitbox ขนาด
-local function updateHitbox()
-	if hitbox and currentTarget and currentTarget.Character and currentTarget.Character:FindFirstChild(lockset) then
-		local part = currentTarget.Character[lockset]
-		if part then
-			-- รีเซ็ตขนาดก่อนแล้วเพิ่มขนาดใหม่
-			part.Size = Vector3.new(2, 2, 1) + Vector3.new(hitboxSize, hitboxSize, hitboxSize)
+	local targetPos = plr.Character.HumanoidRootPart.Position
+	local lookVector = plr.Character.HumanoidRootPart.CFrame.LookVector
+
+	hrp.CFrame = CFrame.new(targetPos + lookVector * 2)
+end
+
+-- KillAll function (kills one target per interval)
+local function killAllTargets(dt)
+	if not killAll then return end
+	killTimer = killTimer + dt
+	if killTimer >= killInterval then
+		killTimer = 0
+		local killTarget = getClosestTarget()
+		if killTarget and killTarget.Character and killTarget.Character:FindFirstChild("Humanoid") then
+			local humanoid = killTarget.Character.Humanoid
+			if humanoid.Health > 0 then
+				teleportToTarget(killTarget)
+				humanoid.Health = 0
+				showNotify("Killed " .. killTarget.Name)
+			end
 		end
 	end
 end
 
--- event ปุ่มกดต่างๆ
+-- Update GUI Button Texts
+local function updateLockBtn()
+	-- Can add lockset display if needed
+end
 
+-- Button Events
 aimbotBtn.MouseButton1Click:Connect(function()
 	aimbot = not aimbot
-	aimbotBtn.Text = "Aimbot: "..(aimbot and "On" or "Off")
-	showNotify("Aimbot " .. (aimbot and "enabled" or "disabled"))
-	if not aimbot then currentTarget = nil end
+	aimbotBtn.Text = "Aimbot: " .. (aimbot and "On" or "Off")
+	showNotify("Aimbot " .. (aimbot and "Enabled" or "Disabled"))
 end)
 
 espBtn.MouseButton1Click:Connect(function()
 	esp = not esp
-	espBtn.Text = "ESP: "..(esp and "On" or "Off")
-	showNotify("ESP " .. (esp and "enabled" or "disabled"))
-	if esp then
-		updateHighlights()
-	else
-		for _, h in pairs(highlightFolder:GetChildren()) do
-			h:Destroy()
+	espBtn.Text = "ESP: " .. (esp and "On" or "Off")
+	if not esp then
+		-- Remove all highlights immediately
+		for _, highlight in pairs(highlights) do
+			highlight:Destroy()
 		end
+		highlights = {}
 	end
-end)
-
-lockBtn.MouseButton1Click:Connect(function()
-	lockIndex = lockIndex + 1
-	if lockIndex > #lockParts then lockIndex = 1 end
-	lockset = lockParts[lockIndex]
-	lockBtn.Text = "Lock Set: "..lockset
-	showNotify("Lockset set to "..lockset)
+	showNotify("ESP " .. (esp and "Enabled" or "Disabled"))
+	updateHighlights()
 end)
 
 killBtn.MouseButton1Click:Connect(function()
 	killAll = not killAll
-	killBtn.Text = "Kill All: "..(killAll and "On" or "Off")
-	showNotify("Kill All " .. (killAll and "enabled" or "disabled"))
+	killBtn.Text = "Kill All: " .. (killAll and "On" or "Off")
+	showNotify("Kill All " .. (killAll and "Enabled" or "Disabled"))
 end)
 
 hitboxBtn.MouseButton1Click:Connect(function()
 	hitbox = not hitbox
 	hitboxBtn.Text = "Hitbox: " .. (hitbox and "On" or "Off")
-	showNotify("Hitbox " .. (hitbox and "enabled" or "disabled"))
-	if not hitbox and currentTarget and currentTarget.Character and currentTarget.Character:FindFirstChild(lockset) then
-		-- รีเซ็ตขนาดถ้าปิด hitbox
-		local part = currentTarget.Character[lockset]
-		if part then
-			part.Size = Vector3.new(2, 2, 1) -- ขนาดเดิมประมาณนี้ (เปลี่ยนตาม model จริง)
-		end
+	if hitbox then
+		updateHitboxes()
+		showNotify("Hitbox Enabled")
+	else
+		resetHitboxes()
+		showNotify("Hitbox Disabled")
 	end
 end)
 
 hitboxInput.FocusLost:Connect(function(enterPressed)
 	if enterPressed then
-		local num = tonumber(hitboxInput.Text)
-		if num and num >= 0 then
-			hitboxSize = num
-			showNotify("Hitbox size set to " .. tostring(hitboxSize))
-			updateHitbox()
+		local val = tonumber(hitboxInput.Text)
+		if val and val >= 0 and val <= 50 then
+			hitboxSize = val
+			if hitbox then
+				updateHitboxes()
+			end
+			showNotify("Hitbox size set to " .. hitboxSize)
 		else
-			showNotify("Please enter a valid number >= 0")
+			showNotify("Invalid hitbox size! Must be 0-50")
 			hitboxInput.Text = tostring(hitboxSize)
 		end
 	end
 end)
 
--- ตัวแปรสำหรับ Kill All
-local killInterval = 0.15
-local killTimer = 0
+-- Setup lockset on character spawn
+local function setupLockset()
+	local char = player.Character or player.CharacterAdded:Wait()
+	lockset = detectLockSet(char)
+	updateLockBtn()
+end
 
-RunService.Heartbeat:Connect(function(dt)
-	if aimbot then
-		local target = getClosestTarget()
-		if target and target.Character and target.Character:FindFirstChild(lockset) then
-			currentTarget = target
-			local targetPos = target.Character[lockset].Position
-			Camera.CFrame = CFrame.new(Camera.CFrame.Position, targetPos)
-			updateHitbox()
-		else
-			currentTarget = nil
+player.CharacterAdded:Connect(function(char)
+	lockset = detectLockSet(char)
+	updateLockBtn()
+	resetHitboxes()
+	if hitbox then updateHitboxes() end
+end)
+
+-- Main update loop
+RunService.RenderStepped:Connect(function(dt)
+	if aimbot and lockset and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+		currentTarget = getClosestTarget()
+		if currentTarget and currentTarget.Character and currentTarget.Character:FindFirstChild(lockset) then
+			local targetPart = currentTarget.Character[lockset]
+			local cameraPos = Camera.CFrame.Position
+			local targetPos = targetPart.Position
+			local direction = (targetPos - cameraPos).Unit
+			local newCFrame = CFrame.new(cameraPos, cameraPos + direction)
+			Camera.CFrame = newCFrame
 		end
 	end
 
 	if killAll then
-		killTimer = killTimer + dt
-		if killTimer >= killInterval then
-			killTimer = 0
-			for _, p in pairs(Players:GetPlayers()) do
-				if p ~= player and p.Character and p.Character:FindFirstChild("Humanoid") and p.Character.Humanoid.Health > 0 then
-					p.Character.Humanoid.Health = 0
-				end
-			end
-		end
+		killAllTargets(dt)
+	end
+
+	if esp then
+		updateHighlights()
 	end
 end)
+
+-- Repeated highlight update every 1 second (in case)
+while true do
+	wait(1)
+	if esp then
+		updateHighlights()
+	end
+end
+
+-- Credit footer (optional)
+print("Nice by @dyumra.")
