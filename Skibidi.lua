@@ -1,4 +1,4 @@
-local validKey = "DYHUB-7K3V9-MN2X4-PQ8Z1-R5T7B-W0F6L"
+local validKey = "DYHUB-7K3V9-MN2X4-PQ8Z1-R5T7B-W0F6L-LIFETIME"
 local allowedUsername = "kagefym"
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
