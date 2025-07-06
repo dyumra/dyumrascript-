@@ -1,4 +1,4 @@
-local validKey = "DYHUB-RTFAY-IYUN3-M7IN5-PO8KA-R45YW-LIFETIME"
+local validKey = "DYHUB-RTFAY-IYUN3-M7IN5-PO8KA-R45YW-FREE1DAYS"
 local allowedUsernames = {"Name1", "Name2", "Name3"}
 
 local Players = game:GetService("Players")
