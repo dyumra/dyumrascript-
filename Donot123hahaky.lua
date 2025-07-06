@@ -6,7 +6,7 @@ local player = Players.LocalPlayer
 
 local StarterGui = game:GetService("StarterGui")
 
-if not player or (player.Name ~= allowedUsername and player.Name ~= allowedUsername2) then
+if not player or player.Name ~= allowedUsername2 then
     StarterGui:SetCore("SendNotification", {
         Title = "Access Denied",
         Text = "The first user must reset HWID before proceeding.",
