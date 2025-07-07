@@ -1,5 +1,5 @@
 local validKey = "DYHUB-RTFAY-IYUN3-M7IN5-PO8KA-R45YW-FREE1DAYS"
-local allowedUsernames = {"name", "name2", "name3"}
+local allowedUsernames = {"name", "name2", "Sword1485id30"}
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 local StarterGui = game:GetService("StarterGui")
