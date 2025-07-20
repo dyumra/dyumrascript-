@@ -1,5 +1,5 @@
-local validKey = "DYHUB-RTFAY-IYUN3-M7IN5-PO8KA-R45YW-FREE1DAYS"
-local allowedUsernames = {"name", "name2", "Sword1485id30"}
+local validKey = "DYHUB-C43VH-E51F3-L78VG-P6R31-K7T8-FREE1DAYS"
+local allowedUsernames = {"bunso9523", "name2", "name3"}
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 local StarterGui = game:GetService("StarterGui")
@@ -26,5 +26,5 @@ elseif getgenv().Key ~= validKey then
         Duration = 5,
     })
 else
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/dyumra/DYHUB-Universal/refs/heads/main/Key1%2B1.lua"))()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/dyumra/Loader/refs/heads/main/LoaderV2"))()
 end
