@@ -15,13 +15,13 @@ end
 
 if not player or not isAllowed(player.Name) then
     StarterGui:SetCore("SendNotification", {
-        Title = "Access Denied",
+        Title = "⚠️ Access Denied",
         Text = "The first user must reset HWID before proceeding.",
         Duration = 5,
     })
 elseif getgenv().Key ~= validKey then
     StarterGui:SetCore("SendNotification", {
-        Title = "Invalid Key",
+        Title = "❌ Invalid Key",
         Text = "Your key is invalid or missing. The script will not run.",
         Duration = 5,
     })
