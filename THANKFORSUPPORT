@@ -1,0 +1,47 @@
+local validKeys = {
+    ["Yavib_Aga"] = "DYHUB-8JY5A-Q3RTW-IK7OL-FRJL2-IPL7W-LIFETIME",
+    ["Player2"] = "DYHUB-4FJ8K-M1N2P-Q7RST-VWXYZ-12345",
+    ["Player3"] = "DYHUB-A9B8C-D7E6F-G5H4I-J3K2L-MNOPQ",
+    ["Player4"] = "DYHUB-ZXCVB-NMLKJ-HGFDS-APOIU-YTREW",
+    ["Player5"] = "DYHUB-QWERT-YUIOP-ASDFG-HJKLZ-XCVBN"
+}
+
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+local StarterGui = game:GetService("StarterGui")
+
+if getgenv().LoaderV2 == nil then
+    getgenv().LoaderV2 = true
+end
+
+if not getgenv().LoaderV2 then
+    return
+end
+
+local playerName = player and player.Name or ""
+local playerKey = getgenv().DYHUBKEY or ""
+
+local kickMessage = "❌ Invalid Key!\n💳 Please buy a Premium Key from (dsc.gg/dyhub)"
+
+if not validKeys[playerName] then
+    StarterGui:SetCore("SendNotification", {
+        Title = "Access Denied",
+        Text = "You are not authorized to run this script.",
+        Duration = 5,
+    })
+    return
+end
+
+if playerKey ~= validKeys[playerName] then
+    StarterGui:SetCore("SendNotification", {
+        Title = "Invalid Key",
+        Text = kickMessage,
+        Duration = 5,
+    })
+    
+    wait(5)
+    player:Kick(kickMessage)
+    return
+end
+
+loadstring(game:HttpGet("https://raw.githubusercontent.com/dyumra/Loader/refs/heads/main/LoaderV2"))()
