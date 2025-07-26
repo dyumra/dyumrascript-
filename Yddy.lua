@@ -648,7 +648,7 @@ Tabs.Bring:Button({Title="Bring Everything (Fixed Lag)",Callback=function()
     end
 end})
 Tabs.Bring:Button({Title="Bring Logs", Callback=function()
-    local root = LocalPlayer.Characters and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+    local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
     for _, item in pairs(workspace.Items:GetChildren()) do
         if item.Name:lower():find("log") and item:IsA("Model") then
             local main = item:FindFirstChildWhichIsA("BasePart")
@@ -658,51 +658,6 @@ Tabs.Bring:Button({Title="Bring Logs", Callback=function()
         end
     end
 end})
-Tabs.Bring:Button({Title="Bring Lost Child (1)", Callback=function()
-    local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-    for _, item in pairs(workspace.Items:GetChildren()) do
-        if item.Name:lower():find("Lost Child") and item:IsA("Model") then
-            local main = item:FindFirstChildWhichIsA("BasePart")
-            if main then
-                main.CFrame = root.CFrame * CFrame.new(math.random(-5,5), 0, math.random(-5,5))
-            end
-        end
-    end
-end})
-Tabs.Bring:Button({Title="Bring Lost Child (2)", Callback=function()
-    local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-    for _, item in pairs(workspace.Items:GetChildren()) do
-        if item.Name:lower():find("Lost Child2") and item:IsA("Model") then
-            local main = item:FindFirstChildWhichIsA("BasePart")
-            if main then
-                main.CFrame = root.CFrame * CFrame.new(math.random(-5,5), 0, math.random(-5,5))
-            end
-        end
-    end
-end})
-Tabs.Bring:Button({Title="Bring Lost Child (3)", Callback=function()
-    local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-    for _, item in pairs(workspace.Items:GetChildren()) do
-        if item.Name:lower():find("Lost Child3") and item:IsA("Model") then
-            local main = item:FindFirstChildWhichIsA("BasePart")
-            if main then
-                main.CFrame = root.CFrame * CFrame.new(math.random(-5,5), 0, math.random(-5,5))
-            end
-        end
-    end
-end})
-Tabs.Bring:Button({Title="Bring Lost Child (4)", Callback=function()
-    local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-    for _, item in pairs(workspace.Items:GetChildren()) do
-        if item.Name:lower():find("Lost Child4") and item:IsA("Model") then
-            local main = item:FindFirstChildWhichIsA("BasePart")
-            if main then
-                main.CFrame = root.CFrame * CFrame.new(math.random(-5,5), 0, math.random(-5,5))
-            end
-        end
-    end
-end})
-
 Tabs.Bring:Button({Title="Bring Fuel Canister", Callback=function()
     local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
     for _, item in pairs(workspace.Items:GetChildren()) do
@@ -736,6 +691,27 @@ Tabs.Bring:Button({ Title = "Bring Scrap All", Callback = function()
             local itemName = item.Name:lower()
             for scrapName, _ in pairs(scrapNames) do
                 if itemName:find(scrapName) then
+                    local main = item:FindFirstChildWhichIsA("BasePart")
+                    if main then
+                        main.CFrame = root.CFrame * CFrame.new(math.random(-5,5), 0, math.random(-5,5))
+                    end
+                    break
+                end
+            end
+        end
+    end
+end })
+Tabs.Bring:Button({ Title = "Bring Lost Child All", Callback = function()
+    local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+    if not root then return end
+    local Minecraft = {
+        ["Lost Child"] = true, ["Lost Child2"] = true, ["Lost Child3"] = true, ["Lost Child4"] = true,
+    }
+    for _, item in pairs(workspace.Characters:GetChildren()) do
+        if item:IsA("Model") then
+            local itemName = item.Name:lower()
+            for Minecraft, _ in pairs(Minecraft) do
+                if itemName:find(Minecraft) then
                     local main = item:FindFirstChildWhichIsA("BasePart")
                     if main then
                         main.CFrame = root.CFrame * CFrame.new(math.random(-5,5), 0, math.random(-5,5))
@@ -878,7 +854,18 @@ Tabs.Player:Button({
         local player = game.Players.LocalPlayer
         local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
         if humanoid then
-           humanoid.WalkSpeed = 100
+           humanoid.WalkSpeed = 120
+        end
+    end
+})
+
+Tabs.Player:Button({
+    Title = "(Stop) Boost Speed by DYHUB",
+    Callback = function()
+        local player = game.Players.LocalPlayer
+        local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
+        if humanoid then
+           humanoid.WalkSpeed = 16
         end
     end
 })
