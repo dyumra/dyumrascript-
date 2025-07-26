@@ -700,45 +700,59 @@ Tabs.Bring:Button({Title="Bring Old Axe", Callback=function() bringItemsByName("
 Tabs.Bring:Button({Title="Bring Rifle Ammo", Callback=function() bringItemsByName("Rifle Ammo") end})
 Tabs.Bring:Button({Title="Bring Revolver Ammo", Callback=function() bringItemsByName("Revolver Ammo") end})
 
-local hitboxSettings = {Wolf=false, Bunny=false, Cultist=false, Show=false, Size=10}
+local hitboxSettings = {
+    Wolf = false,
+    Bunny = false,
+    Cultist = false,
+    All = false, -- ขยายทุก model ที่มี HumanoidRootPart
+    Show = false,
+    Size = 10
+}
 
 local function updateHitboxForModel(model)
-    local root = model:FindFirstChild("HumanoidRootPart")
-    if not root then return end
-    local name = model.Name:lower()
-    local shouldResize =
-        (hitboxSettings.Wolf and (name:find("wolf") or name:find("alpha"))) or
-        (hitboxSettings.Bunny and name:find("bunny")) or
-        (hitboxSettings.Cultist and (name:find("cultist") or name:find("cross")))
-    if shouldResize then
-        root.Size = Vector3.new(hitboxSettings.Size, hitboxSettings.Size, hitboxSettings.Size)
-        root.Transparency = hitboxSettings.Show and 0.5 or 1
-        root.Color = Color3.fromRGB(255, 255, 255)
-        root.Material = Enum.Material.Neon
-        root.CanCollide = false
-    end
+    local root = model:FindFirstChild("HumanoidRootPart")
+    if not root then return end
+    local name = model.Name:lower()
+
+    -- ถ้าเปิด All จะไม่สนชื่อ
+    if hitboxSettings.All then
+        root.Size = Vector3.new(hitboxSettings.Size, hitboxSettings.Size, hitboxSettings.Size)
+        root.Transparency = hitboxSettings.Show and 0.5 or 1
+        root.Color = Color3.fromRGB(255, 255, 255)
+        root.Material = Enum.Material.Neon
+        root.CanCollide = false
+        return
+    end
+
+    -- ตรวจชื่อเฉพาะถ้า All ไม่ได้เปิด
+    local shouldResize =
+        (hitboxSettings.Wolf and (name:find("wolf") or name:find("alpha"))) or
+        (hitboxSettings.Bunny and name:find("bunny")) or
+        (hitboxSettings.Cultist and (name:find("cultist") or name:find("cross")))
+
+    if shouldResize then
+        root.Size = Vector3.new(hitboxSettings.Size, hitboxSettings.Size, hitboxSettings.Size)
+        root.Transparency = hitboxSettings.Show and 0.5 or 1
+        root.Color = Color3.fromRGB(255, 255, 255)
+        root.Material = Enum.Material.Neon
+        root.CanCollide = false
+    end
 end
 
 task.spawn(function()
-    while true do
-        for _, model in ipairs(workspace:GetDescendants()) do
-            if model:IsA("Model") and model:FindFirstChild("HumanoidRootPart") then
-                updateHitboxForModel(model)
-            end
-        end
-        task.wait(2)
-    end
+    while true do
+        for _, model in ipairs(workspace:GetDescendants()) do
+            if model:IsA("Model") and model:FindFirstChild("HumanoidRootPart") then
+                updateHitboxForModel(model)
+            end
+        end
+        task.wait(2)
+    end
 end)
-
-Tabs.Hitbox:Toggle({Title="Expand Wolf Hitbox", Default=false, Callback=function(val) hitboxSettings.Wolf=val end})
-Tabs.Hitbox:Toggle({Title="Expand Bunny Hitbox", Default=false, Callback=function(val) hitboxSettings.Bunny=val end})
-Tabs.Hitbox:Toggle({Title="Expand Cultist Hitbox", Default=false, Callback=function(val) hitboxSettings.Cultist=val end})
-Tabs.Hitbox:Slider({Title="Hitbox Size", Value={Min=2, Max=100, Default=10}, Step=1, Callback=function(val) hitboxSettings.Size=val end})
-Tabs.Hitbox:Toggle({Title="Show Hitbox (Transparency)", Default=false, Callback=function(val) hitboxSettings.Show=val end})
 
 Tabs.Player:Slider({
     Title = "Set WalkSpeed",
-    Min = 16,
+    Min = 5,
     Max = 500,
     Default = 16,
     Callback = function(val)
@@ -752,7 +766,7 @@ Tabs.Player:Slider({
 
 Tabs.Player:Slider({
     Title = "Set JumpPower",
-    Min = 50,
+    Min = 10,
     Max = 500,
     Default = 50,
     Callback = function(val)
@@ -765,9 +779,31 @@ Tabs.Player:Slider({
 })
 
 Tabs.Player:Button({
+    Title = "Boost Speed by DYHUB",
+    Callback = function()
+        local player = game.Players.LocalPlayer
+        local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
+        if humanoid then
+            humanoid.WalkSpeed = 120
+        end
+    end
+})
+
+Tabs.Player:Button({
+    Title = "Reset Speed",
+    Callback = function()
+        local player = game.Players.LocalPlayer
+        local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
+        if humanoid then
+            humanoid.WalkSpeed = 16
+        end
+    end
+})
+
+Tabs.Player:Button({
     Title = "Fly (Beta)",
     Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/dyumra/DYHUB-Universal-Game/refs/heads/main/Idkflyv4.lua"))()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/dyumra/Dupe-Anime-Rails/refs/heads/main/Dly"))()
     end
 })
 
@@ -823,7 +859,7 @@ Tabs.Player:Toggle({
 })
 
 Tabs.Player:Toggle({
-    Title = "God mode (In development)",
+    Title = "God mode (Beta)",
     Default = false,
     Callback = function(state)
         local LocalPlayer = game:GetService("Players").LocalPlayer
@@ -851,6 +887,48 @@ Tabs.Player:Toggle({
             else
                 Humanoid.JumpPower = 50 -- Default jump power
             end
+        end
+    end
+})
+
+local VirtualUser = game:GetService("VirtualUser")
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+
+Tabs.Misc:Toggle({
+    Title = "Anti AFK",
+    Default = false,
+    Callback = function(state)
+        if state then
+            player.Idled:Connect(function()
+                VirtualUser:Button2Down(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
+                wait(15)
+                VirtualUser:Button2Up(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
+            end)
+        end
+    end
+})
+
+local proxPromptConnection
+
+Tabs.Misc:Toggle({
+    Title = "Instant Proximity Prompt (No Delay)",
+    Default = false,
+    Callback = function(state)
+        if state then
+            for _, obj in ipairs(workspace:GetDescendants()) do
+                if obj:IsA("ProximityPrompt") then
+                    obj.HoldDuration = 0
+                end
+            end
+            proxPromptConnection = workspace.DescendantAdded:Connect(function(obj)
+                if obj:IsA("ProximityPrompt") then
+                    obj.HoldDuration = 0
+                end
+            end)
+        elseif proxPromptConnection then
+            proxPromptConnection:Disconnect()
+            proxPromptConnection = nil
         end
     end
 })
