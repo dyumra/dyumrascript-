@@ -650,26 +650,43 @@ end})
 Tabs.Bring:Button({
     Title = "Bring Lost Child All",
     Callback = function()
-        local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-        if not root then return end
+        local success, err = pcall(function()
+            local Players = game:GetService("Players")
+            local LocalPlayer = Players.LocalPlayer
+            if not LocalPlayer then return end
 
-        local namesToFind = {
-            ["Lost Child"] = true,
-            ["Lost Child2"] = true,
-            ["Lost Child3"] = true,
-            ["Lost Child4"] = true,
-        }
+            local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+            local root = character:FindFirstChild("HumanoidRootPart")
+            if not root then return end
 
-        for _, item in pairs(workspace.Characters:GetChildren()) do
-            if item:IsA("Model") and namesToFind[item.Name:lower()] then
-                local main = item:FindFirstChildWhichIsA("BasePart")
-                if main then
-                    main.CFrame = root.CFrame * CFrame.new(math.random(-5, 5), 0, math.random(-5, 5))
+            local targetNames = {
+                ["lost child"] = true,
+                ["lost child2"] = true,
+                ["lost child3"] = true,
+                ["lost child4"] = true,
+            }
+
+            local container = workspace:FindFirstChild("Characters")
+            if not container then
+                warn("❌ workspace.Characters not found")
+                return
+            end
+
+            for _, model in ipairs(container:GetChildren()) do
+                if model:IsA("Model") and targetNames[model.Name:lower()] then
+                    local part = model:FindFirstChild("HumanoidRootPart") or model:FindFirstChildWhichIsA("BasePart")
+                    if part then
+                        part.CFrame = root.CFrame * CFrame.new(math.random(-5, 5), 0, math.random(-5, 5))
+                    end
                 end
             end
+        end)
+
+        if not success then
+            warn("❌ Bring Failed: " .. tostring(err))
         end
     end
-})
+end})
 Tabs.Bring:Button({Title="Bring Logs", Callback=function()
     local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
     for _, item in pairs(workspace.Items:GetChildren()) do
