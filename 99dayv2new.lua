@@ -134,13 +134,13 @@ Window:EditOpenButton({
 })
 
 local Tabs = {
-    Main = Window:Tab({ Title = "Main", Icon = "star" }),
-    Teleport = Window:Tab({ Title = "Teleport", Icon = "rocket" }),
+    Main = Window:Tab({ Title = "Main", Icon = "rocket" }),
+    Teleport = Window:Tab({ Title = "Teleport", Icon = "map-pin" }),
     Player = Window:Tab({ Title = "Player", Icon = "user" }),
     Esp = Window:Tab({ Title = "Esp", Icon = "eye" }),
     Bring = Window:Tab({ Title = "Bring Items", Icon = "package" }),
     Hitbox = Window:Tab({ Title = "Hitbox", Icon = "target" }),
-    Misc = Window:Tab({ Title = "Misc", Icon = "tool" }),
+    Misc = Window:Tab({ Title = "Misc", Icon = "file-cog" }),
 }
 
 local infHungerActive = false
