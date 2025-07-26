@@ -648,7 +648,7 @@ Tabs.Bring:Button({Title="Bring Everything (Fixed Lag)",Callback=function()
     end
 end})
 Tabs.Bring:Button({Title="Bring Logs", Callback=function()
-    local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+    local root = LocalPlayer.Characters and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
     for _, item in pairs(workspace.Items:GetChildren()) do
         if item.Name:lower():find("log") and item:IsA("Model") then
             local main = item:FindFirstChildWhichIsA("BasePart")
@@ -658,6 +658,51 @@ Tabs.Bring:Button({Title="Bring Logs", Callback=function()
         end
     end
 end})
+Tabs.Bring:Button({Title="Bring Lost Child (1)", Callback=function()
+    local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+    for _, item in pairs(workspace.Items:GetChildren()) do
+        if item.Name:lower():find("Lost Child") and item:IsA("Model") then
+            local main = item:FindFirstChildWhichIsA("BasePart")
+            if main then
+                main.CFrame = root.CFrame * CFrame.new(math.random(-5,5), 0, math.random(-5,5))
+            end
+        end
+    end
+end})
+Tabs.Bring:Button({Title="Bring Lost Child (2)", Callback=function()
+    local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+    for _, item in pairs(workspace.Items:GetChildren()) do
+        if item.Name:lower():find("Lost Child2") and item:IsA("Model") then
+            local main = item:FindFirstChildWhichIsA("BasePart")
+            if main then
+                main.CFrame = root.CFrame * CFrame.new(math.random(-5,5), 0, math.random(-5,5))
+            end
+        end
+    end
+end})
+Tabs.Bring:Button({Title="Bring Lost Child (3)", Callback=function()
+    local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+    for _, item in pairs(workspace.Items:GetChildren()) do
+        if item.Name:lower():find("Lost Child3") and item:IsA("Model") then
+            local main = item:FindFirstChildWhichIsA("BasePart")
+            if main then
+                main.CFrame = root.CFrame * CFrame.new(math.random(-5,5), 0, math.random(-5,5))
+            end
+        end
+    end
+end})
+Tabs.Bring:Button({Title="Bring Lost Child (4)", Callback=function()
+    local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+    for _, item in pairs(workspace.Items:GetChildren()) do
+        if item.Name:lower():find("Lost Child4") and item:IsA("Model") then
+            local main = item:FindFirstChildWhichIsA("BasePart")
+            if main then
+                main.CFrame = root.CFrame * CFrame.new(math.random(-5,5), 0, math.random(-5,5))
+            end
+        end
+    end
+end})
+
 Tabs.Bring:Button({Title="Bring Fuel Canister", Callback=function()
     local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
     for _, item in pairs(workspace.Items:GetChildren()) do
@@ -796,7 +841,7 @@ end)
 Tabs.Hitbox:Toggle({Title="Expand Wolf Hitbox", Default=false, Callback=function(val) hitboxSettings.Wolf=val end})
 Tabs.Hitbox:Toggle({Title="Expand Bunny Hitbox", Default=false, Callback=function(val) hitboxSettings.Bunny=val end})
 Tabs.Hitbox:Toggle({Title="Expand Cultist Hitbox", Default=false, Callback=function(val) hitboxSettings.Cultist=val end})
-Tabs.Hitbox:Slider({Title="Hitbox Size", Value={Min=2, Max=100, Default=10}, Step=1, Callback=function(val) hitboxSettings.Size=val end})
+Tabs.Hitbox:Slider({Title="Hitbox Size", Value={Min=2, Max=250, Default=10}, Step=1, Callback=function(val) hitboxSettings.Size=val end})
 Tabs.Hitbox:Toggle({Title="Show Hitbox (Transparency)", Default=false, Callback=function(val) hitboxSettings.Show=val end})
 
 Tabs.Player:Slider({
@@ -828,9 +873,20 @@ Tabs.Player:Slider({
 })
 
 Tabs.Player:Button({
+    Title = "Boost Speed by DYHUB",
+    Callback = function()
+        local player = game.Players.LocalPlayer
+        local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
+        if humanoid then
+           humanoid.WalkSpeed = 100
+        end
+    end
+})
+
+Tabs.Player:Button({
     Title = "Fly (Beta)",
     Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/dyumra/DYHUB-Universal-Game/refs/heads/main/Idkflyv4.lua"))()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/dyumra/Dupe-Anime-Rails/refs/heads/main/Dly"))()
     end
 })
 
@@ -885,7 +941,7 @@ Tabs.Player:Toggle({
 })
 
 Tabs.Player:Toggle({
-    Title = "God mode (In development)",
+    Title = "God mode (Beta)",
     Default = false,
     Callback = function(state)
         -- God mode typically involves setting Humanoid.Health to math.huge or constantly healing.
@@ -928,6 +984,28 @@ Tabs.Player:Toggle({
             end
         end
     end
+})
+
+Tabs.Misc:Toggle({
+    Title = "Instant Proximity Prompt (No Delay)",
+    Default = false,
+    Callback = function(state)
+        if state then
+            -- เปิด: ตั้ง HoldDuration = 0
+            for _, obj in ipairs(workspace:GetDescendants()) do
+                if obj:IsA("ProximityPrompt") then
+                    obj.HoldDuration = 0
+                end
+            end
+
+            -- เฝ้าดูวัตถุใหม่ที่ถูกเพิ่มเข้ามาใน workspace
+            workspace.DescendantAdded:Connect(function(obj)
+                if obj:IsA("ProximityPrompt") then
+                    obj.HoldDuration = 0
+                end
+            end)
+        end
+    end
 })
 
 Tabs.Misc:Button({
