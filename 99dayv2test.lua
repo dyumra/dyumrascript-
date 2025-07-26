@@ -658,50 +658,7 @@ Tabs.Bring:Button({Title="Bring Logs", Callback=function()
         end
     end
 end})
-Tabs.Bring:Button({Title="Bring Lost Child (1)", Callback=function()
-    local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-    for _, item in pairs(workspace.Items:GetChildren()) do
-        if item.Name:lower():find("Lost Child") and item:IsA("Model") then
-            local main = item:FindFirstChildWhichIsA("BasePart")
-            if main then
-                main.CFrame = root.CFrame * CFrame.new(math.random(-5,5), 0, math.random(-5,5))
-            end
-        end
-    end
-end})
-Tabs.Bring:Button({Title="Bring Lost Child (2)", Callback=function()
-    local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-    for _, item in pairs(workspace.Items:GetChildren()) do
-        if item.Name:lower():find("Lost Child2") and item:IsA("Model") then
-            local main = item:FindFirstChildWhichIsA("BasePart")
-            if main then
-                main.CFrame = root.CFrame * CFrame.new(math.random(-5,5), 0, math.random(-5,5))
-            end
-        end
-    end
-end})
-Tabs.Bring:Button({Title="Bring Lost Child (3)", Callback=function()
-    local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-    for _, item in pairs(workspace.Items:GetChildren()) do
-        if item.Name:lower():find("Lost Child3") and item:IsA("Model") then
-            local main = item:FindFirstChildWhichIsA("BasePart")
-            if main then
-                main.CFrame = root.CFrame * CFrame.new(math.random(-5,5), 0, math.random(-5,5))
-            end
-        end
-    end
-end})
-Tabs.Bring:Button({Title="Bring Lost Child (4)", Callback=function()
-    local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-    for _, item in pairs(workspace.Items:GetChildren()) do
-        if item.Name:lower():find("Lost Child4") and item:IsA("Model") then
-            local main = item:FindFirstChildWhichIsA("BasePart")
-            if main then
-                main.CFrame = root.CFrame * CFrame.new(math.random(-5,5), 0, math.random(-5,5))
-            end
-        end
-    end
-end})
+
 
 Tabs.Bring:Button({Title="Bring Fuel Canister", Callback=function()
     local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
