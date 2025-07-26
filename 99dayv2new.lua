@@ -15,29 +15,32 @@ local CoreGui = game:GetService("CoreGui")
 
 -- Define common helper functions at the top to ensure they are available when called
 local function CreateEsp(Char, Color, Text, Parent, numberOffset)
-    if not Char then return end
-    -- Destroy existing ESP components to prevent duplicates if function is called multiple times for same object
-    KeepEsp(Char, Parent) -- Ensure clean state before creating new ESP
+    if not Char or not Parent then return end
+    
+    -- Check if ESP already exists to prevent duplicates
+    if Char:FindFirstChildOfClass("Highlight") or Parent:FindFirstChildOfClass("BillboardGui") then
+        return
+    end
 
     local highlight = Instance.new("Highlight")
     highlight.Name = "ESP_Highlight"
     highlight.Adornee = Char
     highlight.FillColor = Color
-    highlight.FillTransparency = 1
+    highlight.FillTransparency = 0.8
     highlight.OutlineColor = Color
     highlight.OutlineTransparency = 0
     highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
     highlight.Enabled = true
-    highlight.Parent = Char
+    highlight.Parent = CoreGui
 
     local billboard = Instance.new("BillboardGui")
     billboard.Name = "ESP"
-    billboard.Size = UDim2.new(0, 50, 0, 25)
+    billboard.Size = UDim2.new(0, 200, 0, 50)
     billboard.AlwaysOnTop = true
-    billboard.StudsOffset = Vector3.new(0, numberOffset or 3, 0) -- Default offset if not provided
+    billboard.StudsOffset = Vector3.new(0, numberOffset or 3, 0)
     billboard.Adornee = Parent
     billboard.Enabled = true
-    billboard.Parent = Parent
+    billboard.Parent = CoreGui
 
     local label = Instance.new("TextLabel")
     label.Size = UDim2.new(1, 0, 1, 0)
@@ -45,6 +48,9 @@ local function CreateEsp(Char, Color, Text, Parent, numberOffset)
     label.Text = Text
     label.TextColor3 = Color
     label.TextScaled = true
+    label.TextStrokeTransparency = 0
+    label.TextStrokeColor3 = Color3.new(0, 0, 0)
+    label.Font = Enum.Font.GothamBold
     label.Parent = billboard
 
     task.spawn(function()
@@ -55,12 +61,12 @@ local function CreateEsp(Char, Color, Text, Parent, numberOffset)
         local LocalPlayer = Players.LocalPlayer
         local Camera = Workspace.CurrentCamera
 
-        while highlight and billboard and Parent and Parent.Parent do
+        while highlight and billboard and Parent and Parent.Parent and highlight.Parent and billboard.Parent do
             local cameraPosition = Camera and Camera.CFrame.Position
             if cameraPosition and Parent and Parent:IsA("BasePart") then
                 local distance = (cameraPosition - Parent.Position).Magnitude
                 if ActiveDistanceEsp then
-                    label.Text = Text .. " (" .. math.floor(distance + 0.5) .. " stud)"
+                    label.Text = Text .. " (" .. math.floor(distance + 0.5) .. " studs)"
                 else
                     label.Text = Text
                 end
@@ -81,6 +87,17 @@ local function KeepEsp(Char, Parent)
         local billboard = Parent:FindFirstChildOfClass("BillboardGui")
         if billboard then
             billboard:Destroy()
+        end
+    end
+    
+    -- Also check CoreGui for ESP components
+    for _, obj in pairs(CoreGui:GetChildren()) do
+        if obj.Name == "ESP_Highlight" or obj.Name == "ESP" then
+            if obj:IsA("Highlight") and obj.Adornee == Char then
+                obj:Destroy()
+            elseif obj:IsA("BillboardGui") and obj.Adornee == Parent then
+                obj:Destroy()
+            end
         end
     end
 end
@@ -339,25 +356,39 @@ Tabs.Esp:Toggle({
     Default = false,
     Callback = function(state)
         ActiveEspPlayer = state
-        task.spawn(function()
-            while ActiveEspPlayer do
-                for _, player in pairs(game.Players:GetPlayers()) do
-                    if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-                        local char = player.Character
-                        if not char:FindFirstChildOfClass("Highlight") and not char.HumanoidRootPart:FindFirstChildOfClass("BillboardGui") then
-                            CreateEsp(char, Color3.fromRGB(0, 255, 0), player.Name, char.HumanoidRootPart, 2)
+        if state then
+            task.spawn(function()
+                while ActiveEspPlayer do
+                    for _, player in pairs(game.Players:GetPlayers()) do
+                        if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+                            local char = player.Character
+                            local hrp = char.HumanoidRootPart
+                            -- Check both the character and CoreGui for existing ESP
+                            local hasHighlight = char:FindFirstChildOfClass("Highlight")
+                            local hasBillboard = false
+                            for _, obj in pairs(CoreGui:GetChildren()) do
+                                if obj.Name == "ESP" and obj:IsA("BillboardGui") and obj.Adornee == hrp then
+                                    hasBillboard = true
+                                    break
+                                end
+                            end
+                            if not hasHighlight and not hasBillboard then
+                                CreateEsp(char, Color3.fromRGB(0, 255, 0), player.Name, hrp, 2)
+                            end
                         end
                     end
+                    task.wait(0.5)
                 end
-                task.wait(0.1)
-            end
+            end)
+        else
+            -- Clean up all player ESP when disabled
             for _, player in pairs(game.Players:GetPlayers()) do
                 if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
                     local char = player.Character
                     KeepEsp(char, char.HumanoidRootPart)
                 end
             end
-        end)
+        end
     end
 })
 
@@ -366,19 +397,35 @@ Tabs.Esp:Toggle({
     Default = false,
     Callback = function(state)
         ActiveEspItems = state
-        task.spawn(function()
-            while ActiveEspItems do
-                for _, Obj in pairs(game.Workspace.Items:GetChildren()) do
-                    if Obj:IsA("Model") and Obj.PrimaryPart and not Obj:FindFirstChildOfClass("Highlight") and not Obj.PrimaryPart:FindFirstChildOfClass("BillboardGui") then
-                        CreateEsp(Obj, Color3.fromRGB(255, 255, 0), Obj.Name, Obj.PrimaryPart, 2)
+        if state then
+            task.spawn(function()
+                while ActiveEspItems do
+                    for _, Obj in pairs(game.Workspace.Items:GetChildren()) do
+                        if Obj:IsA("Model") and Obj.PrimaryPart then
+                            local hasHighlight = Obj:FindFirstChildOfClass("Highlight")
+                            local hasBillboard = false
+                            for _, guiObj in pairs(CoreGui:GetChildren()) do
+                                if guiObj.Name == "ESP" and guiObj:IsA("BillboardGui") and guiObj.Adornee == Obj.PrimaryPart then
+                                    hasBillboard = true
+                                    break
+                                end
+                            end
+                            if not hasHighlight and not hasBillboard then
+                                CreateEsp(Obj, Color3.fromRGB(255, 255, 0), Obj.Name, Obj.PrimaryPart, 2)
+                            end
+                        end
                     end
+                    task.wait(0.5)
                 end
-                task.wait(0.1)
-            end
+            end)
+        else
+            -- Clean up all item ESP when disabled
             for _, Obj in pairs(game.Workspace.Items:GetChildren()) do
-                KeepEsp(Obj, Obj.PrimaryPart)
+                if Obj.PrimaryPart then
+                    KeepEsp(Obj, Obj.PrimaryPart)
+                end
             end
-        end)
+        end
     end
 })
 
@@ -387,19 +434,35 @@ Tabs.Esp:Toggle({
     Default = false,
     Callback = function(state)
         ActiveEspEnemy = state
-        task.spawn(function()
-            while ActiveEspEnemy do
-                for _, Obj in pairs(game.Workspace.Characters:GetChildren()) do
-                    if Obj:IsA("Model") and Obj.PrimaryPart and (Obj.Name ~= "Lost Child" and Obj.Name ~= "Lost Child2" and Obj.Name ~= "Lost Child3" and Obj.Name ~= "Lost Child4" and Obj.Name ~= "Pelt Trader") and not Obj:FindFirstChildOfClass("Highlight") and not Obj.PrimaryPart:FindFirstChildOfClass("BillboardGui") then
-                        CreateEsp(Obj, Color3.fromRGB(255, 0, 0), Obj.Name, Obj.PrimaryPart, 2)
+        if state then
+            task.spawn(function()
+                while ActiveEspEnemy do
+                    for _, Obj in pairs(game.Workspace.Characters:GetChildren()) do
+                        if Obj:IsA("Model") and Obj.PrimaryPart and (Obj.Name ~= "Lost Child" and Obj.Name ~= "Lost Child2" and Obj.Name ~= "Lost Child3" and Obj.Name ~= "Lost Child4" and Obj.Name ~= "Pelt Trader") then
+                            local hasHighlight = Obj:FindFirstChildOfClass("Highlight")
+                            local hasBillboard = false
+                            for _, guiObj in pairs(CoreGui:GetChildren()) do
+                                if guiObj.Name == "ESP" and guiObj:IsA("BillboardGui") and guiObj.Adornee == Obj.PrimaryPart then
+                                    hasBillboard = true
+                                    break
+                                end
+                            end
+                            if not hasHighlight and not hasBillboard then
+                                CreateEsp(Obj, Color3.fromRGB(255, 0, 0), Obj.Name, Obj.PrimaryPart, 2)
+                            end
+                        end
                     end
+                    task.wait(0.5)
                 end
-                task.wait(0.1)
-            end
+            end)
+        else
+            -- Clean up all enemy ESP when disabled
             for _, Obj in pairs(game.Workspace.Characters:GetChildren()) do
-                KeepEsp(Obj, Obj.PrimaryPart)
+                if Obj.PrimaryPart then
+                    KeepEsp(Obj, Obj.PrimaryPart)
+                end
             end
-        end)
+        end
     end
 })
 
@@ -479,30 +542,45 @@ for category, data in pairs(espTypes) do
         Title = "ESP (" .. category .. ")",
         Default = false,
         Callback = function(state)
-            local active = state
-            task.spawn(function()
-                while active do
-                    for _, obj in pairs(game.Workspace.Items:GetChildren()) do
-                        if obj:IsA("Model") and obj.PrimaryPart and not obj:FindFirstChildOfClass("Highlight") and not obj.PrimaryPart:FindFirstChildOfClass("BillboardGui") then
-                            for _, itemName in pairs(data.items) do
-                                if string.lower(obj.Name) == string.lower(itemName) then
-                                    CreateEsp(obj, data.color, obj.Name, obj.PrimaryPart, 2)
-                                    break
+            if state then
+                task.spawn(function()
+                    while state do
+                        for _, obj in pairs(game.Workspace.Items:GetChildren()) do
+                            if obj:IsA("Model") and obj.PrimaryPart then
+                                for _, itemName in pairs(data.items) do
+                                    if string.lower(obj.Name) == string.lower(itemName) then
+                                        local hasHighlight = obj:FindFirstChildOfClass("Highlight")
+                                        local hasBillboard = false
+                                        for _, guiObj in pairs(CoreGui:GetChildren()) do
+                                            if guiObj.Name == "ESP" and guiObj:IsA("BillboardGui") and guiObj.Adornee == obj.PrimaryPart then
+                                                hasBillboard = true
+                                                break
+                                            end
+                                        end
+                                        if not hasHighlight and not hasBillboard then
+                                            CreateEsp(obj, data.color, obj.Name, obj.PrimaryPart, 2)
+                                        end
+                                        break
+                                    end
                                 end
                             end
                         end
+                        task.wait(0.5)
                     end
-                    task.wait(0.25)
-                end
+                end)
+            else
+                -- Clean up ESP for this category when disabled
                 for _, obj in pairs(game.Workspace.Items:GetChildren()) do
-                    for _, itemName in pairs(data.items) do
-                        if string.lower(obj.Name) == string.lower(itemName) then
-                            KeepEsp(obj, obj.PrimaryPart)
-                            break
+                    if obj.PrimaryPart then
+                        for _, itemName in pairs(data.items) do
+                            if string.lower(obj.Name) == string.lower(itemName) then
+                                KeepEsp(obj, obj.PrimaryPart)
+                                break
+                            end
                         end
                     end
                 end
-            end)
+            end
         end
     })
 end
@@ -512,19 +590,35 @@ Tabs.Esp:Toggle({
     Default = false,
     Callback = function(state)
         ActiveEspChildren = state
-        task.spawn(function()
-            while ActiveEspChildren do
-                for _, Obj in pairs(game.Workspace.Characters:GetChildren()) do
-                    if Obj:IsA("Model") and Obj.PrimaryPart and (Obj.Name == "Lost Child" or Obj.Name == "Lost Child2" or Obj.Name == "Lost Child3" or Obj.Name == "Lost Child4") and not Obj:FindFirstChildOfClass("Highlight") and not Obj.PrimaryPart:FindFirstChildOfClass("BillboardGui") then
-                        CreateEsp(Obj, Color3.fromRGB(0, 255, 0), Obj.Name, Obj.PrimaryPart, 2)
+        if state then
+            task.spawn(function()
+                while ActiveEspChildren do
+                    for _, Obj in pairs(game.Workspace.Characters:GetChildren()) do
+                        if Obj:IsA("Model") and Obj.PrimaryPart and (Obj.Name == "Lost Child" or Obj.Name == "Lost Child2" or Obj.Name == "Lost Child3" or Obj.Name == "Lost Child4") then
+                            local hasHighlight = Obj:FindFirstChildOfClass("Highlight")
+                            local hasBillboard = false
+                            for _, guiObj in pairs(CoreGui:GetChildren()) do
+                                if guiObj.Name == "ESP" and guiObj:IsA("BillboardGui") and guiObj.Adornee == Obj.PrimaryPart then
+                                    hasBillboard = true
+                                    break
+                                end
+                            end
+                            if not hasHighlight and not hasBillboard then
+                                CreateEsp(Obj, Color3.fromRGB(0, 255, 0), Obj.Name, Obj.PrimaryPart, 2)
+                            end
+                        end
                     end
+                    task.wait(0.5)
                 end
-                task.wait(0.1)
-            end
+            end)
+        else
+            -- Clean up all children ESP when disabled
             for _, Obj in pairs(game.Workspace.Characters:GetChildren()) do
-                KeepEsp(Obj, Obj.PrimaryPart)
+                if Obj.PrimaryPart then
+                    KeepEsp(Obj, Obj.PrimaryPart)
+                end
             end
-        end)
+        end
     end
 })
 
@@ -533,19 +627,35 @@ Tabs.Esp:Toggle({
     Default = false,
     Callback = function(state)
         ActiveEspPeltTrader = state
-        task.spawn(function()
-            while ActiveEspPeltTrader do
-                for _, Obj in pairs(game.Workspace.Characters:GetChildren()) do
-                    if Obj:IsA("Model") and Obj.PrimaryPart and Obj.Name == "Pelt Trader" and not Obj:FindFirstChildOfClass("Highlight") and not Obj:FindFirstChildOfClass("BillboardGui") then
-                        CreateEsp(Obj, Color3.fromRGB(0, 255, 255), Obj.Name, Obj.PrimaryPart, 2)
+        if state then
+            task.spawn(function()
+                while ActiveEspPeltTrader do
+                    for _, Obj in pairs(game.Workspace.Characters:GetChildren()) do
+                        if Obj:IsA("Model") and Obj.PrimaryPart and Obj.Name == "Pelt Trader" then
+                            local hasHighlight = Obj:FindFirstChildOfClass("Highlight")
+                            local hasBillboard = false
+                            for _, guiObj in pairs(CoreGui:GetChildren()) do
+                                if guiObj.Name == "ESP" and guiObj:IsA("BillboardGui") and guiObj.Adornee == Obj.PrimaryPart then
+                                    hasBillboard = true
+                                    break
+                                end
+                            end
+                            if not hasHighlight and not hasBillboard then
+                                CreateEsp(Obj, Color3.fromRGB(0, 255, 255), Obj.Name, Obj.PrimaryPart, 2)
+                            end
+                        end
                     end
+                    task.wait(0.5)
                 end
-                task.wait(0.1)
-            end
+            end)
+        else
+            -- Clean up all pelt trader ESP when disabled
             for _, Obj in pairs(game.Workspace.Characters:GetChildren()) do
-                KeepEsp(Obj, Obj.PrimaryPart)
+                if Obj.PrimaryPart then
+                    KeepEsp(Obj, Obj.PrimaryPart)
+                end
             end
-        end)
+        end
     end
 })
 
@@ -635,6 +745,52 @@ for i, name in ipairs(lostChildNames) do
         end
     })
 end
+
+Tabs.Esp:Toggle({
+    Title = "Show Distance",
+    Default = false,
+    Callback = function(state)
+        ActiveDistanceEsp = state
+    end
+})
+
+Tabs.Esp:Button({
+    Title = "Clear All ESP",
+    Callback = function()
+        -- Clear all ESP from CoreGui
+        for _, obj in pairs(CoreGui:GetChildren()) do
+            if obj.Name == "ESP_Highlight" or obj.Name == "ESP" then
+                obj:Destroy()
+            end
+        end
+        
+        -- Clear all highlights from workspace objects
+        for _, item in pairs(game.Workspace.Items:GetChildren()) do
+            local highlight = item:FindFirstChildOfClass("Highlight")
+            if highlight then
+                highlight:Destroy()
+            end
+        end
+        
+        for _, char in pairs(game.Workspace.Characters:GetChildren()) do
+            local highlight = char:FindFirstChildOfClass("Highlight")
+            if highlight then
+                highlight:Destroy()
+            end
+        end
+        
+        for _, player in pairs(game.Players:GetPlayers()) do
+            if player.Character then
+                local highlight = player.Character:FindFirstChildOfClass("Highlight")
+                if highlight then
+                    highlight:Destroy()
+                end
+            end
+        end
+        
+        print("✅ All ESP cleared")
+    end
+})
 
 -----------------------------------------------------------------
 -- BRING TAB
