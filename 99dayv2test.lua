@@ -873,17 +873,6 @@ Tabs.Player:Slider({
 })
 
 Tabs.Player:Button({
-    Title = "Boost Speed by DYHUB",
-    Callback = function()
-        local player = game.Players.LocalPlayer
-        local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
-        if humanoid then
-           humanoid.WalkSpeed = 100
-        end
-    end
-})
-
-Tabs.Player:Button({
     Title = "Fly (Beta)",
     Callback = function()
         loadstring(game:HttpGet("https://raw.githubusercontent.com/dyumra/Dupe-Anime-Rails/refs/heads/main/Dly"))()
@@ -984,28 +973,6 @@ Tabs.Player:Toggle({
             end
         end
     end
-})
-
-Tabs.Misc:Toggle({
-    Title = "Instant Proximity Prompt (No Delay)",
-    Default = false,
-    Callback = function(state)
-        if state then
-            -- เปิด: ตั้ง HoldDuration = 0
-            for _, obj in ipairs(workspace:GetDescendants()) do
-                if obj:IsA("ProximityPrompt") then
-                    obj.HoldDuration = 0
-                end
-            end
-
-            -- เฝ้าดูวัตถุใหม่ที่ถูกเพิ่มเข้ามาใน workspace
-            workspace.DescendantAdded:Connect(function(obj)
-                if obj:IsA("ProximityPrompt") then
-                    obj.HoldDuration = 0
-                end
-            end)
-        end
-    end
 })
 
 Tabs.Misc:Button({
