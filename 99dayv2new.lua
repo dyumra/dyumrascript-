@@ -828,26 +828,12 @@ Tabs.Player:Slider({
 })
 
 Tabs.Player:Button({
-    Title = "Speed Boost by DYHUB",
+    Title = "Proximity Prompt (No Delay)",
     Callback = function()
-        local player = game.Players.LocalPlayer
-        local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
-        if humanoid then
-            humanoid.WalkSpeed = 120
-        end
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/dyumra/DYHUB-Universal-Game/refs/heads/main/nodelay.lua"))()
     end
 })
 
-Tabs.Player:Button({
-    Title = "Reset Speed",
-    Callback = function()
-        local player = game.Players.LocalPlayer
-        local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
-        if humanoid then
-            humanoid.WalkSpeed = 16
-        end
-    end
-})
 
 Tabs.Player:Button({
     Title = "Fly (Beta)",
@@ -950,62 +936,6 @@ Tabs.Player:Toggle({
             end
         end
     end
-})
-
-local VirtualUser = game:GetService("VirtualUser")
-local Players = game:GetService("Players")
-local player = Players.LocalPlayer
-
-Tabs.Misc:Toggle({
-    Title = "Anti AFK",
-    Default = false,
-    Callback = function(state)
-        if state then
-            player.Idled:Connect(function()
-                VirtualUser:Button2Down(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
-                wait(1)
-                VirtualUser:Button2Up(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
-            end)
-        end
-    end
-})
-
-local connection -- ใช้เก็บการเชื่อมต่อ event
-
-Tabs.Misc:Toggle({
-    Title = "Instant Proximity Prompt (No Delay)",
-    Default = false,
-    Callback = function(state)
-        if state then
-            -- เปิด: ตั้ง HoldDuration = 0
-            for _, obj in ipairs(workspace:GetDescendants()) do
-                if obj:IsA("ProximityPrompt") then
-                    obj.HoldDuration = 0
-                end
-            end
-
-            -- ตั้ง Event เพื่อตรวจจับ prompt ใหม่ที่ถูกเพิ่ม
-            connection = workspace.DescendantAdded:Connect(function(obj)
-                if obj:IsA("ProximityPrompt") then
-                    obj.HoldDuration = 0
-                end
-            end)
-
-        else
-            -- ปิด: คืนค่า HoldDuration = 0.5
-            for _, obj in ipairs(workspace:GetDescendants()) do
-                if obj:IsA("ProximityPrompt") then
-                    obj.HoldDuration = 0.5
-                end
-            end
-
-            -- ยกเลิกการเชื่อมต่อ event ถ้ามี
-            if connection then
-                connection:Disconnect()
-                connection = nil
-            end
-        end
-    end
 })
 
 Tabs.Misc:Button({
