@@ -647,6 +647,29 @@ Tabs.Bring:Button({Title="Bring Everything (Fixed Lag)",Callback=function()
         end
     end
 end})
+Tabs.Bring:Button({
+    Title = "Bring Lost Child All",
+    Callback = function()
+        local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+        if not root then return end
+
+        local namesToFind = {
+            ["Lost Child"] = true,
+            ["Lost Child2"] = true,
+            ["Lost Child3"] = true,
+            ["Lost Child4"] = true,
+        }
+
+        for _, item in pairs(workspace.Characters:GetChildren()) do
+            if item:IsA("Model") and namesToFind[item.Name:lower()] then
+                local main = item:FindFirstChildWhichIsA("BasePart")
+                if main then
+                    main.CFrame = root.CFrame * CFrame.new(math.random(-5, 5), 0, math.random(-5, 5))
+                end
+            end
+        end
+    end
+})
 Tabs.Bring:Button({Title="Bring Logs", Callback=function()
     local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
     for _, item in pairs(workspace.Items:GetChildren()) do
