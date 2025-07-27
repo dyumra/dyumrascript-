@@ -759,16 +759,19 @@ Tabs.Bring:Button({Title="Bring Old Axe", Callback=function() bringItemsByName("
 Tabs.Bring:Button({Title="Bring Rifle Ammo", Callback=function() bringItemsByName("Rifle Ammo") end})
 Tabs.Bring:Button({Title="Bring Revolver Ammo", Callback=function() bringItemsByName("Revolver Ammo") end})
 
-local hitboxSettings = {Wolf=false, Bunny=false, Cultist=false, Show=false, Size=10}
+local hitboxSettings = {All=false, Alien=false, Wolf=false, Bunny=false, Cultist=false, Bear=false, Show=false, Size=10}
 
 local function updateHitboxForModel(model)
     local root = model:FindFirstChild("HumanoidRootPart")
     if not root then return end
     local name = model.Name:lower()
     local shouldResize =
+        (hitboxSettings.All and (name:find("Alien") or name:find("Alien Elite") or name:find("Bear") or name:find("Polar Bear") or name:find("wolf") or name:find("alpha") or name:find("Bear") or name:find("Polar Bear") or name:find("cultist") or name:find("cross") or name:find("Crossbow Cultist"))) or
+        (hitboxSettings.Alien and (name:find("Alien") or name:find("Alien Elite"))) or
         (hitboxSettings.Wolf and (name:find("wolf") or name:find("alpha"))) or
         (hitboxSettings.Bunny and name:find("bunny")) or
-        (hitboxSettings.Cultist and (name:find("cultist") or name:find("cross")))
+        (hitboxSettings.Bear and (name:find("Bear") or name:find("Polar Bear"))) or
+        (hitboxSettings.Cultist and (name:find("cultist") or name:find("cross") or name:find("Crossbow Cultist"))) or
     if shouldResize then
         root.Size = Vector3.new(hitboxSettings.Size, hitboxSettings.Size, hitboxSettings.Size)
         root.Transparency = hitboxSettings.Show and 0.5 or 1
@@ -789,6 +792,9 @@ task.spawn(function()
     end
 end)
 
+Tabs.Hitbox:Toggle({Title="Expand All Hitbox", Default=false, Callback=function(val) hitboxSettings.All=val end})
+Tabs.Hitbox:Toggle({Title="Expand Alien Hitbox", Default=false, Callback=function(val) hitboxSettings.Alien=val end})
+Tabs.Hitbox:Toggle({Title="Expand Bear Hitbox", Default=false, Callback=function(val) hitboxSettings.Bear=val end})
 Tabs.Hitbox:Toggle({Title="Expand Wolf Hitbox", Default=false, Callback=function(val) hitboxSettings.Wolf=val end})
 Tabs.Hitbox:Toggle({Title="Expand Bunny Hitbox", Default=false, Callback=function(val) hitboxSettings.Bunny=val end})
 Tabs.Hitbox:Toggle({Title="Expand Cultist Hitbox", Default=false, Callback=function(val) hitboxSettings.Cultist=val end})
