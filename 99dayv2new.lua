@@ -632,6 +632,34 @@ for i, name in ipairs(lostChildNames) do
     })
 end
 
+local Other = {
+    "Alien Chest",
+    "Item Chest",
+    "Item Chest2",
+    "Item Chest3",
+    "Item Chest4",
+    "Item Chest5",
+    "Item Chest6"
+}
+
+for i, name in ipairs(Other) do
+    Tabs.Teleport:Button({
+        Title = "TP to " .. i,
+        Callback = function()
+            local workspaceCharacters = game.Workspace.Characters
+            local targetLostChild = workspaceCharacters:FindFirstChild(name)
+
+            if targetLostChild and targetLostChild:IsA("Model") and targetLostChild.PrimaryPart then
+                local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+                local hrp = character:WaitForChild("HumanoidRootPart")
+                hrp.CFrame = targetLostChild.PrimaryPart.CFrame
+            else
+                warn(name .. " not found in Characters or has no PrimaryPart")
+            end
+        end
+    })
+end
+
 -----------------------------------------------------------------
 -- BRING TAB
 -----------------------------------------------------------------
@@ -720,6 +748,18 @@ Tabs.Bring:Button({Title="Bring Meat (Raw & Cooked)", Callback=function()
         end
     end
 end})
+Tabs.Bring:Button({Title="Bring Chest", Callback=function()
+    local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+    for _, item in pairs(workspace.Items:GetChildren()) do
+        local name = item.Name:lower()
+        if (name:find("Item Chest") or name:find("Alien Chest") or name:find("Item Chest2") or name:find("Item Chest3") or name:find("Item Chest4") or name:find("Item Chest5") or name:find("Item Chest6")) and item:IsA("Model") then
+            local main = item:FindFirstChildWhichIsA("BasePart")
+            if main then
+                main.CFrame = root.CFrame * CFrame.new(math.random(-5,5), 0, math.random(-5,5))
+            end
+        end
+    end
+end})
 Tabs.Bring:Button({Title="Bring Flashlight", Callback=function() bringItemsByName("Flashlight") end})
 Tabs.Bring:Button({Title="Bring Nails", Callback=function() bringItemsByName("Nails") end})
 Tabs.Bring:Button({Title="Bring Fan", Callback=function() bringItemsByName("Fan") end})
@@ -766,7 +806,7 @@ local function updateHitboxForModel(model)
     if not root then return end
     local name = model.Name:lower()
     local shouldResize =
-        (hitboxSettings.All and (name:find("alien") or name:find("alien elite") or name:find("bear") or name:find("polar bear") or name:find("wolf") or name:find("alpha") or name:find("bear") or name:find("polar bear") or name:find("cultist") or name:find("cross") or name:find("crossbow cultist"))) or
+        (hitboxSettings.All and (name:find("alien") or name:find("alien elite") or name:find("bear") or name:find("polar bear") or name:find("wolf") or name:find("alpha") or name:find("bunny") or name:find("polar bear") or name:find("cultist") or name:find("cross") or name:find("crossbow cultist"))) or
         (hitboxSettings.Alien and (name:find("alien") or name:find("alien elite"))) or
         (hitboxSettings.Wolf and (name:find("wolf") or name:find("alpha"))) or
         (hitboxSettings.Bunny and name:find("bunny")) or
@@ -798,7 +838,7 @@ Tabs.Hitbox:Toggle({Title="Expand Bear Hitbox", Default=false, Callback=function
 Tabs.Hitbox:Toggle({Title="Expand Wolf Hitbox", Default=false, Callback=function(val) hitboxSettings.Wolf=val end})
 Tabs.Hitbox:Toggle({Title="Expand Bunny Hitbox", Default=false, Callback=function(val) hitboxSettings.Bunny=val end})
 Tabs.Hitbox:Toggle({Title="Expand Cultist Hitbox", Default=false, Callback=function(val) hitboxSettings.Cultist=val end})
-Tabs.Hitbox:Slider({Title="Hitbox Size", Value={Min=2, Max=100, Default=10}, Step=1, Callback=function(val) hitboxSettings.Size=val end})
+Tabs.Hitbox:Slider({Title="Hitbox Size", Value={Min=2, Max=300, Default=10}, Step=1, Callback=function(val) hitboxSettings.Size=val end})
 Tabs.Hitbox:Toggle({Title="Show Hitbox (Transparency)", Default=false, Callback=function(val) hitboxSettings.Show=val end})
 
 Tabs.Player:Slider({
@@ -895,7 +935,7 @@ Tabs.Player:Toggle({
 })
 
 Tabs.Player:Toggle({
-    Title = "God mode (In development)",
+    Title = "God mode (Beta)",
     Default = false,
     Callback = function(state)
         -- God mode typically involves setting Humanoid.Health to math.huge or constantly healing.
