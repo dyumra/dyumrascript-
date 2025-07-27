@@ -834,7 +834,7 @@ Tabs.Player:Button({
 Tabs.Player:Button({
     Title = "Fly (Beta)",
     Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/dyumra/DYHUB-Universal-Game/refs/heads/main/Idkflyv4.lua"))()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/dyumra/dyumrascript-/refs/heads/main/Flua"))()
     end
 })
 
