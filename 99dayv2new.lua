@@ -633,7 +633,6 @@ for i, name in ipairs(lostChildNames) do
 end
 
 local Other = {
-    "Alien Chest",
     "Item Chest",
     "Item Chest2",
     "Item Chest3",
@@ -644,7 +643,29 @@ local Other = {
 
 for i, name in ipairs(Other) do
     Tabs.Teleport:Button({
-        Title = "TP to " .. i,
+        Title = "TP to Chest" .. i,
+        Callback = function()
+            local workspaceCharacters = game.Workspace.Items
+            local targetLostChild = workspaceCharacters:FindFirstChild(name)
+
+            if targetLostChild and targetLostChild:IsA("Model") and targetLostChild.PrimaryPart then
+                local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+                local hrp = character:WaitForChild("HumanoidRootPart")
+                hrp.CFrame = targetLostChild.PrimaryPart.CFrame
+            else
+                warn(name .. " not found in Characters or has no PrimaryPart")
+            end
+        end
+    })
+end
+
+local Other = {
+    "Alien Chest"
+}
+
+for i, name in ipairs(Other) do
+    Tabs.Teleport:Button({
+        Title = "TP to Alien Chest" .. i,
         Callback = function()
             local workspaceCharacters = game.Workspace.Items
             local targetLostChild = workspaceCharacters:FindFirstChild(name)
