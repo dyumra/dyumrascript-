@@ -13,17 +13,18 @@ local TweenService = game:GetService("TweenService")
 local VirtualInput = game:GetService("VirtualInputManager")
 local CoreGui = game:GetService("CoreGui")
 
--- Define common helper functions at the top to ensure they are available when called
 local function CreateEsp(Char, Color, Text, Parent, numberOffset)
-    if not Char then return end
-    -- Destroy existing ESP components to prevent duplicates if function is called multiple times for same object
-    KeepEsp(Char, Parent) -- Ensure clean state before creating new ESP
+    if not Char or not Char:IsA("Model") then return end
+    if not Char:FindFirstChild("HumanoidRootPart") then return end
+    if not Parent or not Parent:IsA("BasePart") then return end
+
+    KeepEsp(Char, Parent)
 
     local highlight = Instance.new("Highlight")
     highlight.Name = "ESP_Highlight"
     highlight.Adornee = Char
     highlight.FillColor = Color
-    highlight.FillTransparency = 0.5
+    highlight.FillTransparency = 1
     highlight.OutlineColor = Color
     highlight.OutlineTransparency = 0
     highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
@@ -34,7 +35,7 @@ local function CreateEsp(Char, Color, Text, Parent, numberOffset)
     billboard.Name = "ESP"
     billboard.Size = UDim2.new(0, 50, 0, 25)
     billboard.AlwaysOnTop = true
-    billboard.StudsOffset = Vector3.new(0, numberOffset or 3, 0) -- Default offset if not provided
+    billboard.StudsOffset = Vector3.new(0, numberOffset or 3, 0)
     billboard.Adornee = Parent
     billboard.Enabled = true
     billboard.Parent = Parent
@@ -48,16 +49,9 @@ local function CreateEsp(Char, Color, Text, Parent, numberOffset)
     label.Parent = billboard
 
     task.spawn(function()
-        local Players = game:GetService("Players")
-        local RunService = game:GetService("RunService")
-        local Workspace = game:GetService("Workspace")
-
-        local LocalPlayer = Players.LocalPlayer
-        local Camera = Workspace.CurrentCamera
-
         while highlight and billboard and Parent and Parent.Parent do
             local cameraPosition = Camera and Camera.CFrame.Position
-            if cameraPosition and Parent and Parent:IsA("BasePart") then
+            if cameraPosition and Parent:IsA("BasePart") then
                 local distance = (cameraPosition - Parent.Position).Magnitude
                 if ActiveDistanceEsp then
                     label.Text = Text .. " (" .. math.floor(distance + 0.5) .. " stud)"
