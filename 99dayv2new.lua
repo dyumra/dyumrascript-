@@ -23,7 +23,7 @@ local function CreateEsp(Char, Color, Text, Parent, numberOffset)
     highlight.Name = "ESP_Highlight"
     highlight.Adornee = Char
     highlight.FillColor = Color
-    highlight.FillTransparency = 1
+    highlight.FillTransparency = 0.5
     highlight.OutlineColor = Color
     highlight.OutlineTransparency = 0
     highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
