@@ -13,12 +13,29 @@ local TweenService = game:GetService("TweenService")
 local VirtualInput = game:GetService("VirtualInputManager")
 local CoreGui = game:GetService("CoreGui")
 
+-- ย้ายฟังก์ชันนี้ขึ้นก่อน
+local function KeepEsp(Char, Parent)
+    if Char then
+        local highlight = Char:FindFirstChildOfClass("Highlight")
+        if highlight then
+            highlight:Destroy()
+        end
+    end
+    if Parent then
+        local billboard = Parent:FindFirstChildOfClass("BillboardGui")
+        if billboard then
+            billboard:Destroy()
+        end
+    end
+end
+
+-- แล้วต่อด้วย CreateEsp
 local function CreateEsp(Char, Color, Text, Parent, numberOffset)
     if not Char or not Char:IsA("Model") then return end
     if not Char:FindFirstChild("HumanoidRootPart") then return end
     if not Parent or not Parent:IsA("BasePart") then return end
 
-    KeepEsp(Char, Parent)
+    KeepEsp(Char, Parent) -- ตอนนี้จะไม่ error แล้ว
 
     local highlight = Instance.new("Highlight")
     highlight.Name = "ESP_Highlight"
@@ -62,21 +79,6 @@ local function CreateEsp(Char, Color, Text, Parent, numberOffset)
             RunService.Heartbeat:Wait()
         end
     end)
-end
-
-local function KeepEsp(Char, Parent)
-    if Char then
-        local highlight = Char:FindFirstChildOfClass("Highlight")
-        if highlight then
-            highlight:Destroy()
-        end
-    end
-    if Parent then
-        local billboard = Parent:FindFirstChildOfClass("BillboardGui")
-        if billboard then
-            billboard:Destroy()
-        end
-    end
 end
 
 local function bringItemsByName(name)
