@@ -646,7 +646,7 @@ for i, name in ipairs(Other) do
     Tabs.Teleport:Button({
         Title = "TP to " .. i,
         Callback = function()
-            local workspaceCharacters = game.Workspace.Characters
+            local workspaceCharacters = game.Workspace.Items
             local targetLostChild = workspaceCharacters:FindFirstChild(name)
 
             if targetLostChild and targetLostChild:IsA("Model") and targetLostChild.PrimaryPart then
