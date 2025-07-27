@@ -766,12 +766,12 @@ local function updateHitboxForModel(model)
     if not root then return end
     local name = model.Name:lower()
     local shouldResize =
-        (hitboxSettings.All and (name:find("Alien") or name:find("Alien Elite") or name:find("Bear") or name:find("Polar Bear") or name:find("wolf") or name:find("alpha") or name:find("Bear") or name:find("Polar Bear") or name:find("cultist") or name:find("cross") or name:find("Crossbow Cultist"))) or
-        (hitboxSettings.Alien and (name:find("Alien") or name:find("Alien Elite"))) or
+        (hitboxSettings.All and (name:find("alien") or name:find("alien elite") or name:find("bear") or name:find("polar bear") or name:find("wolf") or name:find("alpha") or name:find("bear") or name:find("polar bear") or name:find("cultist") or name:find("cross") or name:find("crossbow cultist"))) or
+        (hitboxSettings.Alien and (name:find("alien") or name:find("alien elite"))) or
         (hitboxSettings.Wolf and (name:find("wolf") or name:find("alpha"))) or
         (hitboxSettings.Bunny and name:find("bunny")) or
-        (hitboxSettings.Bear and (name:find("Bear") or name:find("Polar Bear"))) or
-        (hitboxSettings.Cultist and (name:find("cultist") or name:find("cross") or name:find("Crossbow Cultist"))) or
+        (hitboxSettings.Bear and (name:find("bear") or name:find("polar bear"))) or
+        (hitboxSettings.Cultist and (name:find("cultist") or name:find("cross") or name:find("crossbow cultist"))) -- <--- ตรงนี้ได้ลบ 'or' ที่เกินออกแล้ว
     if shouldResize then
         root.Size = Vector3.new(hitboxSettings.Size, hitboxSettings.Size, hitboxSettings.Size)
         root.Transparency = hitboxSettings.Show and 0.5 or 1
