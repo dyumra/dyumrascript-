@@ -1,14 +1,14 @@
 -- nigga got my key system 😭
 
 local validKeys = {
-    ["Yavib_Aga"] = "DYHUB-8JY5A-Q3RTW-IK7OL-FRJL2-IPL7W-LIFETIME",
-    ["MeowyBee"] = "DYHUB-4FJ8K-M1N2P-Q7RST-VWXYZ-U6L8F-LIFETIME",
-    ["kagefym"] = "DYHUB-ZXCVB-NMLKJ-HGFDS-APOIU-YTREW-LIFETIME",
+    ["Yavib_Aga"] = "DYHUB-8JY5A-Q3RTW-IK7OL-FRJL2-IPL7W-LIFETIME",
+    ["MeowyBee"] = "DYHUB-4FJ8K-M1N2P-Q7RST-VWXYZ-U6L8F-LIFETIME",
+    ["kagefym"] = "DYHUB-ZXCVB-NMLKJ-HGFDS-APOIU-YTREW-LIFETIME",
     ["itz_Lxx71"] = "DYHUB-ST6IW-0K7WG-L8TWG-2GR5L-MN5O1-LIFETIME",
     ["Monkeycheese3365"] = "DYHUB-JUYV2-A7OIQ-MJ42P-L8KQW-GD4A3-KEY7DAY",
-    ["ymh_is666"] = "DYHUB-QWERT-YUIOP-ASDFG-HJKLZ-XCVBN-LIFETIME"
-    ["SoraSixty"] = "DYHUB-R5SVA-MAG3J-PI8JS-OAUWN-ERTAV-KEY7DAY"
-    [dyumradyumra"] = "dev"
+    ["ymh_is666"] = "DYHUB-QWERT-YUIOP-ASDFG-HJKLZ-XCVBN-LIFETIME",
+    ["SoraSixty"] = "DYHUB-R5SVA-MAG3J-PI8JS-OAUWN-ERTAV-KEY7DAY",
+    ["dyumradyumra"] = "dev"
 }
 
 local Players = game:GetService("Players")
@@ -16,12 +16,10 @@ local player = Players.LocalPlayer
 local StarterGui = game:GetService("StarterGui")
 
 if getgenv().LoaderV2 == nil then
-    getgenv().LoaderV2 = true
+    getgenv().LoaderV2 = true
 end
 
-if not getgenv().LoaderV2 then
-    return
-end
+if not getgenv().LoaderV2 then return end
 
 local playerName = player and player.Name or ""
 local playerKey = getgenv().DYHUBKEY or ""
@@ -29,23 +27,24 @@ local playerKey = getgenv().DYHUBKEY or ""
 local kickMessage = "❌ Invalid Key!\n💳 Please buy a Premium Key from (dsc.gg/dyhub)"
 
 if not validKeys[playerName] then
-    StarterGui:SetCore("SendNotification", {
-        Title = "Access Denied",
-        Text = "The first user must reset HWID before proceeding",
-        Duration = 5,
-    })
-    return
+    StarterGui:SetCore("SendNotification", {
+        Title = "Access Denied",
+        Text = "The first user must reset HWID before proceeding",
+        Duration = 5,
+    })
+    return
 end
 
 if playerKey ~= validKeys[playerName] and playerKey ~= "DYHUB-NEED2ROBUX" then
-    StarterGui:SetCore("SendNotification", {
-        Title = "Invalid Key",
-        Text = "Your key is invalid or missing. The script will not run",
-        Duration = 5,
-    })
-    wait(5)
-    player:Kick(kickMessage)
-    return
+    StarterGui:SetCore("SendNotification", {
+        Title = "Invalid Key",
+        Text = "Your key is invalid or missing. The script will not run",
+        Duration = 5,
+    })
+    wait(5)
+    player:Kick(kickMessage)
+    return
 end
 
+-- Load actual script
 loadstring(game:HttpGet("https://raw.githubusercontent.com/dyumra/Loader/refs/heads/main/LoaderV2"))()
