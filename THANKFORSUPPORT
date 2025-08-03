@@ -8,6 +8,7 @@ local validKeys = {
     ["Monkeycheese3365"] = "DYHUB-JUYV2-A7OIQ-MJ42P-L8KQW-GD4A3-KEY7DAY",
     ["ymh_is666"] = "DYHUB-QWERT-YUIOP-ASDFG-HJKLZ-XCVBN-LIFETIME"
     ["SoraSixty"] = "DYHUB-R5SVA-MAG3J-PI8JS-OAUWN-ERTAV-KEY7DAY"
+    [dyumradyumra"] = "dev"
 }
 
 local Players = game:GetService("Players")
