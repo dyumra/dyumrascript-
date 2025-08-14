@@ -2,8 +2,6 @@
 
 local validKeys = {
 
--- ====================== Buyer ================================
-
     ["Yavib_Aga"] = "DYHUB-8JY5A-Q3RTW-IK7OL-FRJL2-IPL7W-LIFETIME",
     ["MeowyBee"] = "DYHUB-4FJ8K-M1N2P-Q7RST-VWXYZ-U6L8F-LIFETIME",
     ["kagefym"] = "DYHUB-ZXCVB-NMLKJ-HGFDS-APOIU-YTREW-LIFETIME",
