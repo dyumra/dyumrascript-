@@ -1,17 +1,25 @@
 -- nigga got my key system 😭
 
 local validKeys = {
+
+-- ====================== Buyer ================================
+
     ["Yavib_Aga"] = "DYHUB-8JY5A-Q3RTW-IK7OL-FRJL2-IPL7W-LIFETIME",
     ["MeowyBee"] = "DYHUB-4FJ8K-M1N2P-Q7RST-VWXYZ-U6L8F-LIFETIME",
     ["kagefym"] = "DYHUB-ZXCVB-NMLKJ-HGFDS-APOIU-YTREW-LIFETIME",
     ["itz_Lxx71"] = "DYHUB-ST6IW-0K7WG-L8TWG-2GR5L-MN5O1-LIFETIME",
-    ["Monkeycheese3365"] = "DYHUB-JUYV2-A7OIQ-MJ42P-L8KQW-GD4A3-KEY7DAY",
     ["ymh_is666"] = "DYHUB-QWERT-YUIOP-ASDFG-HJKLZ-XCVBN-LIFETIME",
-    ["SoraSixty"] = "DYHUB-R5SVA-MAG3J-PI8JS-OAUWN-ERTAV-KEY7DAY",
     ["DjScrew65"] = "DYHUB-HU6SH-9KSN1-L8SHA-YTW5S-NA84A-LIFETIME",
     ["stealbf9"] = "DYHUB-3WTAB-KU6AG-P9WBA-OI5SA-YEGSY-LIFETIME",
     ["CinderellaPT"] = "DYHUB-HYWU8-P9AJ3-M7LA9-0UWN3-4HS67-LIFETIME",
-    -- ADMIN
+
+-- ====================== Booster ==============================
+
+    ["Monkeycheese3365"] = "DYHUB-JUYV2-A7OIQ-MJ42P-L8KQW-GD4A3-KEY14DAY",
+    ["Hiimnew928289alt2"] = "DYHUB-KU7AH-Q2B5A-MKG5A-B5S4E-I7GA3-KEY14DAY",
+
+-- ====================== Admin ================================
+
     ["Yolmar_43"] = "DYHUB-OWNER",
     ["182735417"] = "DYHUB-DICK-888",
     ["1234563210"] = "DYHUB-PUSSY-888"
