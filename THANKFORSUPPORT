@@ -1,40 +1,40 @@
--- nigga got my key system 😭
-
-local validKeys = {
-
-    ["Yavib_Aga"] = "DYHUB-8JY5A-Q3RTW-IK7OL-FRJL2-IPL7W-LIFETIME",
-    ["MeowyBee"] = "DYHUB-4FJ8K-M1N2P-Q7RST-VWXYZ-U6L8F-LIFETIME",
-    ["kagefym"] = "DYHUB-ZXCVB-NMLKJ-HGFDS-APOIU-YTREW-LIFETIME",
-    ["itz_Lxx71"] = "DYHUB-ST6IW-0K7WG-L8TWG-2GR5L-MN5O1-LIFETIME",
-    ["ymh_is666"] = "DYHUB-QWERT-YUIOP-ASDFG-HJKLZ-XCVBN-LIFETIME",
-    ["DjScrew65"] = "DYHUB-HU6SH-9KSN1-L8SHA-YTW5S-NA84A-LIFETIME",
-    ["stealbf9"] = "DYHUB-3WTAB-KU6AG-P9WBA-OI5SA-YEGSY-LIFETIME",
-    ["CinderellaPT"] = "DYHUB-HYWU8-P9AJ3-M7LA9-0UWN3-4HS67-LIFETIME",
-
-    ["Monkeycheese3365"] = "DYHUB-JUYV2-A7OIQ-MJ42P-L8KQW-GD4A3-KEY14DAY",
-    ["Hiimnew928289alt2"] = "DYHUB-KU7AH-Q2B5A-MKG5A-B5S4E-I7GA3-KEY14DAY",
-
-    ["Yolmar_43"] = "DYHUB-OWNER",
-    ["182735417"] = "DYHUB-DICK-888",
-    ["1234563210"] = "DYHUB-PUSSY-888"
-}
-
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 local StarterGui = game:GetService("StarterGui")
 
+-- Prevent double load
 if getgenv().LoaderV2 == nil then
     getgenv().LoaderV2 = true
 end
-
 if not getgenv().LoaderV2 then return end
+
+-- Load user list from external file
+local success, userList = pcall(function()
+    local code = game:HttpGet("https://raw.githubusercontent.com/dyumra/Whitelist/refs/heads/main/DYHUB-PREMIUM")
+    local func = loadstring(code)
+    if func then
+        return func()
+    else
+        error("Failed to load user table")
+    end
+end)
+
+if not success or type(userList) ~= "table" then
+    StarterGui:SetCore("SendNotification", {
+        Title = "Error",
+        Text = "Failed to load user data",
+        Duration = 5,
+    })
+    return
+end
 
 local playerName = player and player.Name or ""
 local playerKey = getgenv().DYHUBKEY or ""
-
 local kickMessage = "❌ Invalid Key!\n💳 Please buy a Premium Key from (dsc.gg/dyhub)"
 
-if not validKeys[playerName] then
+-- Check if player exists in whitelist
+local playerData = userList[playerName]
+if not playerData then
     StarterGui:SetCore("SendNotification", {
         Title = "Access Denied",
         Text = "The first user must reset HWID before proceeding",
@@ -43,16 +43,21 @@ if not validKeys[playerName] then
     return
 end
 
-if playerKey ~= validKeys[playerName] and playerKey ~= "DYHUB-NEED2ROBUX" then
+-- Check key validity
+if playerKey ~= playerData.Key and playerKey ~= "DYHUB-NEED2ROBUX" then
     StarterGui:SetCore("SendNotification", {
         Title = "Invalid Key",
         Text = "Your key is invalid or missing. The script will not run",
         Duration = 5,
     })
-    wait(5)
+    task.wait(5)
     player:Kick(kickMessage)
     return
 end
 
--- Load actual script
+-- Store extra user info for later use
+getgenv().UserTag = playerData.Tag
+getgenv().ExpireTime = playerData.Time
+
+-- If everything is fine, load the main script
 loadstring(game:HttpGet("https://raw.githubusercontent.com/dyumra/Premium/refs/heads/main/Premium.savekey"))()
