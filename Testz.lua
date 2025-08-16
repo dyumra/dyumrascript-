@@ -111,4 +111,4 @@ getgenv().UserTag = buyerData.Tag
 getgenv().ExpireTime = timeValue or dayValue
 
 -- Load main script
-loadstring(game:HttpGet("https://raw.githubusercontent.com/dyumra/kuy/refs/heads/main/Error.lua"))()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/dyumra/Dupe-Anime-Rails/refs/heads/main/Hip.lua"))()
