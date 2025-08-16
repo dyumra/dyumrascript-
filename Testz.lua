@@ -1,4 +1,4 @@
--- nigga
+-- test
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 local StarterGui = game:GetService("StarterGui")
@@ -49,7 +49,7 @@ if buyerData then
             Duration = 6,
         })
         task.wait(6)
-        player:Kick("❌ Your key is invalid.\n💳 Please check your key at (dsc.gg/dyhub)")
+        player:Kick("❌ Your key or account is invalid.\n💳 Please recheck your key and account at (dsc.gg/dyhub)")
         return
     end
 elseif keyOwnerData then
