@@ -101,4 +101,4 @@ end
 getgenv().UserTag = buyerData.Tag
 getgenv().ExpireTime = timeValue or dayValue
 
-loadstring(game:HttpGet("https://raw.githubusercontent.com/dyumra/Premium/refs/heads/main/Premium.savekey"))()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/dyumra/kuy/refs/heads/main/Error.lua"))()
