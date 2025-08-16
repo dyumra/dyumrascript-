@@ -1,3 +1,5 @@
+-- version 1
+
 -- Services
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
@@ -48,6 +50,7 @@ local keyOwnerName, keyOwnerData = findKeyOwner(playerKey)
 if buyerData then
     -- Player is in Buyer list
     if playerKey ~= buyerData.Key and playerKey ~= "DYHUB-NEED2ROBUX" then
+        -- ใส่ Key ของคนอื่น → ขึ้นข้อความ Invalid Key
         StarterGui:SetCore("SendNotification", {
             Title = "Invalid Key",
             Text = "Your key is invalid, please check your key",
@@ -58,7 +61,7 @@ if buyerData then
         return
     end
 elseif keyOwnerData then
-    -- Key belongs to someone else
+    -- ใส่ Key ของคนอื่น → ขึ้นข้อความ The first Buyer must reset HWID
     StarterGui:SetCore("SendNotification", {
         Title = "Access Denied",
         Text = "The first Buyer must reset HWID before proceeding",
@@ -68,7 +71,7 @@ elseif keyOwnerData then
     player:Kick("❌ The first Buyer must reset HWID before proceeding\n💳 Please reset the HWID at (dsc.gg/dyhub)")
     return
 else
-    -- Key is invalid or missing
+    -- Key ไม่ถูกต้อง / ไม่มี Key
     StarterGui:SetCore("SendNotification", {
         Title = "Invalid Key",
         Text = "Please purchase a Premium Key at (dsc.gg/dyhub)",
