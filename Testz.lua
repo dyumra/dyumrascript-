@@ -7,7 +7,6 @@ if getgenv().LoaderV2 == nil then
 end
 if not getgenv().LoaderV2 then return end
 
--- โหลด Buyer list
 local success, buyerList = pcall(function()
     local code = game:HttpGet("https://raw.githubusercontent.com/dyumra/Whitelist/refs/heads/main/DYHUB-PREMIUM.lua")
     local func = loadstring(code)
@@ -28,7 +27,6 @@ end
 local playerName = player and player.Name or ""
 local playerKey = getgenv().DYHUBKEY or ""
 
--- ฟังก์ชันหาเจ้าของ Key
 local function findKeyOwner(key)
     for name, data in pairs(buyerList) do
         if data.Key == key then
@@ -42,42 +40,64 @@ local buyerData = buyerList[playerName]
 local keyOwnerName, keyOwnerData = findKeyOwner(playerKey)
 
 if buyerData then
-    -- กรณีมีชื่อใน Buyer list
-    if playerKey == buyerData.Key then
-        -- Key ถูก ต้องโหลดสคริปต์ต่อ
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/dyumra/kuy/refs/heads/main/Error.lua"))()
-    else
-        -- Key ผิด
+    -- ชื่อผู้เล่นอยู่ใน Buyer list
+    if playerKey ~= buyerData.Key and playerKey ~= "DYHUB-NEED2ROBUX" then
         StarterGui:SetCore("SendNotification", {
             Title = "Invalid Key",
-            Text = "Your key does not match your account",
+            Text = "Your key is invalid, please check your key",
             Duration = 6,
         })
         task.wait(6)
         player:Kick("❌ Your key is invalid.\n💳 Please check your key at (dsc.gg/dyhub)")
         return
     end
+    -- Key ถูก ต้องโหลดสคริปต์ต่อ
+elseif keyOwnerData then
+    -- ชื่อผู้เล่นไม่มี แต่ใส่ Key ของคนอื่น
+    StarterGui:SetCore("SendNotification", {
+        Title = "Access Denied",
+        Text = "The first Buyer must reset HWID before proceeding",
+        Duration = 6,
+    })
+    task.wait(6)
+    player:Kick("❌ The first Buyer must reset HWID before proceeding\n💳 Please reset the HWID at (dsc.gg/dyhub)")
+    return
 else
-    -- ไม่มีชื่อใน Buyer list
-    if keyOwnerData then
-        -- Key ของคนอื่น
+    -- ชื่อผู้เล่นไม่มี และ Key ไม่ถูกต้อง
+    StarterGui:SetCore("SendNotification", {
+        Title = "Invalid Key",
+        Text = "Please purchase a Premium Key at (dsc.gg/dyhub)",
+        Duration = 6,
+    })
+    task.wait(6)
+    player:Kick("❌ Your key is invalid or missing.\n💳 Please purchase a Premium Key at (dsc.gg/dyhub)")
+    return
+end
+
+local timeValue = buyerData.Time
+if timeValue == "Lifetime" or tonumber(timeValue) == -1 then
+    timeValue = "999999999"
+else
+    timeValue = nil
+end
+
+local dayValue = tonumber(buyerData.Day) or 0
+if dayValue > 0 and timeValue ~= "999999999" then
+    local firstLogin = getgenv().BuyerFirstLoginTime or os.time()
+    local expireTimestamp = firstLogin + dayValue * 24 * 60 * 60
+    if os.time() > expireTimestamp then
         StarterGui:SetCore("SendNotification", {
-            Title = "Access Denied",
-            Text = "The first Buyer must reset HWID before proceeding",
-            Duration = 6,
+            Title = "Subscription Expired",
+            Text = "Your subscription has expired.",
+            Duration = 7,
         })
-        task.wait(6)
-        player:Kick("❌ The first Buyer must reset HWID before proceeding\n💳 Please reset the HWID at (dsc.gg/dyhub)")
-        return
-    else
-        -- Key ผิด
-        StarterGui:SetCore("SendNotification", {
-            Title = "Invalid Key",
-            Text = "Please purchase a Premium Key at (dsc.gg/dyhub)",
-            Duration = 6,
-        })
-        task.wait(6)
-        player:Kick("❌ Your key is invalid or missing.\n💳 Please purchase a Premium Key at (dsc.gg/dyhub)")
+        task.wait(7)
+        player:Kick("❌ Your subscription has expired.\n💳 Please renew at (dsc.gg/dyhub)")
         return
     end
 end
+
+getgenv().UserTag = buyerData.Tag
+getgenv().ExpireTime = timeValue or dayValue
+
+loadstring(game:HttpGet("https://raw.githubusercontent.com/dyumra/kuy/refs/heads/main/Error.lua"))()
