@@ -1,4 +1,4 @@
--- 3
+-- nigga
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 local StarterGui = game:GetService("StarterGui")
@@ -44,12 +44,12 @@ if buyerData then
     -- ชื่อผู้เล่นอยู่ใน Buyer list
     if playerKey ~= buyerData.Key and playerKey ~= "DYHUB-NEED2ROBUX" then
         StarterGui:SetCore("SendNotification", {
-            Title = "Access Denied",
-            Text = "The first Buyer must reset HWID before proceeding",
+            Title = "Invalid Key",
+            Text = "Your key does not match your account",
             Duration = 6,
         })
         task.wait(6)
-        player:Kick("❌ The first Buyer must reset HWID before proceeding\n💳 Please reset the HWID at (dsc.gg/dyhub)")
+        player:Kick("❌ Your key is invalid.\n💳 Please check your key at (dsc.gg/dyhub)")
         return
     end
 elseif keyOwnerData then
