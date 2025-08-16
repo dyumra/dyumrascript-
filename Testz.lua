@@ -48,7 +48,7 @@ if buyerData and playerKey ~= buyerData.Key and playerKey ~= "DYHUB-NEED2ROBUX" 
         Duration = 6,
     })
     task.wait(6)
-    player:Kick("❌ The first Buyer must reset HWID before proceeding 💳")
+    player:Kick("❌ The first Buyer must reset HWID before proceeding\n💳 Please reset the hwid at (dsc.gg/dyhub)")
     return
 end
 
@@ -62,7 +62,7 @@ if not buyerData then
             Duration = 6,
         })
         task.wait(6)
-        player:Kick("❌ The first Buyer must reset HWID before proceeding \n💳 Please reset the hwid at (dsc.gg/dyhub)")
+        player:Kick("❌ The first Buyer must reset HWID before proceeding\n💳 Please reset the hwid at (dsc.gg/dyhub)")
     else
         StarterGui:SetCore("SendNotification", {
             Title = "Invalid Key",
@@ -89,11 +89,11 @@ if dayValue > 0 and timeValue ~= "999999999" then
     if os.time() > expireTimestamp then
         StarterGui:SetCore("SendNotification", {
             Title = "Subscription Expired",
-            Text = "Your subscription has expired. Please renew at (dsc.gg/dyhub)",
+            Text = "Your subscription has expired.",
             Duration = 7,
         })
         task.wait(7)
-        player:Kick("❌ Your subscription has expired. Please renew at (dsc.gg/dyhub)")
+        player:Kick("❌ Your subscription has expired.\n💳 Please renew at (dsc.gg/dyhub)")
         return
     end
 end
