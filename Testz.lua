@@ -62,7 +62,7 @@ if not buyerData then
             Duration = 6,
         })
         task.wait(6)
-        player:Kick("❌ The first Buyer must reset HWID before proceeding 💳")
+        player:Kick("❌ The first Buyer must reset HWID before proceeding \n💳 Please reset the hwid at (dsc.gg/dyhub)")
     else
         StarterGui:SetCore("SendNotification", {
             Title = "Invalid Key",
