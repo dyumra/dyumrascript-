@@ -1,5 +1,4 @@
--- hi
-
+-- yoyo
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 local StarterGui = game:GetService("StarterGui")
@@ -12,8 +11,16 @@ if not getgenv().LoaderV2 then return end
 -- โหลด Buyer list
 local success, buyerList = pcall(function()
     local code = game:HttpGet("https://raw.githubusercontent.com/dyumra/Whitelist/refs/heads/main/DYHUB-PREMIUM.lua")
-    local func = loadstring(code)
-    return func and func() or error("Failed to parse Buyer list")
+    if not code or code == "" then error("Failed to download Buyer list") end
+
+    local func, err = loadstring(code)
+    if not func then error("Failed to parse Buyer list: "..tostring(err)) end
+
+    local listSuccess, listData = pcall(func)
+    if not listSuccess or type(listData) ~= "table" then
+        error("Buyer list returned invalid data")
+    end
+    return listData
 end)
 
 if not success or type(buyerList) ~= "table" or not next(buyerList) then
@@ -42,8 +49,8 @@ end
 local buyerData = buyerList[playerName]
 local keyOwnerName, keyOwnerData = findKeyOwner(playerKey)
 
+-- เช็ก Key และ Buyer
 if buyerData then
-    -- ชื่อผู้เล่นอยู่ใน Buyer list
     if keyOwnerData and keyOwnerName ~= playerName then
         -- ใส่ Key ของคนอื่น
         StarterGui:SetCore("SendNotification", {
@@ -87,7 +94,7 @@ else
     return
 end
 
--- ตรวจสอบเวลา
+-- ตรวจสอบเวลา Subscription
 local timeValue = buyerData.Time
 if timeValue == "Lifetime" or tonumber(timeValue) == -1 then
     timeValue = "999999999"
@@ -111,9 +118,25 @@ if dayValue > 0 and timeValue ~= "999999999" then
     end
 end
 
--- กำหนดตัวแปร global
+-- ตั้งค่า global
 getgenv().UserTag = buyerData.Tag
 getgenv().ExpireTime = timeValue or dayValue
 
 -- โหลดสคริปต์หลัก
-loadstring(game:HttpGet("https://raw.githubusercontent.com/dyumra/kuy/refs/heads/main/Error.lua"))()
+local mainSuccess, mainErr = pcall(function()
+    local mainCode = game:HttpGet("https://raw.githubusercontent.com/dyumra/kuy/refs/heads/main/Error.lua")
+    if not mainCode or mainCode == "" then error("Failed to download main script") end
+    local mainFunc, loadErr = loadstring(mainCode)
+    if not mainFunc then error("Failed to parse main script: "..tostring(loadErr)) end
+    mainFunc()
+end)
+if not mainSuccess then
+    StarterGui:SetCore("SendNotification", {
+        Title = "Error",
+        Text = "Failed to load main script",
+        Duration = 7,
+    })
+    task.wait(7)
+    player:Kick("❌ Failed to load main script.\n💳 Please contact support at (dsc.gg/dyhub)\nError: "..tostring(mainErr))
+    return
+end
