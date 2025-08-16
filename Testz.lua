@@ -40,20 +40,20 @@ end
 
 local buyerData = buyerList[playerName]
 
--- ถ้ามีชื่อใน Buyer list แต่ Key ไม่ตรงของตัวเอง
-if buyerData and playerKey ~= buyerData.Key and playerKey ~= "DYHUB-NEED2ROBUX" then
-    StarterGui:SetCore("SendNotification", {
-        Title = "Access Denied",
-        Text = "The first Buyer must reset HWID before proceeding",
-        Duration = 6,
-    })
-    task.wait(6)
-    player:Kick("❌ The first Buyer must reset HWID before proceeding\n💳 Please reset the hwid at (dsc.gg/dyhub)")
-    return
-end
-
--- ถ้าไม่มีชื่อใน Buyer list
-if not buyerData then
+-- ตรวจสอบ Key สำหรับผู้ที่อยู่ใน Buyer list
+if buyerData then
+    if playerKey ~= buyerData.Key and playerKey ~= "DYHUB-NEED2ROBUX" then
+        StarterGui:SetCore("SendNotification", {
+            Title = "Access Denied",
+            Text = "The first Buyer must reset HWID before proceeding",
+            Duration = 6,
+        })
+        task.wait(6)
+        player:Kick("❌ The first Buyer must reset HWID before proceeding\n💳 Please reset the HWID at (dsc.gg/dyhub)")
+        return
+    end
+else
+    -- กรณีไม่มีชื่อใน Buyer list
     local keyOwner = findKeyOwner(playerKey)
     if keyOwner then
         StarterGui:SetCore("SendNotification", {
@@ -62,7 +62,7 @@ if not buyerData then
             Duration = 6,
         })
         task.wait(6)
-        player:Kick("❌ The first Buyer must reset HWID before proceeding\n💳 Please reset the hwid at (dsc.gg/dyhub)")
+        player:Kick("❌ The first Buyer must reset HWID before proceeding\n💳 Please reset the HWID at (dsc.gg/dyhub)")
     else
         StarterGui:SetCore("SendNotification", {
             Title = "Invalid Key",
