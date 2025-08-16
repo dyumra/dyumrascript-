@@ -10,7 +10,7 @@ if not getgenv().LoaderV2 then return end
 
 -- Load user list from external file
 local success, userList = pcall(function()
-    local code = game:HttpGet("https://raw.githubusercontent.com/dyumra/Whitelist/refs/heads/main/DYHUB-PREMIUM")
+    local code = game:HttpGet("https://raw.githubusercontent.com/dyumra/Whitelist/refs/heads/main/DYHUB-PREMIUM.lua")
     local func = loadstring(code)
     if func then
         return func()
