@@ -1,5 +1,3 @@
--- keysystem 2
-
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 local StarterGui = game:GetService("StarterGui")
@@ -30,32 +28,20 @@ local playerName = player and player.Name or ""
 local playerKey = getgenv().DYHUBKEY or ""
 
 local function findKeyOwner(key)
-    for _, data in pairs(buyerList) do
+    for name, data in pairs(buyerList) do
         if data.Key == key then
-            return data
+            return name, data
         end
     end
-    return nil
+    return nil, nil
 end
 
 local buyerData = buyerList[playerName]
+local keyOwnerName, keyOwnerData = findKeyOwner(playerKey)
 
--- ตรวจสอบ Key สำหรับผู้ที่อยู่ใน Buyer list
-if buyerData then
-    if playerKey ~= buyerData.Key and playerKey ~= "DYHUB-NEED2ROBUX" then
-        StarterGui:SetCore("SendNotification", {
-            Title = "Access Denied",
-            Text = "The first Buyer must reset HWID before proceeding",
-            Duration = 6,
-        })
-        task.wait(6)
-        player:Kick("❌ The first Buyer must reset HWID before proceeding\n💳 Please reset the HWID at (dsc.gg/dyhub)")
-        return
-    end
-else
-    -- กรณีไม่มีชื่อใน Buyer list
-    local keyOwner = findKeyOwner(playerKey)
-    if keyOwner then
+if not buyerData then
+    -- ไม่มีชื่อใน Buyer list
+    if keyOwnerData then
         StarterGui:SetCore("SendNotification", {
             Title = "Access Denied",
             Text = "The first Buyer must reset HWID before proceeding",
@@ -73,6 +59,18 @@ else
         player:Kick("❌ Your key is invalid or missing.\n💳 Please purchase a Premium Key at (dsc.gg/dyhub)")
     end
     return
+else
+    -- มีชื่อใน Buyer list
+    if playerKey ~= buyerData.Key and playerKey ~= "DYHUB-NEED2ROBUX" then
+        StarterGui:SetCore("SendNotification", {
+            Title = "Access Denied",
+            Text = "The first Buyer must reset HWID before proceeding",
+            Duration = 6,
+        })
+        task.wait(6)
+        player:Kick("❌ The first Buyer must reset HWID before proceeding\n💳 Please reset the HWID at (dsc.gg/dyhub)")
+        return
+    end
 end
 
 local timeValue = buyerData.Time
@@ -102,3 +100,4 @@ getgenv().UserTag = buyerData.Tag
 getgenv().ExpireTime = timeValue or dayValue
 
 loadstring(game:HttpGet("https://raw.githubusercontent.com/dyumra/kuy/refs/heads/main/Error.lua"))()
+-- 2
