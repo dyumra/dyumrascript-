@@ -1,3 +1,5 @@
+-- keysystem
+
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 local StarterGui = game:GetService("StarterGui")
@@ -38,6 +40,19 @@ end
 
 local buyerData = buyerList[playerName]
 
+-- ถ้ามีชื่อใน Buyer list แต่ Key ไม่ตรงของตัวเอง
+if buyerData and playerKey ~= buyerData.Key and playerKey ~= "DYHUB-NEED2ROBUX" then
+    StarterGui:SetCore("SendNotification", {
+        Title = "Access Denied",
+        Text = "The first Buyer must reset HWID before proceeding",
+        Duration = 6,
+    })
+    task.wait(6)
+    player:Kick("❌ The first Buyer must reset HWID before proceeding 💳")
+    return
+end
+
+-- ถ้าไม่มีชื่อใน Buyer list
 if not buyerData then
     local keyOwner = findKeyOwner(playerKey)
     if keyOwner then
@@ -46,6 +61,8 @@ if not buyerData then
             Text = "The first Buyer must reset HWID before proceeding",
             Duration = 6,
         })
+        task.wait(6)
+        player:Kick("❌ The first Buyer must reset HWID before proceeding 💳")
     else
         StarterGui:SetCore("SendNotification", {
             Title = "Invalid Key",
@@ -55,17 +72,6 @@ if not buyerData then
         task.wait(6)
         player:Kick("❌ Your key is invalid or missing.\n💳 Please purchase a Premium Key at (dsc.gg/dyhub)")
     end
-    return
-end
-
-if playerKey ~= buyerData.Key and playerKey ~= "DYHUB-NEED2ROBUX" then
-    StarterGui:SetCore("SendNotification", {
-        Title = "Invalid Key",
-        Text = "Please purchase a Premium Key at (dsc.gg/dyhub)",
-        Duration = 6,
-    })
-    task.wait(6)
-    player:Kick("❌ Your key is invalid or missing.\n💳 Please purchase a Premium Key at (dsc.gg/dyhub)")
     return
 end
 
