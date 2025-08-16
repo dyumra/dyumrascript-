@@ -1,3 +1,4 @@
+-- 3
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 local StarterGui = game:GetService("StarterGui")
@@ -39,28 +40,8 @@ end
 local buyerData = buyerList[playerName]
 local keyOwnerName, keyOwnerData = findKeyOwner(playerKey)
 
-if not buyerData then
-    -- ไม่มีชื่อใน Buyer list
-    if keyOwnerData then
-        StarterGui:SetCore("SendNotification", {
-            Title = "Access Denied",
-            Text = "The first Buyer must reset HWID before proceeding",
-            Duration = 6,
-        })
-        task.wait(6)
-        player:Kick("❌ The first Buyer must reset HWID before proceeding\n💳 Please reset the HWID at (dsc.gg/dyhub)")
-    else
-        StarterGui:SetCore("SendNotification", {
-            Title = "Invalid Key",
-            Text = "Please purchase a Premium Key at (dsc.gg/dyhub)",
-            Duration = 6,
-        })
-        task.wait(6)
-        player:Kick("❌ Your key is invalid or missing.\n💳 Please purchase a Premium Key at (dsc.gg/dyhub)")
-    end
-    return
-else
-    -- มีชื่อใน Buyer list
+if buyerData then
+    -- ชื่อผู้เล่นอยู่ใน Buyer list
     if playerKey ~= buyerData.Key and playerKey ~= "DYHUB-NEED2ROBUX" then
         StarterGui:SetCore("SendNotification", {
             Title = "Access Denied",
@@ -71,6 +52,26 @@ else
         player:Kick("❌ The first Buyer must reset HWID before proceeding\n💳 Please reset the HWID at (dsc.gg/dyhub)")
         return
     end
+elseif keyOwnerData then
+    -- ชื่อผู้เล่นไม่มี แต่ใส่ Key ของคนอื่น
+    StarterGui:SetCore("SendNotification", {
+        Title = "Access Denied",
+        Text = "The first Buyer must reset HWID before proceeding",
+        Duration = 6,
+    })
+    task.wait(6)
+    player:Kick("❌ The first Buyer must reset HWID before proceeding\n💳 Please reset the HWID at (dsc.gg/dyhub)")
+    return
+else
+    -- ชื่อผู้เล่นไม่มี และ Key ไม่ถูกต้อง
+    StarterGui:SetCore("SendNotification", {
+        Title = "Invalid Key",
+        Text = "Please purchase a Premium Key at (dsc.gg/dyhub)",
+        Duration = 6,
+    })
+    task.wait(6)
+    player:Kick("❌ Your key is invalid or missing.\n💳 Please purchase a Premium Key at (dsc.gg/dyhub)")
+    return
 end
 
 local timeValue = buyerData.Time
@@ -100,4 +101,3 @@ getgenv().UserTag = buyerData.Tag
 getgenv().ExpireTime = timeValue or dayValue
 
 loadstring(game:HttpGet("https://raw.githubusercontent.com/dyumra/kuy/refs/heads/main/Error.lua"))()
--- 2
