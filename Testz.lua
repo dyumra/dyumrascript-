@@ -1,17 +1,12 @@
--- version 1
-
--- Services
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 local StarterGui = game:GetService("StarterGui")
 
--- Loader guard
 if getgenv().LoaderV2 == nil then
     getgenv().LoaderV2 = true
 end
 if not getgenv().LoaderV2 then return end
 
--- Load Buyer list safely
 local success, buyerList = pcall(function()
     local code = game:HttpGet("https://raw.githubusercontent.com/dyumra/Whitelist/refs/heads/main/DYHUB-PREMIUM.lua")
     local func = loadstring(code)
@@ -29,11 +24,9 @@ if not success or type(buyerList) ~= "table" or not next(buyerList) then
     return
 end
 
--- Player info
 local playerName = player and player.Name or ""
 local playerKey = getgenv().DYHUBKEY or ""
 
--- Function to find owner of a key
 local function findKeyOwner(key)
     for name, data in pairs(buyerList) do
         if data.Key == key then
@@ -46,11 +39,8 @@ end
 local buyerData = buyerList[playerName]
 local keyOwnerName, keyOwnerData = findKeyOwner(playerKey)
 
--- Key & Buyer checks
 if buyerData then
-    -- Player is in Buyer list
     if playerKey ~= buyerData.Key and playerKey ~= "DYHUB-NEED2ROBUX" then
-        -- ใส่ Key ของคนอื่น → ขึ้นข้อความ Invalid Key
         StarterGui:SetCore("SendNotification", {
             Title = "Invalid Key",
             Text = "Your key is invalid, please check your key",
@@ -61,7 +51,6 @@ if buyerData then
         return
     end
 elseif keyOwnerData then
-    -- ใส่ Key ของคนอื่น → ขึ้นข้อความ The first Buyer must reset HWID
     StarterGui:SetCore("SendNotification", {
         Title = "Access Denied",
         Text = "The first Buyer must reset HWID before proceeding",
@@ -71,7 +60,6 @@ elseif keyOwnerData then
     player:Kick("❌ The first Buyer must reset HWID before proceeding\n💳 Please reset the HWID at (dsc.gg/dyhub)")
     return
 else
-    -- Key ไม่ถูกต้อง / ไม่มี Key
     StarterGui:SetCore("SendNotification", {
         Title = "Invalid Key",
         Text = "Please purchase a Premium Key at (dsc.gg/dyhub)",
@@ -82,7 +70,6 @@ else
     return
 end
 
--- Subscription / Expire checks
 local timeValue = buyerData.Time
 if timeValue == "Lifetime" or tonumber(timeValue) == -1 then
     timeValue = "999999999"
@@ -106,9 +93,7 @@ if dayValue > 0 and timeValue ~= "999999999" then
     end
 end
 
--- Save global info
 getgenv().UserTag = buyerData.Tag
 getgenv().ExpireTime = timeValue or dayValue
 
--- Load main script
-loadstring(game:HttpGet("https://raw.githubusercontent.com/dyumra/Dupe-Anime-Rails/refs/heads/main/Hip.lua"))()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/dyumra/LOADER-V2/refs/heads/main/DYHUB-982-321-712"))()
